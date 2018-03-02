@@ -1,0 +1,15 @@
+Django User Profiles
+https://medium.com/@bencleary/django-user-profiles-f5c9aedb70db
+Extend User Model
+https://simpleisbetterthancomplex.com/tutorial/2016/07/22/how-to-extend-django-user-model.html
+
+status callback:
+https://www.twilio.com/docs/guides/how-to-confirm-delivery-in-python#getting-status-events-for-twiml-generated-messages
+
+twilio: what is a webhook
+https://www.twilio.com/docs/guides/how-to-receive-and-reply-in-python#what-is-a-webhook
+
+testing:
+https://requestb.in/19mnap81?inspect
+
+https://ngrok.com/

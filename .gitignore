@@ -52,11 +52,11 @@ coverage.xml
 
 # Django stuff:
 *.log
-local_settings.py
-
-# Flask stuff:
-instance/
-.webassets-cache
+local.py
+development.py
+production.py
+staging.py
+wsgi.py
 
 # Scrapy stuff:
 .scrapy
@@ -66,9 +66,6 @@ docs/_build/
 
 # PyBuilder
 target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
 
 # pyenv
 .python-version
@@ -99,3 +96,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# misc
+*.swp
