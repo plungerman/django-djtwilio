@@ -56,6 +56,7 @@ DATABASES = {
     },
 }
 INSTALLED_APPS = [
+    'bootstrap_admin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -64,6 +65,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.staticfiles',
+    'djtwilio.core',
+    'djtwilio.apps.sms',
     # needed for template tags
     'djtools',
 ]
@@ -181,6 +184,8 @@ EMAIL_FAIL_SILENTLY = False
 DEFAULT_FROM_EMAIL = ''
 SERVER_EMAIL = ''
 SERVER_MAIL=''
+# bootstrap admin
+BOOTSTRAP_ADMIN_SIDEBAR_MENU = True
 # Twilio
 TWILIO_API_URL = 'https://api.twilio.com/2010-04-01/'
 TWILIO_ACCOUNT_SID = ''

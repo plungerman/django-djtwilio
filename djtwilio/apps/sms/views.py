@@ -8,8 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from djtwilio.apps.sms.forms import SendForm
 from djtwilio.apps.sms.manager import Message
-from djtwilio.apps.sms.client import twilio_client as client
-from djtwilio.apps.sms.errors import MESSAGE_DELIVERY_CODES
+from djtwilio.core.client import twilio_client
 
 from djzbar.decorators.auth import portal_auth_required
 
@@ -32,6 +31,8 @@ def send(request):
             data = form.cleaned_data
 
             die = False
+            account = Account.objects.get(sid = user.profile.account.sid)
+            client = twilio_client(account)
             try:
                 response = client.messages.create(
                     to = data['phone_to'],
@@ -75,23 +76,23 @@ def send(request):
         form = SendForm(initial=initial)
 
     return render(
-        request, 'core/admissions/sms/form.html', {'form': form}
+        request, 'apps/sms/form.html', {'form': form}
     )
 
 
 def send_bulk(request):
     return render(
-        request, 'core/admissions/sms/form_bulk.html'
+        request, 'apps/sms/form_bulk.html'
     )
 
 
 def detail(request, sid):
     return render(
-        request, 'core/admissions/sms/detail.html'
+        request, 'apps/sms/detail.html'
     )
 
 
 def search(request):
     return render(
-        request, 'core/admissions/sms/search.html'
+        request, 'apps/sms/search.html'
     )

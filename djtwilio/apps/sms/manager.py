@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 
-from djtwilio.apps.sms.client import twilio_client as client
+from djtwilio.core.client import twilio_client as client
 
 from twilio.base.exceptions import TwilioRestException
 

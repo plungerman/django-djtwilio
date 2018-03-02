@@ -3,7 +3,7 @@ from django.test import TestCase
 
 from djtools.utils.logging import seperator
 
-from djtwilio.apps.sms.client import twilio_client as client
+from djtwilio.core.client import twilio_client
 from djtwilio.apps.sms.manager import Message
 from djtwilio.apps.sms.errors import MESSAGE_DELIVERY_CODES
 
@@ -15,7 +15,7 @@ class CoreViewsTestCase(TestCase):
 
     def setUp(self):
 
-        self.client = client
+        self.client = twilio_client
         self.to = settings.TWILIO_TEST_PHONE_TO
         self.from_valid = settings.TWILIO_TEST_PHONE_FROM
         self.from_invalid = settings.TWILIO_TEST_PHONE_FROM_INVALID

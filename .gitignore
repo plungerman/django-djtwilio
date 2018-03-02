@@ -57,6 +57,7 @@ development.py
 production.py
 staging.py
 wsgi.py
+migrations
 
 # Scrapy stuff:
 .scrapy
