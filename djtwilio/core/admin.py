@@ -10,7 +10,23 @@ class AccountAdmin(admin.ModelAdmin):
 
 
 class ProfileAdmin(admin.ModelAdmin):
-    pass
+    list_display = (
+        'last_name','first_name','message_sid','account','bulk'
+    )
+    ordering = (
+        'user__last_name','user__first_name',
+    )
+    search_fields = (
+        'user__last_name','user__first_name','user__email','user__username'
+    )
+    list_per_page = 500
+    #raw_id_fields = ('user',)
+
+    def first_name(self, obj):
+        return obj.user.first_name
+
+    def last_name(self, obj):
+        return obj.user.last_name
 
 
 admin.site.register(Account, AccountAdmin)

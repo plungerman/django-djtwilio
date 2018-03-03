@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 
-from djtwilio.core.client import twilio_client as client
+from djtwilio.core.client import twilio_client
 
 from twilio.base.exceptions import TwilioRestException
 
@@ -10,7 +10,7 @@ class Message(object):
 
     def __init__(self):
 
-        self.client = client
+        self.client = twilio_client()
 
     def status(self, sid, status):
 

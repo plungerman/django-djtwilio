@@ -15,11 +15,13 @@ class Account(models.Model):
         max_length=24
     )
 
+    def __unicode__(self):
+        return "{} ({})".format(self.department, self.sid)
+
 
 class Profile(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE,
-        #related_name='profile_user'
     )
     phone = models.CharField(
         max_length=12, verbose_name="Mobile Number",
@@ -32,13 +34,18 @@ class Profile(models.Model):
     )
     account = models.ForeignKey(
         Account, on_delete=models.CASCADE,
-        related_name='profile_account',
+        #related_name='account',
         null=True, blank=True
     )
     bulk = models.BooleanField(
         "Bulk messenger",
         default = False
     )
+
+    def __unicode__(self):
+        return "{}, {}".format(
+            self.user.last_name, self.user.first_name
+        )
 
 
 @receiver(post_save, sender=User)

@@ -44,6 +44,7 @@ urlpatterns = [
             template_name="denied.html"
         ), name="access_denied"
     ),
+    # apps could have its own urls.py file eventually
     url(
         r'^sms/', include('djtwilio.apps.sms.urls')
     ),

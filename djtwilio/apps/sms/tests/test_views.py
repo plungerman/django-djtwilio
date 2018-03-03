@@ -15,7 +15,7 @@ class CoreViewsTestCase(TestCase):
 
     def setUp(self):
 
-        self.client = twilio_client
+        self.client = twilio_client()
         self.to = settings.TWILIO_TEST_PHONE_TO
         self.from_valid = settings.TWILIO_TEST_PHONE_FROM
         self.from_invalid = settings.TWILIO_TEST_PHONE_FROM_INVALID
@@ -63,8 +63,10 @@ class CoreViewsTestCase(TestCase):
                     print message.__dict__
                 else:
                     print "Fail: message was not sent:"
-                    print message.error_message
-                    print MESSAGE_DELIVERY_CODES[message.error_code].description
+                    #print message.error_message
+                    code = message.error_code
+                    print MESSAGE_DELIVERY_CODES[code]['message']
+                    print MESSAGE_DELIVERY_CODES[code]['description']
         else:
             print "use the --debug-mode flag to test message delivery"
 
