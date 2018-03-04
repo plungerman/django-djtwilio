@@ -11,7 +11,7 @@ class AccountAdmin(admin.ModelAdmin):
 
 class ProfileAdmin(admin.ModelAdmin):
     list_display = (
-        'last_name','first_name','message_sid','account','bulk'
+        'last_name','first_name','message_sid','bulk'
     )
     ordering = (
         'user__last_name','user__first_name',
@@ -27,6 +27,9 @@ class ProfileAdmin(admin.ModelAdmin):
 
     def last_name(self, obj):
         return obj.user.last_name
+
+    def account(self, obj):
+        return obj.account
 
 
 admin.site.register(Account, AccountAdmin)

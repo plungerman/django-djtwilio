@@ -196,12 +196,14 @@ TWILIO_TEST_PHONE_FROM = ''
 TWILIO_TEST_PHONE_TO = ''
 TWILIO_TEST_MESSAGE = 'Who does your taxes?'
 TWILIO_TEST_MESSAGE_SID = ''
+TWILIO_TEST_DEPARTMENT = 'Admissions'
 TWILIO_ADDMISSIONS_GROUP = 'Admissions SMS'
 TWILIO_ADMISSIONS_REPS = {}
 # auth tests
-TEST_USERNAME = 'larry'
-TEST_PASSWORD = 'IQMiBNfmI*Y5gVKY&uV9TIsNZE@szpbE'
-TEST_EMAIL = 'larry@carthage.edu'
+TEST_USERNAME = ''
+TEST_PASSWORD = ''
+TEST_EMAIL = ''
+TEST_USER_ID = ''
 # logging
 LOG_FILEPATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs/')
 LOG_FILENAME = LOG_FILEPATH + 'debug.log'

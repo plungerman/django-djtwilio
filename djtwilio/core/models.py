@@ -6,13 +6,16 @@ from django.dispatch import receiver
 
 class Account(models.Model):
     sid = models.CharField(
-        max_length=34
+        max_length=34,
+        null=True, blank=True
     )
     token = models.CharField(
-        max_length=32
+        max_length=32,
+        null=True, blank=True
     )
     department = models.CharField(
-        max_length=24
+        max_length=24,
+        null=True, blank=True
     )
 
     def __unicode__(self):
@@ -32,14 +35,13 @@ class Profile(models.Model):
         max_length=34,
         null=True, blank=True
     )
-    account = models.ForeignKey(
-        Account, on_delete=models.CASCADE,
-        #related_name='account',
-        null=True, blank=True
-    )
     bulk = models.BooleanField(
         "Bulk messenger",
         default = False
+    )
+    account = models.ForeignKey(
+        Account, on_delete=models.CASCADE,
+        null=True, blank=True
     )
 
     def __unicode__(self):
@@ -56,3 +58,4 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
+

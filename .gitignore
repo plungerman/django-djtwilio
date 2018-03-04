@@ -58,6 +58,10 @@ production.py
 staging.py
 wsgi.py
 migrations
+#
+user.json
+profile.json
+account.json
 
 # Scrapy stuff:
 .scrapy

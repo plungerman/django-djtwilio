@@ -33,7 +33,9 @@ class MessageAdmin(admin.ModelAdmin):
 
 
 class ErrorAdmin(admin.ModelAdmin):
-    pass
+    ordering = (
+        'code',
+    )
 
 
 class BulkAdmin(admin.ModelAdmin):

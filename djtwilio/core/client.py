@@ -12,10 +12,8 @@ def twilio_client(account=None):
     """
 
     if account:
-        #sid = account.sid
-        #token = account.token
-        sid = settings.TWILIO_ACCOUNT_SID
-        token = settings.TWILIO_AUTH_TOKEN
+        sid = str(account.sid)
+        token = str(account.token)
     else:
         sid = settings.TWILIO_ACCOUNT_SID
         token = settings.TWILIO_AUTH_TOKEN

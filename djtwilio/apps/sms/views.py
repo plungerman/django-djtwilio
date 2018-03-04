@@ -7,9 +7,9 @@ from django.core.urlresolvers import reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 
 from djtwilio.apps.sms.forms import SendForm
-from djtwilio.apps.sms.manager import Message
+from djtwilio.apps.sms.models import Message
+from djtwilio.apps.sms.errors import MESSAGE_DELIVERY_CODES
 from djtwilio.core.client import twilio_client
-from djtwilio.core.models import Account
 
 from djzbar.decorators.auth import portal_auth_required
 
@@ -18,9 +18,14 @@ from twilio.base.exceptions import TwilioRestException
 MESSAGING_SERVICE_SID = settings.TWILIO_TEST_MESSAGING_SERVICE_SID
 
 
+@csrf_exempt
+def status_callback(request):
+
+    pass
+
+
 @portal_auth_required(
-    #group='Admissions SMS', session_var='DJTWILIO_AUTH',
-    session_var='DJTWILIO_AUTH',
+    group='Admissions SMS', session_var='DJTWILIO_AUTH',
     redirect_url=reverse_lazy('access_denied')
 )
 @csrf_exempt
@@ -31,19 +36,24 @@ def send(request):
     if request.method=='POST':
         form = SendForm(request.POST, request.FILES)
         user = request.user
-        account = user.profile.account
         if form.is_valid():
-            data = form.cleaned_data
-
             die = False
-            client = twilio_client(account)
+            data = form.cleaned_data
+            recipient = data['phone_to']
+            body = data['message'],
+            message = Message.objects.create(
+                messenger = user,
+                recipient = recipient,
+                body = body
+            )
+            client = twilio_client(user.profile.account)
             try:
                 response = client.messages.create(
-                    to = data['phone_to'],
-                    messaging_service_sid = account.sid,
+                    to = recipient,
+                    messaging_service_sid = user.profile.message_sid,
                     # use parentheses to prevent extra whitespace
-                    body = (data['message']),
-                    status_callback = 'https://requestb.in/19mnap81'
+                    body = (body),
+                    status_callback = 'https://requestb.in/tcyl20tc'
                 )
             except TwilioRestException as e:
                 die = True
@@ -52,18 +62,20 @@ def send(request):
                 )
 
             if not die:
-                message = Message().status(response.sid, 'delivered')
-
-                if message.status == 'delivered':
+                sid = response.sid
+                message.message_status.sid = sid
+                ms = message.status()
+                if ms.status == 'delivered':
                     messages.add_message(
                         request,messages.SUCCESS,"Your message has been sent.",
                         extra_tags='success'
                     )
                 else:
+                    error = Error.objects.get(code=ms.error_code)
+                    message.message_status.error = error
                     messages.add_message(
                         request, messages.ERROR, "{}: {}".format(
-                            message.error_message,
-                            MESSAGE_DELIVERY[message.error_code]
+                            error.message, error.description
                         )
                     )
 
