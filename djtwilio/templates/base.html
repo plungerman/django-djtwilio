@@ -1,7 +1,7 @@
 {% extends "djbootmin/base.html" %}
 {% block extra_style %}
-<link href="https://www.carthage.edu/themes/shared/css/forms.css"
-    rel="stylesheet" type="text/css">
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+    rel="stylesheet">
 <link href="https://www.carthage.edu/themes/shared/css/tables.css"
     rel="stylesheet" type="text/css">
 <!-- print CSS -->
@@ -11,9 +11,7 @@
 .bg-boot{background-color:#563d7c;}
 #page-wrapper{margin:0;padding:0;}
 .form fieldset {margin-top:0;}
-.panel-primary > .panel-heading {
-    color: inherit;
-}
+.panel-primary > .panel-heading { color: inherit; }
 .btn {padding: .1rem .2rem;font-size:inherit;}
 .card-body { padding: .5rem; }
 .card-body select { width: 100%; }
@@ -27,8 +25,17 @@ nav .input-group-btn {font-size:1.3em;}
 .navbar-toggler-icon {color:yellow;}
 .dropdown-menu {padding: 5px; background-color:#563d7c;}
 .dropdown, .dropup { padding: 3px; }
-.success a {
-    color: #007bff;
+.success a { color: #007bff; }
+.content-wrapper { margin-top:60px; }
+.form fieldset {margin-top:0;}
+.panel-primary > .panel-heading {color: inherit;}
+.btn {padding: .1rem .2rem;font-size:inherit;}
+dt, dd {line-height:.75em;}
+dt {overflow: hidden; white-space: nowrap;}
+dd {overflow: hidden;white-space: nowrap;}
+dt:after {
+  content: " ..................................................................................";
+  color: #cacaca;
 }
 </style>
 {% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card mb-3">
+  <div class="card-header alert-info">
+    <h3>
+    <i class="fa fa-leaf" style="color:#28a745;"></i>
+    Sent to {{message.recipient}} at {{message.date_created}}
+    by <a href="mailto:{{message.messenger.email}}">
+        {{message.messenger.last_name}},
+        {{message.messenger.first_name}}</a> ({{message.messenger.profile.account.department}})
+    </h3>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-12 mb-3">
+        <div class="card h-100">
+          <div class="card-header clearfix small z-1 alert-warning">
+            <span class="float-left">
+              Message Details
+            </span>
+            <span class="float-right">
+            {% if message.status.error %}
+              <i class="fa fa-exclamation-triangle"></i>
+            {% else %}
+              <i class="fa fa-info-circle"></i>
+            {% endif %}
+            </span>
+          </div>
+          <div class="card-body bg-light">
+            <p>{{message.body}}</p>
+            <dl class="row">
+              <dt class="col-sm-7 col-7">To</dt>
+              <dd class="col-sm-4 col-4">
+                {{message.status.To|default:"&nbsp;"}}
+              </dd>
+              <dt class="col-sm-7 col-7">From</dt>
+              <dd class="col-sm-4 col-4">
+                {{message.status.From|default:"&nbsp;"}}
+              </dd>
+              <dt class="col-sm-7 col-7">Status</dt>
+              <dd class="col-sm-4 col-4">{{message.status.MessageStatus|default:"&nbsp;"}}</dd>
+            </dl>
+          </div>
+          <div class="card-footer clearfix small z-1 bg-warning">
+            {% if message.status.error %}
+              <h4>
+                Error: {{message.status.error.message}}
+              </h4>
+              <p>
+                {{message.status.error.description}}
+              </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
