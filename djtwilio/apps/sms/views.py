@@ -21,6 +21,12 @@ import re
 MESSAGING_SERVICE_SID = settings.TWILIO_TEST_MESSAGING_SERVICE_SID
 
 
+def detail(request, sid):
+    return render(
+        request, 'apps/sms/detail.html'
+    )
+
+
 @csrf_exempt
 def status_callback(request):
 
@@ -60,6 +66,17 @@ def status_callback(request):
 def send(request):
 
     initial = {}
+    if settings.DEBUG:
+        initial = {
+            'phone_to': settings.TWILIO_TEST_PHONE_TO,
+            'message': settings.TWILIO_TEST_MESSAGE
+        }
+
+    form = SendForm(initial=initial)
+    template = 'apps/sms/form.html'
+    response = render(
+        request, template, {'form': form}
+    )
 
     if request.method=='POST':
         form = SendForm(request.POST, request.FILES)
@@ -76,12 +93,19 @@ def send(request):
                     messaging_service_sid = user.profile.message_sid,
                     # use parentheses to prevent extra whitespace
                     body = (body),
-                    status_callback = 'https://requestb.in/tcyl20tc'
+                    status_callback = 'https://{}{}'.format(
+                        settings.SERVER_URL,
+                        reverse_lazy('sms_status_callback')
+                    )
                 )
             except TwilioRestException as e:
                 die = True
                 messages.add_message(
                     request, messages.ERROR, e, extra_tags='error'
+                )
+
+                response = HttpResponseRedirect(
+                    reverse_lazy('sms_send')
                 )
 
             if not die:
@@ -96,48 +120,27 @@ def send(request):
                 status = Status.objects.create(SmsSid=sid, MessageSid=sid)
                 message.status = status
                 message.save()
+                messages.add_message(
+                    request,messages.SUCCESS,"""
+                        Your message has been sent. View the
+                        <a href="#">message status</a>.
+                    """, extra_tags='success'
+                )
 
-
-                if ms.status == 'delivered':
-                    messages.add_message(
-                        request,messages.SUCCESS,"Your message has been sent.",
-                        extra_tags='success'
-                    )
-                else:
-                    error = Error.objects.get(code=ms.error_code)
-                    message.status.error = error
-                    messages.add_message(
-                        request, messages.ERROR, "{}: {}".format(
-                            error.message, error.description
-                        )
-                    )
-
-            return HttpResponseRedirect(
-                reverse_lazy('sms_send')
+                response = HttpResponseRedirect(
+                    reverse_lazy('sms_send')
+                )
+        else:
+            response = render(
+                request, template, {'form': form}
             )
 
-    else:
-        if settings.DEBUG:
-            initial = {
-                'phone_to': settings.TWILIO_TEST_PHONE_TO,
-                'message': settings.TWILIO_TEST_MESSAGE
-            }
-        form = SendForm(initial=initial)
-
-    return render(
-        request, 'apps/sms/form.html', {'form': form}
-    )
+    return response
 
 
 def send_bulk(request):
     return render(
         request, 'apps/sms/form_bulk.html'
-    )
-
-
-def detail(request, sid):
-    return render(
-        request, 'apps/sms/detail.html'
     )
 
 

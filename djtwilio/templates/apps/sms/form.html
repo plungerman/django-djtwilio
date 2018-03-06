@@ -24,15 +24,23 @@ $(function() {
     }
 
   });
+  //$('#messageStatus').on('shown.bs.modal', function () {
+  //})
+  //$('.modal').on('shown.bs.modal',function(){
+    //$(this).find('iframe').attr('src','http://www.google.com')
+  //})
 });
 </script>
 {% endblock %}
 {% block content %}
 <div class="forms-container large-8 medium-10 small-12">
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#messageStatus">
+  Message Status
+</button>
     {% if messages %}
       {% for message in messages %}
         <div id="messages" class="{{ message.tags }} large-12 medium-12 small-12">
-        <strong>{{ message }}</strong>
+        <strong>{{ message|safe }}</strong>
         </div>
       {% endfor %}
     {% endif %}
@@ -64,5 +72,21 @@ $(function() {
         </fieldset>
         {% include "form_submit.inc.html" %}
     </form>
+</div>
+<!-- Message Status Modal -->
+<div class="modal fade" id="messageStatus" tabindex="-1" role="dialog" aria-labelledby="messageStatusLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="messageStatusLabel">Message Status</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <iframe src="https://www.carthage.edu/apps/twilio/sms/send/success/"></iframe>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

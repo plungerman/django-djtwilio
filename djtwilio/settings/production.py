@@ -1,4 +1,4 @@
 from .local import *
 
-DEBUG = False
+DEBUG = True
 ROOT_URL = '/apps/twilio/'
