@@ -54,8 +54,6 @@ coverage.xml
 *.log
 local.py
 development.py
-production.py
-staging.py
 wsgi.py
 migrations
 #
