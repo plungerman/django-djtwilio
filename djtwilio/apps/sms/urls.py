@@ -21,6 +21,10 @@ urlpatterns = [
         views.send, name='sms_send_bulk'
     ),
     url(
+        r'^status-callback/$',
+        views.status_callback, name='sms_status_callback'
+    ),
+    url(
         r'^detail/(?P<sid>\w+)/$',
         views.detail, name='sms_detail'
     ),

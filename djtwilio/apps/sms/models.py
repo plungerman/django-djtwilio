@@ -46,6 +46,58 @@ class Bulk(models.Model):
     )
 
 
+class Status(models.Model):
+    '''
+        POST content from Twilio:
+    '''
+
+    error = models.ForeignKey(
+        Error,
+        related_name='message_error',
+        null=True, blank=True,
+    )
+    To = models.CharField(
+        max_length = 16,
+        null=True, blank=True
+    )
+    From = models.CharField(
+        max_length=16,
+        null=True, blank=True
+    )
+    MessagingServiceSid = models.CharField(
+        max_length = 34,
+        null=True, blank=True
+    )
+    SmsSid = models.CharField(
+        max_length = 34,
+        null=True, blank=True
+    )
+    MessageStatus = models.CharField(
+        max_length = 16,
+        null=True, blank=True
+    )
+    AccountSid = models.CharField(
+        max_length = 34,
+        null=True, blank=True
+    )
+    SmsStatus = models.CharField(
+        max_length = 16,
+        null=True, blank=True
+    )
+    MessageSid = models.CharField(
+        max_length = 34,
+        null=True, blank=True
+    )
+    ApiVersion = models.CharField(
+        max_length = 16,
+        null=True, blank=True
+    )
+    ErrorCode = models.CharField(
+        max_length = 16,
+        null=True, blank=True
+    )
+
+
 class Message(models.Model):
 
     date_created = models.DateTimeField(
@@ -66,11 +118,16 @@ class Message(models.Model):
         null=True, blank=True,
         related_name='message_bulk'
     )
+    status = models.ForeignKey(
+        Status, on_delete=models.CASCADE,
+        related_name='message_status',
+        null=True, blank=True
+    )
 
-    def status(self):
+    def get_status(self):
 
         count = 0
-        sid = self.message_status.sid
+        sid = self.status.MessageSid
         status = 'delivered'
         client = twilio_client(self.messenger.profile.account)
         ms = client.messages(sid).fetch()
@@ -101,33 +158,3 @@ class Message(models.Model):
                 return False
             else:
                 return e
-
-
-class Status(models.Model):
-    message = models.OneToOneField(
-        Message, on_delete=models.CASCADE,
-        related_name='message_status'
-    )
-    sid = models.CharField(
-        max_length=34,
-        null=True, blank=True
-    )
-    status = models.CharField(
-        max_length=12,
-        null=True, blank=True
-    )
-    error = models.ForeignKey(
-        Error,
-        null=True, blank=True,
-        related_name='message_error'
-    )
-    phone_from = models.CharField(
-        max_length=12,
-        null=True, blank=True
-    )
-
-
-@receiver(post_save, sender=Message)
-def create_message_status(sender, instance, created, **kwargs):
-    if created:
-        Status.objects.create(message=instance)

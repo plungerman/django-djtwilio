@@ -27,5 +27,3 @@ class AppsSmsModelsTestCase(TestCase):
             recipient = self.recipient,
             body = self.body
         )
-        #print message.message_status.sid
-        print message.message_status.id

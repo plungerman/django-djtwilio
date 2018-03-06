@@ -2,7 +2,16 @@
 
 from django import forms
 
+from djtwilio.apps.sms.models import Status
+
 from localflavor.us.forms import USPhoneNumberField
+
+
+class StatusCallbackForm(forms.ModelForm):
+
+    class Meta:
+        model = Status
+        fields = '__all__'
 
 
 class SendForm(forms.Form):
