@@ -7,7 +7,8 @@
     Sent to {{message.recipient}} at {{message.date_created}}
     by <a href="mailto:{{message.messenger.email}}">
         {{message.messenger.last_name}},
-        {{message.messenger.first_name}}</a> ({{message.messenger.profile.account.department}})
+        {{message.messenger.first_name}}</a>
+        ({{message.messenger.profile.account.department}})
     </h3>
   </div>
   <div class="card-body">
@@ -27,7 +28,6 @@
             </span>
           </div>
           <div class="card-body bg-light">
-            <p>{{message.body}}</p>
             <dl class="row">
               <dt class="col-sm-7 col-7">To</dt>
               <dd class="col-sm-4 col-4">
@@ -40,6 +40,7 @@
               <dt class="col-sm-7 col-7">Status</dt>
               <dd class="col-sm-4 col-4">{{message.status.MessageStatus|default:"&nbsp;"}}</dd>
             </dl>
+            <p>{{message.body}}</p>
           </div>
           <div class="card-footer clearfix small z-1 bg-warning">
             {% if message.status.error %}

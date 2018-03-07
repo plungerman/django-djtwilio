@@ -29,6 +29,10 @@ urlpatterns = [
         views.detail, name='sms_detail'
     ),
     url(
+        r'^list/$',
+        views.list, name='sms_list'
+    ),
+    url(
         r'^search/$',
         views.search, name='sms_search'
     ),

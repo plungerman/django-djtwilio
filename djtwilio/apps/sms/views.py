@@ -21,9 +21,40 @@ import re
 MESSAGING_SERVICE_SID = settings.TWILIO_TEST_MESSAGING_SERVICE_SID
 
 
+@portal_auth_required(
+    group='Admissions SMS', session_var='DJTWILIO_AUTH',
+    redirect_url=reverse_lazy('access_denied')
+)
 def detail(request, sid):
+
+    user = request.user
+    message = Message.objects.get(status__MessageSid=sid)
+    if message.messenger != user and not user.is_superuser:
+        response = HttpResponseRedirect(
+            reverse_lazy('sms_send')
+        )
+    else:
+        response = render(
+        request, 'apps/sms/detail.html', {'message': message,}
+    )
+
+    return response
+
+
+@portal_auth_required(
+    group='Admissions SMS', session_var='DJTWILIO_AUTH',
+    redirect_url=reverse_lazy('access_denied')
+)
+def list(request):
+
+    user = request.user
+    if user.is_superuser:
+        messages = Message.objects.all()
+    else:
+        messages = user.message_messenger.all()
+
     return render(
-        request, 'apps/sms/detail.html'
+        request, 'apps/sms/list.html', {'objects': messages,}
     )
 
 
@@ -85,7 +116,7 @@ def send(request):
             die = False
             data = form.cleaned_data
             recipient = data['phone_to']
-            body = data['message'],
+            body = data['message']
             client = twilio_client(user.profile.account)
             try:
                 response = client.messages.create(
