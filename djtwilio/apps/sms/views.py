@@ -49,9 +49,9 @@ def list(request):
 
     user = request.user
     if user.is_superuser:
-        messages = Message.objects.all()
+        messages = Message.objects.all().order_by('date_created')
     else:
-        messages = user.message_messenger.all()
+        messages = user.message_messenger.all().order_by('-date_created')
 
     return render(
         request, 'apps/sms/list.html', {'objects': messages,}
