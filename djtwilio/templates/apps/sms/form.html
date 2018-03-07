@@ -29,19 +29,21 @@ $(function() {
     }
 
   });
-  //$('#messageStatus').on('shown.bs.modal', function () {
-  //})
-  //$('.modal').on('shown.bs.modal',function(){
-    //$(this).find('iframe').attr('src','http://www.google.com')
-  //})
+  $('#messageStatus').on('shown.bs.modal', function () {
+    $(this).find('iframe').attr('src','/skirk/twilio/sms/detail/SM214d02e3166e462c851e92a82e943031/');
+  })
 });
 </script>
 {% endblock %}
 {% block content %}
 <div class="forms-container large-8 medium-10 small-12">
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#messageStatus">
-  Message Status
-</button>
+<div id="messages" class="success success large-12 medium-12 small-12">
+        <strong>
+                        Your message has been sent. View the
+                        <a style="color:blue;" data-target="#messageStatus" data-toggle="modal" href="/skirk/twilio/sms/detail/SM214d02e3166e462c851e92a82e943031/">
+                          message status</a>.
+                    </strong>
+        </div>
     {% if messages %}
       {% for message in messages %}
         <div id="messages" class="{{ message.tags }} large-12 medium-12 small-12">
@@ -79,7 +81,7 @@ $(function() {
     </form>
 </div>
 <!-- Message Status Modal -->
-<div class="modal fade" id="messageStatus" tabindex="-1" role="dialog" aria-labelledby="messageStatusLabel" aria-hidden="true">
+<div class="modal fade" id="messageStatus" tabindex="-1" role="dialog" aria-labelledby="messageStatusLabel" aria-hidden="true" data-remote="/skirk/twilio/sms/detail/SM214d02e3166e462c851e92a82e943031/">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -89,7 +91,7 @@ $(function() {
         </button>
       </div>
       <div class="modal-body">
-        <iframe src="https://www.carthage.edu/apps/twilio/sms/send/success/"></iframe>
+        <iframe src="/skirk/twilio/sms/detail/SM214d02e3166e462c851e92a82e943031/"></iframe>
       </div>
     </div>
   </div>

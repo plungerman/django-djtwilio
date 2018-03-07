@@ -97,6 +97,8 @@ def status_callback(request):
 def send(request):
 
     initial = {}
+    earl = None
+    sid = 0
     if settings.DEBUG:
         initial = {
             'phone_to': settings.TWILIO_TEST_PHONE_TO,
@@ -152,10 +154,13 @@ def send(request):
                 message.status = status
                 message.save()
                 messages.add_message(
-                    request,messages.SUCCESS,"""
+                    request, messages.SUCCESS, """
                         Your message has been sent. View the
-                        <a href="#">message status</a>.
-                    """, extra_tags='success'
+                        <a data-target="#messageStatus" data-toggle="modal"
+                          data-remote="{}">
+                          message status</a>.
+                    """.format(reverse_lazy('sms_detail', args=[sid])),
+                    extra_tags='success'
                 )
 
                 response = HttpResponseRedirect(
