@@ -40,9 +40,10 @@
               <dt class="col-sm-7 col-7">Status</dt>
               <dd class="col-sm-4 col-4">{{message.status.MessageStatus|default:"&nbsp;"}}</dd>
             </dl>
-            <p>{{message.body}}</p>
+            <pre class="p-3 alert-success border-dark rounded">{{message.body}}</pre>
           </div>
-          <div class="card-footer clearfix small z-1 bg-warning">
+          <div class="card-footer clearfix small z-1
+            {% if message.status.error %}bg-warning{% else %}alert-secondary{% endif %}">
             {% if message.status.error %}
               <h4>
                 Error: {{message.status.error.message}}

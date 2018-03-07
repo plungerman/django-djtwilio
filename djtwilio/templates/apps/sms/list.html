@@ -31,9 +31,10 @@ table.dataTable thead span.sort-icon {
 <script>
 $(document).ready(function() {
   var table = $('#data-table').DataTable({
+    'order': [[ 2, 'desc' ]],
     'lengthMenu': [
       [25, 50, 100, 250, 500, 1000, 2000, -1],
-      [25, 50, 100, 250, 500, 1000, 2000, "All"]
+      [25, 50, 100, 250, 500, 1000, 2000, 'All']
     ],
     dom: 'lfrBtip',
     buttons: [
@@ -84,7 +85,7 @@ $(document).ready(function() {
         </td>
         <td>{{o.status.From}}</td>
         <td>
-          {{o.date_created}}
+          {{o.date_created|date:'Y-m-d H:i:s'}}
         </td>
         <td data-toggle="tooltip" data-placement="left" title="{{o.status.error.message}}">
           {{o.status.MessageStatus}}
