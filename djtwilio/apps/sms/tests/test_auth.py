@@ -17,22 +17,22 @@ class CoreViewsTestCase(TestCase):
     def setUp(self):
 
         self.user = create_test_user()
-        print "created user"
-        print self.user.id
+        print("created user")
+        print(self.user.id)
         self.password = settings.TEST_PASSWORD
 
     def test_auth(self):
-        print "\n"
-        print "Test Auth"
+        print("\n")
+        print("Test Auth")
         seperator()
-        print "earl:"
+        print("earl:")
         earl = reverse('sms_send')
-        print earl
+        print(earl)
         # get SMS send page
         response = self.client.get(earl)
         self.assertEqual(response.status_code, 302)
         # redirect to sign in page
-        print "redirect to sign in at {}".format(response['location'])
+        print("redirect to sign in at {}".format(response['location']))
 
         # attempt to sign in with client login method
         login = self.client.login(
@@ -41,6 +41,6 @@ class CoreViewsTestCase(TestCase):
         self.assertTrue(login)
         response = self.client.get(earl)
         self.assertEqual(response.status_code, 200)
-        print "URL:"
-        print response.request['PATH_INFO']
-        print "Auth Success"
+        print("URL:")
+        print(response.request['PATH_INFO'])
+        print("Auth Success")

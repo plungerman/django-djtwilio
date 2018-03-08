@@ -19,8 +19,8 @@ class AppsSmsModelsTestCase(TestCase):
         self.body = settings.TWILIO_TEST_MESSAGE
 
     def test_message(self):
-        print "\n"
-        print "create a message object"
+        print("\n")
+        print("create a message object")
         seperator()
         message = Message.objects.create(
             messenger = self.user,

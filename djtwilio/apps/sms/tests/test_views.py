@@ -26,11 +26,31 @@ class AppsSmsViewsTestCase(TestCase):
         self.recipient = settings.TWILIO_TEST_PHONE_TO
         self.body = settings.TWILIO_TEST_MESSAGE
         self.mssid_invalid = settings.TWILIO_TEST_MESSAGING_SERVICE_SID_INVALID
+        self.sid = settings.TWILIO_TEST_MESSAGE_SID
+
+    def test_list(self):
+
+        print("\n")
+        print("messages list")
+
+        user = self.user
+        all_messages = Message.objects.all().order_by('date_created')
+        user_messages = user.message_messenger.all().order_by('-date_created')
+
+    def test_detail(self):
+
+        print("\n")
+        print("message detail")
+
+        medium = 'screen'
+        user = self.user
+        message = Message.objects.get(status__MessageSid=self.sid)
+        template = 'apps/sms/detail_{}.html'.format(medium)
 
     def test_status_callback(self):
 
-        print "\n"
-        print "status callback"
+        print("\n")
+        print("status callback")
         status_dict = settings.TWILIO_TEST_STATUS_DICT
         response = self.client.post(
             reverse('sms_status_callback'), status_dict
@@ -38,8 +58,8 @@ class AppsSmsViewsTestCase(TestCase):
         print response
 
     def test_send_valid(self):
-        print "\n"
-        print "send an sms message"
+        print("\n")
+        print("send an sms message")
         seperator()
         die = False
         if settings.DEBUG:
@@ -49,13 +69,16 @@ class AppsSmsViewsTestCase(TestCase):
                     messaging_service_sid = self.user.profile.message_sid,
                     # use parentheses to prevent extra whitespace
                     body = (self.body),
-                    #status_callback = 'https://requestb.in/tcyl20tc'
+                    status_callback = 'https://{}{}'.format(
+                        settings.SERVER_URL,
+                        reverse('sms_status_callback')
+                    )
                 )
             except TwilioRestException as e:
                 die = True
-                print "REST Error message:"
+                print("REST Error message:")
                 seperator()
-                print e
+                print(e)
 
             if not die:
                 # create message object
@@ -64,52 +87,53 @@ class AppsSmsViewsTestCase(TestCase):
                     recipient = self.recipient,
                     body = self.body
                 )
-                print response.__dict__
-                print "response sid:"
+                print(response.__dict__)
+                print("response sid:")
                 sid = response.sid
                 status = Status.objects.create(SmsSid=sid, MessageSid=sid)
                 message.status = status
                 message.save()
                 ms = message.get_status()
                 if ms.status == 'delivered':
-                    print "Success: message sent"
-                    print message.__dict__
+                    print("Success: message sent")
+                    print(message.__dict__)
                 else:
                     error = Error.objects.get(code=ms.error_code)
                     message.status.error = error
-                    print "Fail: message was not sent: '{}'".format(
+                    print("Fail: message was not sent: '{}'".format(
                         ms.error_code
-                    )
-                    print "Error message: {}".format(
+                    ))
+                    print("Error message: {}".format(
                         message.status.error.message
-                    )
-                    print "Error description: {}".format(
+                    ))
+                    print("Error description: {}".format(
                         message.status.error.description
-                    )
+                    ))
         else:
             print "use the --debug-mode flag to test message delivery"
 
-    '''
     def test_send_invalid_message_sid(self):
-        print "\n"
-        print "send an sms message from invalid message sid"
+        print("\n")
+        print("send an sms message from invalid message sid")
         seperator()
+
         if settings.DEBUG:
+
             try:
                 response = self.twilio_client.messages.create(
-                    to = self.to,
+                    to = self.recipient,
                     messaging_service_sid = self.mssid_invalid,
                     # use parentheses to prevent extra whitespace
-                    body = (
-                        "Test sms message via Python Unit Test\n"
-                        "Who does your taxes?"
+                    body = (self.body),
+                    status_callback = 'https://{}{}'.format(
+                        settings.SERVER_URL,
+                        reverse('sms_status_callback')
                     )
                 )
             except TwilioRestException as e:
-                print "REST Error message:"
+                die = True
+                print("REST Error message:")
                 seperator()
-                print e
-
+                print(e)
         else:
             print "use the --debug-mode flag to test message delivery"
-    '''

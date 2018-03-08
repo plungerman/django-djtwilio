@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.contrib import messages
 from django.template import RequestContext
 from django.http import HttpResponseRedirect
-from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 
 from djtwilio.apps.sms.forms import SendForm, StatusCallbackForm
@@ -32,7 +32,7 @@ def detail(request, sid, medium='screen'):
     template = 'apps/sms/detail_{}.html'.format(medium)
     if message.messenger != user and not user.is_superuser:
         response = HttpResponseRedirect(
-            reverse_lazy('sms_send')
+            reverse('sms_send')
         )
     else:
         response = render(
@@ -129,7 +129,7 @@ def send(request):
                     body = (body),
                     status_callback = 'https://{}{}'.format(
                         settings.SERVER_URL,
-                        reverse_lazy('sms_status_callback')
+                        reverse('sms_status_callback')
                     )
                 )
             except TwilioRestException as e:
@@ -139,7 +139,7 @@ def send(request):
                 )
 
                 response = HttpResponseRedirect(
-                    reverse_lazy('sms_send')
+                    reverse('sms_send')
                 )
 
             if not die:
@@ -160,12 +160,12 @@ def send(request):
                         <a data-target="#messageStatus" data-toggle="modal"
                           data-load-url="{}" class="text-primary" href="#">
                           message status</a>.
-                    """.format(reverse_lazy('sms_detail', args=[sid,'modal'])),
+                    """.format(reverse('sms_detail', args=[sid,'modal'])),
                     extra_tags='success'
                 )
 
                 response = HttpResponseRedirect(
-                    reverse_lazy('sms_send')
+                    reverse('sms_send')
                 )
         else:
             response = render(
