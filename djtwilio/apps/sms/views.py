@@ -25,17 +25,18 @@ MESSAGING_SERVICE_SID = settings.TWILIO_TEST_MESSAGING_SERVICE_SID
     group='Admissions SMS', session_var='DJTWILIO_AUTH',
     redirect_url=reverse_lazy('access_denied')
 )
-def detail(request, sid):
+def detail(request, sid, medium='screen'):
 
     user = request.user
     message = Message.objects.get(status__MessageSid=sid)
+    template = 'apps/sms/detail_{}.html'.format(medium)
     if message.messenger != user and not user.is_superuser:
         response = HttpResponseRedirect(
             reverse_lazy('sms_send')
         )
     else:
         response = render(
-        request, 'apps/sms/detail.html', {'message': message,}
+        request, template, {'message': message,}
     )
 
     return response
@@ -157,9 +158,9 @@ def send(request):
                     request, messages.SUCCESS, """
                         Your message has been sent. View the
                         <a data-target="#messageStatus" data-toggle="modal"
-                          data-remote="{}">
+                          data-load-url="{}" class="text-primary" href="#">
                           message status</a>.
-                    """.format(reverse_lazy('sms_detail', args=[sid])),
+                    """.format(reverse_lazy('sms_detail', args=[sid,'modal'])),
                     extra_tags='success'
                 )
 

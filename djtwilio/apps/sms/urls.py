@@ -25,8 +25,12 @@ urlpatterns = [
         views.status_callback, name='sms_status_callback'
     ),
     url(
-        r'^detail/(?P<sid>\w+)/$',
+        r'^detail/(?P<sid>\w+)/(?P<medium>[-\w]+)/$',
         views.detail, name='sms_detail'
+    ),
+    url(
+        r'^detail/(?P<sid>\w+)/$',
+        views.detail, name='sms_detail_default'
     ),
     url(
         r'^list/$',

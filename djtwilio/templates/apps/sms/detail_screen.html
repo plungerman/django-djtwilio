@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card mb-3">
   <div class="card-header alert-info">
     <h3>
     <i class="fa fa-leaf" style="color:#28a745;"></i>
@@ -12,8 +11,7 @@
     </h3>
   </div>
   <div class="card-body">
-    <div class="row">
-      <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-12 mb-3">
+      <div class="{% block message_card_body %}col-xl-5 col-lg-5 col-md-8 col-sm-12 col-12 mb-3{% endblock %}">
         <div class="card h-100">
           <div class="card-header clearfix small z-1 alert-warning">
             <span class="float-left">
@@ -28,7 +26,7 @@
             </span>
           </div>
           <div class="card-body bg-light">
-            <dl class="row">
+            <dl class="row mt-1">
               <dt class="col-sm-7 col-7">To</dt>
               <dd class="col-sm-4 col-4">
                 {{message.status.To|default:"&nbsp;"}}
@@ -56,7 +54,4 @@
         </div>
       </div>
     </div>
-  </div>
-</div>
 {% endblock %}
-
