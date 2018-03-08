@@ -47,6 +47,15 @@ $(function() {
 {% endblock %}
 {% block content %}
 <div class="forms-container large-8 medium-10 small-12">
+  {% if django_debug %}
+  <div id="messages" class="success success large-12 medium-12 small-12">
+    <strong>
+      Your message has been sent. View the
+      <a data-target="#messageStatus" data-toggle="modal" data-load-url="/skirk/twilio/sms/detail/SM32ead021529f4670bee4f45e803b1155/modal/" class="text-primary" href="#">
+      message status</a>.
+    </strong>
+  </div>
+  {% endif %}
     {% if messages %}
       {% for message in messages %}
         <div id="messages" class="{{ message.tags }} large-12 medium-12 small-12">
@@ -84,7 +93,7 @@ $(function() {
     </form>
 </div>
 <!-- Message Status Modal -->
-<div class="modal fade h-85" id="messageStatus" tabindex="-1" role="dialog" aria-labelledby="messageStatusLabel" aria-hidden="true">
+<div class="modal fade h-75" id="messageStatus" tabindex="-1" role="dialog" aria-labelledby="messageStatusLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
