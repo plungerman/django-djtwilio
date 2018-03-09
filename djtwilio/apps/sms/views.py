@@ -1,9 +1,9 @@
 from django.conf import settings
 from django.shortcuts import render
-from django.http import HttpResponse
 from django.contrib import messages
+from django.http import HttpResponse
 from django.template import RequestContext
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 
@@ -28,7 +28,12 @@ MESSAGING_SERVICE_SID = settings.TWILIO_TEST_MESSAGING_SERVICE_SID
 def detail(request, sid, medium='screen'):
 
     user = request.user
-    message = Message.objects.get(status__MessageSid=sid)
+
+    try:
+        message = Message.objects.get(status__MessageSid=sid)
+    except:
+        raise Http404
+
     template = 'apps/sms/detail_{}.html'.format(medium)
     if message.messenger != user and not user.is_superuser:
         response = HttpResponseRedirect(

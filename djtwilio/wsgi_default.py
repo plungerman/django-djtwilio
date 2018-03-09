@@ -23,7 +23,7 @@ os.environ['ODBCINI'] = ''
 os.environ['ONCONFIG'] = ''
 os.environ['INFORMIXSQLHOSTS'] = ''
 os.environ['LD_LIBRARY_PATH'] = '$INFORMIXDIR/lib:$INFORMIXDIR/lib/esql:$INFORMIXDIR/lib/tools:/usr/lib/apache2/modules:$INFORMIXDIR/lib/cli'
-os.environ['LD_RUN_PATH'] = os.environ['LD_LIBRARY_PATH']
+os.environ['LD_RUN_PATH'] = '$INFORMIXDIR/lib:$INFORMIXDIR/lib/esql:$INFORMIXDIR/lib/tools:/usr/lib/apache2/modules'
 # wsgi
 from django.core.wsgi import get_wsgi_application
 

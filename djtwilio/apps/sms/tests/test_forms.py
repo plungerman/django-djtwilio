@@ -30,6 +30,16 @@ class SendFormTestCase(TestCase):
             'message': ['This field is required.'],
         })
 
+    def test_send_form_opt_out_data(self):
+        form = SendForm({
+            'phone_to': settings.TWILIO_TEST_PHONE_OPT_OUT,
+            'message': settings.TWILIO_TEST_MESSAGE
+        })
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            'phone_to': ['This student has chosen to opt-out of phone contact.'],
+        })
+
     def test_send_form_blank_data(self):
         form = SendForm({})
         self.assertFalse(form.is_valid())

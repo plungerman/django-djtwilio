@@ -18,7 +18,7 @@
 .card-header { font-size:1.2em; padding: .25rem .5rem;}
 .card-footer { padding: .25rem .5rem;}
 .card {min-height: 160px;}
-.content-wrapper { margin-left: 0;margin-top:60px; }
+.content-wrapper { margin-top:60px; }
 nav a {color: #cbbde2;}
 nav a:hover {color:#fff;}
 nav .input-group-btn {font-size:1.3em;}
@@ -49,25 +49,16 @@ pre {
 {% block extra_javascript %}
 <script>
 $(function() {
-  $('#olvidado').click(function(e) {
-    e.preventDefault();
-    $('div#form-olvidado').toggle('500');
-  });
-  $('#acceso').click(function(e) {
-    e.preventDefault();
-    $('div#form-olvidado').toggle('500');
-  });
+  $("body").toggleClass("sidenav-toggled");
 });
 </script>
 {% endblock %}
 {% block body_tag %}{% endblock %}
-{% block navigation %}
-<nav class="navbar navbar-expand-sm bg-boot fixed-top navbar-dark" id="mainNav">
+{% block navbar-header %}
   <a href="{# url 'home' #}" class="mr-sm-3 mr-lg-3"><i class="fa fa-home fa-2x green"></i></a>
-    <button class="navbar-toggler navbar-toggler-right collapsed" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-  <div class="collapse navbar-collapse" id="navbarResponsive">
+  <a class="navbar-brand" href="{# url 'home' #}">Twilio Manager</a>
+{% endblock %}
+{% block navbar-top-links %}
   <ul class="navbar-nav ml-auto">
     <li class="dropdown user-dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -90,9 +81,35 @@ $(function() {
         </ul>
     </li>
   </ul>
-  </div>
-</nav>
-{% endblock %}
+{% endblock navbar-top-links %}
+{% block navbar-sidenav %}
+<ul class="navbar-nav navbar-sidenav">
+  <li class="nav-item" data-toggle="tooltip" data-placement="right" title="My Messages">
+    <a class="nav-link" href="{% url 'sms_list' %}">
+      <i class="fa fa-fw fa fa-inbox"></i>
+      <span class="nav-link-text">My messages</span>
+    </a>
+  </li>
+  <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Send Messages">
+    <a class="nav-link" href="{% url 'sms_send' %}">
+      <i class="fa fa-fw fa fa-send"></i>
+      <span class="nav-link-text">Send Messages</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link text-center" data-toggle="tooltip" data-placement="right" title="Expand Menu" id="sidenavToggler">
+      <i class="fa fa-fw fa-angle-double-left"></i>
+    </a>
+  </li>
+</ul>
+<ul class="navbar-nav sidenav-toggler">
+  <li class="nav-item">
+    <a class="nav-link text-center">
+      <i class="fa fa-fw"></i>
+    </a>
+  </li>
+</ul>
+{% endblock navbar-sidenav %}
 {% block content %}{% endblock %}
 {% block breadcrumb %}{% endblock %}
 {% block footer %}{% endblock %}

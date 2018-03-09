@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
-
 from django import forms
+from django.conf import settings
 
 from djtwilio.apps.sms.models import Status
 
+from djzbar.utils.informix import do_sql
+
 from localflavor.us.forms import USPhoneNumberField
+
+DEBUG = settings.INFORMIX_DEBUG
 
 
 class StatusCallbackForm(forms.ModelForm):
@@ -26,23 +30,23 @@ class SendForm(forms.Form):
         help_text = '<span id="chars">160</span> characters remaining'
     )
 
-    def clean_phone(self):
+    def clean_phone_to(self):
         '''
-        0 or 1 or Y/N ?
-        opt_out Y/N logic is backwards from what may be intuitive;
         opt_out = "Y" should mean "do not send text".
-
-        opt_out = 1 means you can receive sms at this number
-        opt_out = 0 means you cannot receive sms
         '''
+
         opt_out = False
-        #opt_out = True
         cd = self.cleaned_data
-        phone = cd.get('phone')
+        phone = cd.get('phone_to')
+        sql = 'SELECT * FROM aa_rec WHERE phone="{}"'.format(phone)
+        objects = do_sql(sql, key=DEBUG)
+        for o in objects:
+            if o.opt_out == 'Y':
+                opt_out = True
+
         if opt_out:
-            raise forms.ValidationError(
-                """
-                This student has chosen to opt-out of phone contact
-                """
+            self._errors['phone_to'] = self.error_class(
+                ["This student has chosen to opt-out of phone contact."]
             )
-        return cd['phone']
+
+        return cd['phone_to']

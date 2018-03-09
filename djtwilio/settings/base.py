@@ -5,6 +5,11 @@ Django settings for project.
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 
+from djzbar.settings import INFORMIX_EARL_TEST as INFORMIX_EARL
+from djzbar.settings import JX_EARL_PROD
+from djzbar.settings import JX_EARL_TEST
+from djzbar.settings import INFORMIX_ODBC
+
 # Debug
 DEBUG = False
 INFORMIX_DEBUG = 'debug'
@@ -194,6 +199,7 @@ TWILIO_ACCOUNT_PASS = ''
 TWILIO_FORGERY_PROTECTION = True
 TWILIO_TEST_PHONE_FROM = ''
 TWILIO_TEST_PHONE_TO = ''
+TWILIO_TEST_PHONE_OPT_OUT = ''
 TWILIO_TEST_MESSAGE = 'Who does your taxes?'
 TWILIO_TEST_MESSAGE_SID = ''
 TWILIO_TEST_DEPARTMENT = 'Admissions'
