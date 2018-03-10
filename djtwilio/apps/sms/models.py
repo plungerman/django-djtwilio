@@ -110,6 +110,10 @@ class Message(models.Model):
     recipient = models.CharField(
         max_length=12
     )
+    student_number = models.CharField(
+        null=True, blank=True,
+        max_length=16
+    )
     body = models.TextField(
         null=True, blank=True
     )

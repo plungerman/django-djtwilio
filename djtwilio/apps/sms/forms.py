@@ -29,8 +29,13 @@ class SendForm(forms.Form):
         widget=forms.Textarea(attrs={'class': 'required'}),
         help_text = '<span id="chars">160</span> characters remaining'
     )
+    student_number = forms.CharField(
+        required=False,
+        max_length=16,
+        widget=forms.HiddenInput()
+    )
 
-    def clean_phone_to(self):
+    def clean(self):
         '''
         opt_out = "Y" should mean "do not send text".
         '''
@@ -41,6 +46,7 @@ class SendForm(forms.Form):
         sql = 'SELECT * FROM aa_rec WHERE phone="{}"'.format(phone)
         objects = do_sql(sql, key=DEBUG)
         for o in objects:
+            sid = o.id
             if o.opt_out == 'Y':
                 opt_out = True
 
@@ -48,5 +54,8 @@ class SendForm(forms.Form):
             self._errors['phone_to'] = self.error_class(
                 ["This student has chosen to opt-out of phone contact."]
             )
+        else:
+            if not self.cleaned_data.get('student_number'):
+                self.cleaned_data['student_number'] = sid
 
-        return cd['phone_to']
+        return cd

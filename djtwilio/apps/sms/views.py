@@ -156,6 +156,7 @@ def send(request):
                 message = Message.objects.create(
                     messenger = user,
                     recipient = recipient,
+                    student_number = data.get('student_number'),
                     body = body
                 )
                 sid = response.sid

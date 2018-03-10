@@ -1,1 +1,1 @@
-[{"model": "sms.status", "pk": 4, "fields": {"error": null, "To": null, "From": null, "MessagingServiceSid": null, "SmsSid": null, "MessageStatus": null, "AccountSid": null, "SmsStatus": null, "MessageSid": "SMa34cc944c9654aea99d6200bbefa80dc", "ApiVersion": null, "ErrorCode": null}}]
+[{"model": "sms.status", "pk": 4, "fields": {"error": null, "To": "414-555-1234", "From": null, "MessagingServiceSid": null, "SmsSid": null, "MessageStatus": null, "AccountSid": null, "SmsStatus": null, "MessageSid": "SMa34cc944c9654aea99d6200bbefa80dc", "ApiVersion": null, "ErrorCode": null}}]
