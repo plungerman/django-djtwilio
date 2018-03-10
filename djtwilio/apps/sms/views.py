@@ -72,16 +72,20 @@ def status_callback(request):
         if re.match("^[A-Za-z0-9]*$", sid):
             status = Status.objects.get(MessageSid=sid)
             if status:
-                form = StatusCallbackForm(request.POST, instance=status)
-                if form.is_valid():
-                    status = form.save(commit=False)
-                    if status.ErrorCode:
-                        error = Error.objects.get(code=status.ErrorCode)
-                        status.error = error
-                    status.save()
-                    msg = "Success"
+                if status.MessageStatus != 'delivered':
+                    form = StatusCallbackForm(request.POST, instance=status)
+                    if form.is_valid():
+                        status = form.save(commit=False)
+                        if status.ErrorCode:
+                            error = Error.objects.get(code=status.ErrorCode)
+                            status.error = error
+                        status.save()
+                        # update informix
+                        msg = "Success"
+                    else:
+                        msg = "Invalid POST data"
                 else:
-                    msg = "Invalid POST data"
+                    msg = "MessageStatus has already been set to 'delivered'"
             else:
                 msg = "No message mataching Sid"
         else:
@@ -163,7 +167,7 @@ def send(request):
                     request, messages.SUCCESS, """
                         Your message has been sent. View the
                         <a data-target="#messageStatus" data-toggle="modal"
-                          data-load-url="{}" class="text-primary" href="#">
+                          data-load-url="{}" class="text-primary">
                           message status</a>.
                     """.format(reverse('sms_detail', args=[sid,'modal'])),
                     extra_tags='success'

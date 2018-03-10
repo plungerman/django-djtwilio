@@ -3,11 +3,13 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
-from djtools.utils.logging import seperator
-
+from djtwilio.apps.sms.data import CtcBlob
 from djtwilio.apps.sms.models import Error, Message, Status
 from djtwilio.core.client import twilio_client
 from djtwilio.core.utils import create_test_user
+
+from djtools.utils.logging import seperator
+from djzbar.utils.informix import get_session
 
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.base.exceptions import TwilioRestException
@@ -27,6 +29,7 @@ class AppsSmsViewsTestCase(TestCase):
         self.body = settings.TWILIO_TEST_MESSAGE
         self.mssid_invalid = settings.TWILIO_TEST_MESSAGING_SERVICE_SID_INVALID
         self.sid = settings.TWILIO_TEST_MESSAGE_SID
+        self.earl = settings.INFORMIX_EARL
 
     def test_list(self):
 
@@ -56,6 +59,26 @@ class AppsSmsViewsTestCase(TestCase):
             reverse('sms_status_callback'), status_dict
         )
         print response
+
+        print("update informix")
+
+        # create the ctc_blob object with the value of the message body for txt
+        session = get_session(self.earl)
+        blob = CtcBlob(txt=self.body)
+        session.add(blob)
+        session.flush()
+
+        sql = '''
+            INSERT INTO ctc_rec
+                (id, tick, add_date, due_date, cmpl_date, resrc, bctc_no, stat)
+            VALUES
+                ({},"ADM",TODAY,TODAY,TODAY,"TEXTOUT",{},"C")
+        '''.format(settings.TWILIO_TEST_STUDENT_ID, blob.bctc_no)
+
+        print("insert sql statement:\n{}".format(sql))
+
+        session.execute(sql)
+        session.commit()
 
     def test_send_valid(self):
         print("\n")
