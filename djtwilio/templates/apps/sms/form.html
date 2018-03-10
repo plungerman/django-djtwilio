@@ -52,7 +52,7 @@ $(function() {
   <div id="messages" class="success success large-12 medium-12 small-12">
     <strong>
       Your message has been sent. View the
-      <a data-target="#messageStatus" data-toggle="modal" data-load-url="/skirk/twilio/sms/detail/SM32ead021529f4670bee4f45e803b1155/modal/" class="text-primary" href="#">
+      <a data-target="#messageStatus" data-toggle="modal" data-load-url="/skirk/twilio/sms/detail/SMa34cc944c9654aea99d6200bbefa80dc/modal/" class="text-primary" href="#">
       message status</a>.
     </strong>
   </div>
@@ -80,8 +80,8 @@ $(function() {
     {% include "includes/errors_text.html" %}
     <form method="post" action="." class="form" id="profile">
         {% csrf_token %}
-        {% for field in form.hidden_fields %}
-            {% include "form_field.inc.html" %}
+        {% for hidden in or_form.hidden_fields %}
+        {{ hidden }}
         {% endfor %}
         <fieldset class="blockLabels">
             <ol>
