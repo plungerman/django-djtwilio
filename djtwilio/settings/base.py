@@ -94,9 +94,9 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             os.path.join(BASE_DIR, 'templates'),
-            '/data2/django_templates/djkorra/',
-            '/data2/django_templates/djcher/',
+            '/data2/django_templates/djbootmin/',
             '/data2/django_templates/django-djskins/',
+            '/data2/django_templates/djcher/',
             '/data2/livewhale/includes/',
         ],
         'APP_DIRS': True,
@@ -151,6 +151,7 @@ LDAP_RETURN = []
 LDAP_RETURN_PWM = []
 LDAP_ID_ATTR = ''
 LDAP_CHALLENGE_ATTR = ''
+LDAP_AUTH_USER_PK = False
 # auth backends
 AUTHENTICATION_BACKENDS = (
     'djauth.ldapBackend.LDAPBackend',

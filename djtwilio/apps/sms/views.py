@@ -1,9 +1,7 @@
 from django.conf import settings
 from django.shortcuts import render
 from django.contrib import messages
-from django.http import HttpResponse
-from django.template import RequestContext
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 
@@ -122,14 +120,14 @@ def send(request):
     )
 
     if request.method=='POST':
-        form = SendForm(request.POST, request.FILES)
+        form = SendForm(request.POST)
         user = request.user
         if form.is_valid():
             die = False
             data = form.cleaned_data
             recipient = data['phone_to']
             body = data['message']
-            client = twilio_client(user.profile.account)
+            client = twilio_client(user.sender.account)
             try:
                 response = client.messages.create(
                     to = recipient,
@@ -144,7 +142,7 @@ def send(request):
             except TwilioRestException as e:
                 die = True
                 messages.add_message(
-                    request, messages.ERROR, e, extra_tags='error'
+                    request, messages.ERROR, e, extra_tags='alert alert-danger'
                 )
 
                 response = HttpResponseRedirect(
@@ -171,7 +169,7 @@ def send(request):
                           data-load-url="{}" class="text-primary">
                           message status</a>.
                     """.format(reverse('sms_detail', args=[sid,'modal'])),
-                    extra_tags='success'
+                    extra_tags='alert alert-success'
                 )
 
                 response = HttpResponseRedirect(

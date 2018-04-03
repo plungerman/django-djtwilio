@@ -13,5 +13,6 @@ python manage.py loaddata core/fixtures/account.json
 python manage.py loaddata core/fixtures/user.json
 # dependent
 python manage.py loaddata apps/sms/fixtures/status.json # depends on Errors
+python manage.py loaddata core/fixtures/sender.json # depends on User
 python manage.py loaddata core/fixtures/profile.json # depends on User
 python manage.py loaddata apps/sms/fixtures/message.json # depends on User

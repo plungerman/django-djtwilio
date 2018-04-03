@@ -13,9 +13,12 @@ class CoreModelsTestCase(TestCase):
     def setUp(self):
 
         self.user = create_test_user()
+        self.account = self.user.sender.get(
+            account__sid=settings.TWILIO_ACCOUNT_SID
+        ).account
 
     def test_user_account(self):
         print "\n"
         print "create a user and profile and account"
         seperator()
-        print self.user.profile.account.token
+        print self.sender.account.token

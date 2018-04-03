@@ -2,11 +2,6 @@
 {% block title %}
     Send SMS &mdash; Admissions &mdash; Carthage College
 {% endblock %}
-{% block extra_style %}
-{{block.super}}
-<link href="https://www.carthage.edu/themes/shared/css/forms.css"
-    rel="stylesheet" type="text/css">
-{% endblock %}
 {% block extra_javascript %}
 {{block.super}}
 <script src="https://www.carthage.edu/static/vendor/cleave.js/cleave.min.js"></script>
@@ -34,38 +29,22 @@ $(function() {
     var loadurl = e.relatedTarget.dataset.loadUrl;
     $(this).find('.modal-body').load(loadurl);
   });
-/*
-  $('.ls-modal').on('click', function(e){
-    e.preventDefault();
-    $('#messageStatus').modal('show').find('.modal-body').load($(this).attr('href'));
-  });
-      <a style="color:blue;" class="ls-modal"
-        href="/skirk/twilio/sms/detail/SM58e5c73f0ef34ef689d06f435556c553/modal/">
-      message status</a>.
-*/
 });
 </script>
 {% endblock %}
 {% block content %}
-<div class="forms-container large-8 medium-10 small-12">
-  {% if django_debug %}
-  <div id="messages" class="success success large-12 medium-12 small-12">
-    <strong>
-      Your message has been sent. View the
-      <a data-target="#messageStatus" data-toggle="modal" data-load-url="/skirk/twilio/sms/detail/SMa34cc944c9654aea99d6200bbefa80dc/modal/" class="text-primary" href="#">
-      message status</a>.
-    </strong>
-  </div>
-  {% endif %}
-    {% if messages %}
-      {% for message in messages %}
-        <div id="messages" class="{{ message.tags }} large-12 medium-12 small-12">
-        <strong>{{ message|safe }}</strong>
-        </div>
-      {% endfor %}
-    {% endif %}
+<h3>Send a message</h3>
+{% if messages %}
+  {% for message in messages %}
+    <div id="messages" class="{{ message.tags }}">
+      <strong>{{ message|safe }}</strong>
+    </div>
+  {% endfor %}
+{% endif %}
+<div class="row">
+  <div class="forms-container col-xl-5 col-lg-5 col-md-5 col-sm-12 col-12">
     {% if errors %}
-    <div class="error-message">
+    <div class="alert alert-danger">
         <p>Some messages did not go through to the recipients phone:</p>
         <ul>
         {% for e in errors %}
@@ -78,20 +57,19 @@ $(function() {
     {% endif %}
     {% include "includes/required_text.html" %}
     {% include "includes/errors_text.html" %}
-    <form method="post" action="." class="form" id="profile">
+    <form method="post" action=".">
         {% csrf_token %}
         {% for hidden in or_form.hidden_fields %}
         {{ hidden }}
         {% endfor %}
-        <fieldset class="blockLabels">
-            <ol>
-                {% for field in form.visible_fields %}
-                    {% include "form_field.inc.html" %}
-                {% endfor %}
-            </ol>
+        <fieldset>
+        {% for field in form.visible_fields %}
+          {% include "form_field.inc.html" %}
+        {% endfor %}
         </fieldset>
-        {% include "form_submit.inc.html" %}
+        <input class="btn btn-primary btn-lg" type="submit" value="Submit">
     </form>
+  </div>
 </div>
 <!-- Message Status Modal -->
 <div class="modal fade h-75" id="messageStatus" tabindex="-1" role="dialog" aria-labelledby="messageStatusLabel" aria-hidden="true">

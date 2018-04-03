@@ -18,13 +18,17 @@ from twilio.base.exceptions import TwilioRestException
 class AppsSmsViewsTestCase(TestCase):
 
     fixtures = [
-        'errors.json','account.json','status.json','user.json','message.json'
+        'errors.json','account.json','status.json','user.json','message.json',
+        'profile','sender.json'
     ]
 
     def setUp(self):
 
         self.user = create_test_user()
-        self.twilio_client = twilio_client(self.user.profile.account)
+        self.account = self.user.sender.get(
+            account__sid=settings.TWILIO_ACCOUNT_SID
+        ).account
+        self.twilio_client = twilio_client(self.user.sender.account)
         self.recipient = settings.TWILIO_TEST_PHONE_TO
         self.body = settings.TWILIO_TEST_MESSAGE
         self.mssid_invalid = settings.TWILIO_TEST_MESSAGING_SERVICE_SID_INVALID

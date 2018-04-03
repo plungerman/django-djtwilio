@@ -10,7 +10,6 @@
 <style type="text/css">
 .bg-boot{background-color:#563d7c;}
 #page-wrapper{margin:0;padding:0;}
-.form fieldset {margin-top:0;}
 .panel-primary > .panel-heading { color: inherit; }
 .btn {padding: .1rem .2rem;font-size:inherit;}
 .card-body { padding: .5rem; }
@@ -26,7 +25,6 @@ nav .input-group-btn {font-size:1.3em;}
 .dropdown-menu {padding: 5px; background-color:#563d7c;}
 .dropdown, .dropup { padding: 3px; }
 .success a { color: #007bff; }
-.form fieldset {margin-top:0;}
 .panel-primary > .panel-heading {color: inherit;}
 .btn {padding: .1rem .2rem;font-size:inherit;}
 dt, dd {line-height:.85em;}
@@ -43,6 +41,12 @@ pre {
     white-space: -o-pre-wrap;    /* Opera 7 */
     word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
+/* Overrides for BS form classes */
+.form-group.required .control-label:after {
+  content:"*";
+  color:red;
+}
+.form-group .control-label { font-weight:700; }
 </style>
 {% endblock %}
 {% block extra_javascript %}
@@ -59,6 +63,21 @@ $(function() {
 {% endblock %}
 {% block navbar-top-links %}
   <ul class="navbar-nav ml-auto">
+    {% if not user.is_anonymous %}
+    <li class="nav-item">
+      <form class="form-inline my-2 my-lg-0 mr-sm-3 mr-lg-3" action="{# url 'search_students' #}" method="post">
+        {% csrf_token %}
+        <div class="input-group">
+          <input class="form-control" name="student" placeholder="Student ID..." type="text">
+          <span class="input-group-btn">
+            <button class="btn btn-primary" type="submit">
+              <i class="fa fa-search"></i>
+            </button>
+          </span>
+        </div>
+      </form>
+    </li>
+    {% endif %}
     <li class="dropdown user-dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
             <i class="fa fa-user"></i> {{user.first_name|default:"Dashboard"}}
