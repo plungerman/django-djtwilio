@@ -1,0 +1,1 @@
+[{"model": "core.profile", "pk": 2, "fields": {"user": 1, "bulk": false}}, {"model": "core.profile", "pk": 4, "fields": {"user": 531990, "bulk": false}}, {"model": "core.profile", "pk": 5, "fields": {"user": 411281, "bulk": false}}, {"model": "core.profile", "pk": 7, "fields": {"user": 1217657, "bulk": false}}]
