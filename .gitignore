@@ -58,7 +58,7 @@ wsgi.py
 migrations
 #
 user.json
-profile.json
+sender.json
 account.json
 
 # Scrapy stuff:
