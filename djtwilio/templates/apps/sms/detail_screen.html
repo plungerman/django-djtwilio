@@ -4,10 +4,10 @@
     <h3>
     <i class="fa fa-leaf" style="color:#28a745;"></i>
     Sent to {{message.recipient}} at {{message.date_created}}
-    by <a href="mailto:{{message.messenger.email}}">
-        {{message.messenger.last_name}},
-        {{message.messenger.first_name}}</a>
-        ({{message.messenger.profile.account.department}})
+    by <a href="mailto:{{message.messenger.user.email}}">
+        {{message.messenger.user.last_name}},
+        {{message.messenger.user.first_name}}</a>
+        ({{message.messenger.account.department}})
     </h3>
   </div>
   <div class="card-body">

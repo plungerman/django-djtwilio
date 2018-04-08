@@ -1,15 +1,19 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from djtools.fields.helpers import upload_to_path
 
 from djtwilio.core.client import twilio_client
+from djtwilio.core.models import Sender
+
 from twilio.base.exceptions import TwilioRestException
 
 
 class Error(models.Model):
+    """
+    Errors returned from API
+    """
     code = models.CharField(
         max_length=8
     )
@@ -28,7 +32,9 @@ class Error(models.Model):
 
 
 class Bulk(models.Model):
-
+    """
+    Sending messages in bulk
+    """
     date_created = models.DateTimeField(
         auto_now_add=True
     )
@@ -47,10 +53,9 @@ class Bulk(models.Model):
 
 
 class Status(models.Model):
-    '''
-        POST content from Twilio:
-    '''
-
+    """
+    POST content from Twilio:
+    """
     error = models.ForeignKey(
         Error,
         related_name='message_error',
@@ -99,13 +104,15 @@ class Status(models.Model):
 
 
 class Message(models.Model):
-
+    """
+    An SMS data model
+    """
     date_created = models.DateTimeField(
         auto_now_add=True
     )
     messenger = models.ForeignKey(
-        User, on_delete=models.CASCADE,
-        related_name='message_messenger'
+        Sender, on_delete=models.CASCADE,
+        related_name='messenger'
     )
     recipient = models.CharField(
         max_length=12

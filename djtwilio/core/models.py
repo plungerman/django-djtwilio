@@ -28,11 +28,11 @@ class Sender(models.Model):
         related_name='sender'
     )
     phone = models.CharField(
-        max_length=12, verbose_name="Mobile Number",
+        max_length=12, verbose_name="Phone Number",
         help_text="Format: XXX-XXX-XXXX",
         null=True, blank=True
     )
-    message_sid = models.CharField(
+    messaging_service_sid = models.CharField(
         max_length=34,
         null=True, blank=True
     )
@@ -40,9 +40,18 @@ class Sender(models.Model):
         Account, on_delete=models.CASCADE,
         null=True, blank=True
     )
+    nickname = models.CharField(
+        max_length=128,
+        null=True, blank=True
+    )
     default = models.BooleanField(
         default = False
     )
+
+    def __unicode__(self):
+        return "{} [{}] ({})".format(
+            self.phone, self.messaging_service_sid, self.nickname
+        )
 
 
 class Profile(models.Model):

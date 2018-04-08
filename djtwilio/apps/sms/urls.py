@@ -33,6 +33,10 @@ urlpatterns = [
         views.detail, name='sms_detail_default'
     ),
     url(
+        r'^get-messaging-services-sid/$',
+        views.get_messaging_service_sid, name='get_messaging_service_sid'
+    ),
+    url(
         r'^list/$',
         views.list, name='sms_list'
     ),

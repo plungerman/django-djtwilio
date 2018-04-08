@@ -20,7 +20,6 @@ class StatusCallbackForm(forms.ModelForm):
 
 class SendForm(forms.Form):
 
-    #message_sid =
     phone_to = USPhoneNumberField(
         label = "To",
         max_length=12,
@@ -31,15 +30,33 @@ class SendForm(forms.Form):
         max_length=16,
         widget=forms.TextInput(attrs={'class': 'required form-control'}),
     )
+    messaging_service_sid = forms.CharField()
     message = forms.CharField(
         widget=forms.Textarea(attrs={'class': 'required form-control'}),
         help_text = '<span id="chars">160</span> characters remaining'
     )
 
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(SendForm, self).__init__(*args, **kwargs)
+
+
+        choices = [("","---Phone number---")]
+        for s in self.request.user.sender.all():
+            choices.append((s.messaging_service_sid, "{} ({})".format(
+                s.phone, s.nickname
+            )))
+
+        self.fields['messaging_service_sid'] = forms.ChoiceField(
+            label = "From",
+            choices=choices,
+            widget=forms.Select(attrs={'class': 'required form-control'})
+        )
+
     def clean(self):
-        '''
+        """
         opt_out = "Y" should mean "do not send text".
-        '''
+        """
 
         opt_out = False
         cd = self.cleaned_data

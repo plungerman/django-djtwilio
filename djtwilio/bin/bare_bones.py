@@ -21,6 +21,7 @@ def main():
 
     try:
         # do something
+        foo = True
     except Exception, e:
         print "does not exist"
         print "Exception: {}".format(str(e))

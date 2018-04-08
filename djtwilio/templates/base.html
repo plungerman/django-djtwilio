@@ -1,4 +1,14 @@
 {% extends "djbootmin/base.html" %}
+{% block style %}
+<!-- Bootstrap core CSS-->
+<link href="https://www.carthage.edu/static/vendor/bootstrap-admin4.0.0/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<!-- Custom fonts for this template-->
+<link href="https://www.carthage.edu/static/vendor/bootstrap-admin4.0.0./vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+<!-- Page level plugin CSS-->
+<link href="https://www.carthage.edu/static/vendor/bootstrap-admin4.0.0/vendor/datatables/dataTables.bootstrap4.css" rel="stylesheet">
+<!-- Custom styles for this template-->
+<link href="https://www.carthage.edu/static/vendor/bootstrap-admin4.0.0/css/sb-admin.min.css" rel="stylesheet">
+{% endblock %}
 {% block extra_style %}
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
     rel="stylesheet">
@@ -23,7 +33,7 @@ nav a:hover {color:#fff;}
 nav .input-group-btn {font-size:1.3em;}
 .navbar-toggler-icon {color:yellow;}
 .dropdown-menu {padding: 5px; background-color:#563d7c;}
-.dropdown, .dropup { padding: 3px; }
+.dropdown { padding: 5px; width:120px; }
 .success a { color: #007bff; }
 .panel-primary > .panel-heading {color: inherit;}
 .btn {padding: .1rem .2rem;font-size:inherit;}
@@ -42,11 +52,11 @@ pre {
     word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
 /* Overrides for BS form classes */
-.form-group.required .control-label:after {
-  content:"*";
+.form-group.required label:after {
+  content:" *";
   color:red;
 }
-.form-group .control-label { font-weight:700; }
+.form-group label { font-weight:700; }
 </style>
 {% endblock %}
 {% block extra_javascript %}
@@ -96,6 +106,14 @@ $(function() {
                 </a>
                 {% endif %}
             </li>
+            {% if not user.is_anonymous %}
+            <li>
+                <a href="{% url 'user_profile' %}">
+                    <i class="fa fa-universal-access" aria-hidden="true"></i>
+                    User Profile
+                </a>
+            </li>
+            {% endif %}
         </ul>
     </li>
   </ul>
@@ -132,3 +150,29 @@ $(function() {
 {% block breadcrumb %}{% endblock %}
 {% block footer %}{% endblock %}
 {% block logout %}{% endblock %}
+{% block javascript %}
+<!-- Bootstrap core JavaScript-->
+<script src="https://www.carthage.edu/static/vendor/bootstrap-admin4.0.0/vendor/jquery/jquery.min.js"></script>
+<script src="https://www.carthage.edu/static/vendor/bootstrap-admin4.0.0/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- Core plugin JavaScript-->
+<script src="https://www.carthage.edu/static/vendor/bootstrap-admin4.0.0/vendor/jquery-easing/jquery.easing.min.js"></script>
+<!-- Page level plugin JavaScript-->
+<script src="https://www.carthage.edu/static/vendor/bootstrap-admin4.0.0/vendor/datatables/jquery.dataTables.js"></script>
+<script src="https://www.carthage.edu/static/vendor/bootstrap-admin4.0.0/vendor/datatables/dataTables.bootstrap4.js"></script>
+<!-- Custom scripts for all pages-->
+<script src="https://www.carthage.edu/static/vendor/bootstrap-admin4.0.0/js/sb-admin.min.js"></script>
+<!-- Custom scripts for this page-->
+<script src="https://www.carthage.edu/static/vendor/bootstrap-admin4.0.0/js/sb-admin-datatables.min.js"></script>
+<script>
+  $(function() {
+    $('#olvidado').click(function(e) {
+      e.preventDefault();
+      $('div#form-olvidado').toggle('500');
+    });
+    $('#acceso').click(function(e) {
+      e.preventDefault();
+      $('div#form-olvidado').toggle('500');
+    });
+  });
+</script>
+{% endblock %}

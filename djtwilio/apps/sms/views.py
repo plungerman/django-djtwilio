@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.shortcuts import render
 from django.contrib import messages
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 
@@ -15,6 +16,7 @@ from djzbar.decorators.auth import portal_auth_required
 from twilio.base.exceptions import TwilioRestException
 
 import re
+import json
 
 MESSAGING_SERVICE_SID = settings.TWILIO_TEST_MESSAGING_SERVICE_SID
 
@@ -33,7 +35,7 @@ def detail(request, sid, medium='screen'):
         raise Http404
 
     template = 'apps/sms/detail_{}.html'.format(medium)
-    if message.messenger != user and not user.is_superuser:
+    if message.messenger.user != user and not user.is_superuser:
         response = HttpResponseRedirect(
             reverse('sms_send')
         )
@@ -55,10 +57,46 @@ def list(request):
     if user.is_superuser:
         messages = Message.objects.all().order_by('date_created')
     else:
-        messages = user.message_messenger.all().order_by('-date_created')
+        messages = []
+        for sender in user.sender.all():
+            for m in sender.messenger.all().order_by('-date_created'):
+                messages.append(m)
 
     return render(
         request, 'apps/sms/list.html', {'objects': messages,}
+    )
+
+
+@csrf_exempt
+@portal_auth_required(
+    group='Admissions SMS', session_var='DJTWILIO_AUTH',
+    redirect_url=reverse_lazy('access_denied')
+)
+def get_messaging_service_sid(request):
+
+    results = {'messaging_service_sid':'','message':""}
+    if request.method=='POST':
+        phone = request.POST.get('phone_to')
+        if phone:
+            try:
+                message = Message.objects.filter(
+                    recipient=phone
+                ).order_by('-date_created')[0]
+                results['messaging_service_sid'] = '{}'.format(
+                    message.messenger.messaging_service_sid
+                )
+                msg = "Success"
+            except:
+                msg = "No messages sent to that phone number."
+        else:
+            msg = "No phone number provided."
+    else:
+        # requires POST
+        msg = "Method must be POST."
+
+    results['message'] = msg
+    return HttpResponse(
+        json.dumps(results), content_type='application/json; charset=utf-8'
     )
 
 
@@ -109,29 +147,33 @@ def send(request):
     sid = 0
     if settings.DEBUG:
         initial = {
-            'phone_to': settings.TWILIO_TEST_PHONE_TO,
+            #'phone_to': settings.TWILIO_TEST_PHONE_TO,
             'message': settings.TWILIO_TEST_MESSAGE
         }
 
-    form = SendForm(initial=initial)
+    form = SendForm(initial=initial, request=request)
     template = 'apps/sms/form.html'
     response = render(
         request, template, {'form': form}
     )
 
     if request.method=='POST':
-        form = SendForm(request.POST)
+        form = SendForm(request.POST, request=request)
         user = request.user
         if form.is_valid():
             die = False
             data = form.cleaned_data
+            messaging_service_sid = data['messaging_service_sid']
+            sender = user.sender.get(
+                messaging_service_sid = messaging_service_sid
+            )
             recipient = data['phone_to']
             body = data['message']
-            client = twilio_client(user.sender.account)
+            client = twilio_client(sender.account)
             try:
                 response = client.messages.create(
                     to = recipient,
-                    messaging_service_sid = user.profile.message_sid,
+                    messaging_service_sid = messaging_service_sid,
                     # use parentheses to prevent extra whitespace
                     body = (body),
                     status_callback = 'https://{}{}'.format(
@@ -152,7 +194,7 @@ def send(request):
             if not die:
                 # create Message object
                 message = Message.objects.create(
-                    messenger = user,
+                    messenger = sender,
                     recipient = recipient,
                     student_number = data.get('student_number'),
                     body = body

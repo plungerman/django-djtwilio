@@ -6,30 +6,30 @@ from djtwilio.apps.sms.models import (
 
 
 class MessageAdmin(admin.ModelAdmin):
+    pass
+    '''
     list_display = (
-        'messenger', 'recipient', 'bulk',
-        'date_created',
+        'messenger', 'recipient', 'bulk', 'date_created'
     )
     date_hierarchy = 'date_created'
     ordering = (
-        'messenger__last_name','messenger__first_name',
         'date_created'
     )
     readonly_fields = (
         'messenger','bulk'
     )
     search_fields = (
-        'messenger__last_name','messenger__first_name','messenger__email',
-        'messenger__username','body'
+        'body'
     )
     list_per_page = 500
     raw_id_fields = ('messenger',)
 
     def first_name(self, obj):
-        return obj.messenger.first_name
+        return obj.messenger.user.first_name
 
     def last_name(self, obj):
-        return obj.messenger.last_name
+        return obj.messenger.user.last_name
+    '''
 
 
 class ErrorAdmin(admin.ModelAdmin):

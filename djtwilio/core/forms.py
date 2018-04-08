@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from django import forms
 
+from djtwilio.core.models import Account, Sender
+
+from localflavor.us.forms import USPhoneNumberField, USZipCodeField
+
 
 class StudentNumberForm(forms.Form):
 
@@ -8,3 +12,42 @@ class StudentNumberForm(forms.Form):
         label = "Student ID",
         widget=forms.TextInput(attrs={'placeholder': 'Student ID'})
     )
+
+class SenderForm(forms.ModelForm):
+
+    phone = USPhoneNumberField(
+        label = "Phone number",
+        help_text = "Format: XXX XXX XXXX",
+        required = True
+    )
+    messaging_service_sid = forms.CharField(
+        label = "Messaging service ID",
+        max_length = 34,
+        help_text = """
+            A 34 character code that is associated with the phone number
+        """,
+        required = True
+    )
+    account = forms.ModelChoiceField(
+        label = "Account",
+        queryset = Account.objects.all(),
+        required = True
+    )
+    nickname = forms.CharField(
+        label = "Nickname",
+        required = True
+    )
+
+    class Meta:
+        model = Sender
+        exclude = ('user',)
+
+    def clean_messaging_service_sid(self):
+
+        sid = self.cleaned_data.get('messaging_service_sid')
+        if sid and len(sid) < 34:
+            self._errors['messaging_service_sid'] = self.error_class(
+                ["Messaging Services SID is 34 characters."]
+            )
+
+        return sid

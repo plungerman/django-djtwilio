@@ -62,6 +62,7 @@ DATABASES = {
 }
 INSTALLED_APPS = [
     'bootstrap_admin',
+    'bootstrap4',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -192,6 +193,10 @@ SERVER_EMAIL = ''
 SERVER_MAIL=''
 # bootstrap admin
 BOOTSTRAP_ADMIN_SIDEBAR_MENU = True
+# bootstrap forms
+BOOTSTRAP4 = {
+    'required_css_class': 'required',
+}
 # Twilio
 TWILIO_API_URL = 'https://api.twilio.com/2010-04-01/'
 TWILIO_ACCOUNT_SID = ''
