@@ -10,7 +10,8 @@
 <script>
 var cleavePhone = new Cleave('#id_phone_to', {
   phone: true,
-  phoneRegionCode: 'US'
+  phoneRegionCode: 'US',
+  delimiter: '-'
 });
 $(function() {
   var maxLength = 160;
@@ -39,6 +40,7 @@ $(function() {
         success: function(data) {
           if (data['message'] == "Success") {
             $("#id_messaging_service_sid").val(data['messaging_service_sid']);
+            $("#id_student_number").val(data['student_number']);
           }
         }
       });

@@ -80,7 +80,7 @@ $(document).ready(function() {
       <tr>
         <td>
             <a href="{% url 'sms_detail_default' o.status.MessageSid %}">
-              {{o.status.To}}
+              {{o.recipient}}
             </a>
         </td>
         <td>{{o.messenger.phone}}</td>

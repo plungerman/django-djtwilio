@@ -74,7 +74,7 @@ def list(request):
 )
 def get_messaging_service_sid(request):
 
-    results = {'messaging_service_sid':'','message':""}
+    results = {'messaging_service_sid':'','student_number':'','message':""}
     if request.method=='POST':
         phone = request.POST.get('phone_to')
         if phone:
@@ -84,6 +84,9 @@ def get_messaging_service_sid(request):
                 ).order_by('-date_created')[0]
                 results['messaging_service_sid'] = '{}'.format(
                     message.messenger.messaging_service_sid
+                )
+                results['student_number'] = '{}'.format(
+                    message.student_number
                 )
                 msg = "Success"
             except:
