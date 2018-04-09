@@ -1,1 +1,1 @@
-[{"model": "sms.message", "pk": 5, "fields": {"status": 4, "date_created": "2018-03-04T19:18:54", "messenger": 4, "recipient": "262 551 5900", "body": "Who does your taxes?", "student_number": "8675309", "bulk": null}}]
+[{"model": "sms.message", "pk": 5, "fields": {"status": 4, "date_created": "2018-03-04T19:18:54", "messenger": 4, "recipient": "262-551-5900", "body": "Who does your taxes?", "student_number": "8675309", "bulk": null}}]
