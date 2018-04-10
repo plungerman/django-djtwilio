@@ -2,7 +2,7 @@ from django.conf import settings
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 
@@ -10,15 +10,18 @@ from djtwilio.apps.sms.forms import SendForm, StatusCallbackForm
 from djtwilio.apps.sms.models import Error, Message, Status
 from djtwilio.apps.sms.errors import MESSAGE_DELIVERY_CODES
 from djtwilio.core.client import twilio_client
+from djtwilio.apps.sms.data import CtcBlob
 
+from djzbar.utils.informix import get_session
 from djzbar.decorators.auth import portal_auth_required
 
 from twilio.base.exceptions import TwilioRestException
 
 import re
 import json
+import unicodedata
 
-MESSAGING_SERVICE_SID = settings.TWILIO_TEST_MESSAGING_SERVICE_SID
+EARL = settings.INFORMIX_EARL
 
 
 @portal_auth_required(
@@ -80,8 +83,8 @@ def get_messaging_service_sid(request):
         if phone:
             try:
                 message = Message.objects.filter(
-                    recipient=phone
-                ).order_by('-date_created')[0]
+                    messenger__user=request.user
+                ).filter(recipient=phone).order_by('-date_created')[0]
                 results['messaging_service_sid'] = '{}'.format(
                     message.messenger.messaging_service_sid
                 )
@@ -120,6 +123,37 @@ def status_callback(request):
                             status.error = error
                         status.save()
                         # update informix
+                        if status.MessageStatus == 'delivered':
+                            message = Message.objects.get(status__id=status.id)
+                            # create the ctc_blob object with the value of
+                            # the message body for txt
+                            session = get_session(EARL)
+                            # informix does not like unicode for their blob and
+                            # it has to be a string, so here we deal with
+                            # non-standar characters that do not work with
+                            # python strings
+                            body = unicodedata.normalize(
+                                'NFKD', message.body).encode('ascii','ignore')
+                            blob = CtcBlob(txt=body)
+                            session.add(blob)
+                            session.flush()
+
+                            sql = '''
+                                INSERT INTO ctc_rec (
+                                    id, tick, add_date, due_date, cmpl_date,
+                                    resrc, bctc_no, stat
+                                )
+                                VALUES (
+                                    {},"ADM",TODAY,TODAY,TODAY,"TEXTOUT",{},"C"
+                                )
+                            '''.format(
+                                    message.student_number, blob.bctc_no
+                            )
+
+                            session.execute(sql)
+                            session.commit()
+                            session.close()
+
                         msg = "Success"
                     else:
                         msg = "Invalid POST data"
