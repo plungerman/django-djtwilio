@@ -222,7 +222,7 @@ LOG_FILEPATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 LOG_FILENAME = LOG_FILEPATH + 'debug.log'
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
     'formatters': {
         'standard': {
             'format' : '[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s',
@@ -263,7 +263,22 @@ LOGGING = {
         }
     },
     'loggers': {
+        '': {
+            'handlers':['logfile'],
+            'propagate': True,
+            'level':'DEBUG',
+        },
         'djtwilio': {
+            'handlers':['logfile'],
+            'propagate': True,
+            'level':'DEBUG',
+        },
+        'djtwilio.apps.sms': {
+            'handlers':['logfile'],
+            'propagate': True,
+            'level':'DEBUG',
+        },
+        'djtwilio.core': {
             'handlers':['logfile'],
             'propagate': True,
             'level':'DEBUG',
