@@ -37,3 +37,8 @@ python manage.py loaddata apps/sms/fixtures/status.json # depends on Errors
 python manage.py loaddata core/fixtures/profile.json # depends on User
 python manage.py loaddata apps/sms/fixtures/message.json # depends on User
 ```
+
+## Copilot
+
+https://www.twilio.com/copilot
+https://www.twilio.com/docs/sms/services/copilot-send-messages
