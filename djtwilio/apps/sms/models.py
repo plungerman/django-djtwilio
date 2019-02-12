@@ -56,6 +56,9 @@ class Status(models.Model):
     """
     POST content from Twilio:
     """
+    date_created = models.DateTimeField(
+        auto_now_add=True
+    )
     error = models.ForeignKey(
         Error,
         related_name='message_error',
