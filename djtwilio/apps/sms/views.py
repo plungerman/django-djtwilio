@@ -10,6 +10,7 @@ from djtwilio.apps.sms.forms import SendForm, StatusCallbackForm
 from djtwilio.apps.sms.models import Error, Message, Status
 from djtwilio.apps.sms.errors import MESSAGE_DELIVERY_CODES
 from djtwilio.core.client import twilio_client
+from djtwilio.core.models import Sender
 from djtwilio.apps.sms.data import CtcBlob
 
 from djzbar.utils.informix import get_session
@@ -200,17 +201,15 @@ def send(request):
         if form.is_valid():
             die = False
             data = form.cleaned_data
-            messaging_service_sid = data['messaging_service_sid']
-            sender = user.sender.get(
-                messaging_service_sid = messaging_service_sid
-            )
+            sender = Sender.objects.get(pk=data['messaging_service_sid'])
             recipient = data['phone_to']
             body = data['message']
             client = twilio_client(sender.account)
             try:
                 response = client.messages.create(
                     to = recipient,
-                    messaging_service_sid = messaging_service_sid,
+                    from_=sender.phone,
+                    messaging_service_sid = sender.messaging_service_sid,
                     # use parentheses to prevent extra whitespace
                     body = (body),
                     status_callback = 'https://{}{}'.format(
@@ -245,7 +244,7 @@ def send(request):
                     request, messages.SUCCESS, """
                         Your message has been sent. View the
                         <a data-target="#messageStatus" data-toggle="modal"
-                          data-load-url="{}" class="text-primary">
+                          data-load-url="{}" class="message-status text-primary">
                           message status</a>.
                     """.format(reverse('sms_detail', args=[sid,'modal'])),
                     extra_tags='alert alert-success'

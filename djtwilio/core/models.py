@@ -1,5 +1,7 @@
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -52,6 +54,20 @@ class Sender(models.Model):
         return "{} [{}] ({})".format(
             self.phone, self.messaging_service_sid, self.nickname
         )
+
+    class Meta:
+        unique_together = ('user', 'nickname',)
+
+    def clean(self):
+        if not self.default:
+            return
+        try:
+            existing = self.__class__.objects.get(
+                ~Q(pk = self.id), user=self.user, default=True,
+            )
+            raise ValidationError("You already have a default phone number.")
+        except:
+            return
 
 
 class Profile(models.Model):
