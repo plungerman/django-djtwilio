@@ -112,8 +112,8 @@ def status_callback(request):
     if request.method=='POST':
         sid = request.POST.get('MessageSid')
         if re.match("^[A-Za-z0-9]*$", sid):
-            status = Status.objects.get(MessageSid=sid)
-            if status:
+            try:
+                status = Status.objects.get(MessageSid=sid)
                 if status.MessageStatus != 'delivered':
                     form = StatusCallbackForm(request.POST, instance=status)
                     if form.is_valid():
@@ -159,7 +159,7 @@ def status_callback(request):
                         msg = "Invalid POST data"
                 else:
                     msg = "MessageStatus has already been set to 'delivered'"
-            else:
+            except:
                 msg = "No message mataching Sid"
         else:
             msg = "Invalid message Sid"
