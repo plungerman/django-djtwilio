@@ -93,7 +93,9 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def create_user_sender(sender, instance, created, **kwargs):
     if created and not kwargs.get('raw', False):
-        Sender.objects.create(user=instance)
+        Sender.objects.create(
+            user=instance, nickname="Default phone", default=True
+        )
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):

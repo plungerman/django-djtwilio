@@ -36,7 +36,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT_DIR = os.path.dirname(__file__)
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 STATIC_URL = '/static/djtwilio/'
-ROOT_URL = '/twilio/'
+ROOT_URL = '/apps/twilio'
 MEDIA_ROOT = '{}/assets/'.format(ROOT_DIR)
 STATIC_ROOT = '{}/static/'.format(ROOT_DIR)
 MEDIA_URL = '{}assets/'.format(STATIC_URL)
@@ -172,8 +172,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-LOGIN_URL = '{}accounts/login/'.format(ROOT_URL)
-LOGOUT_URL = '{}accounts/logout/'.format(ROOT_URL)
+LOGIN_URL = '{}/accounts/login/'.format(ROOT_URL)
+LOGOUT_URL = '{}/accounts/logout/'.format(ROOT_URL)
 LOGIN_REDIRECT_URL = ROOT_URL
 USE_X_FORWARDED_HOST = True
 #SESSION_ENGINE = 'django.contrib.sessions.backends.cache'

@@ -62,7 +62,7 @@ class AppsSmsViewsTestCase(TestCase):
         response = self.client.post(
             reverse('sms_status_callback'), status_dict
         )
-        print response
+        print(response)
 
         print("update informix")
 
@@ -137,7 +137,7 @@ class AppsSmsViewsTestCase(TestCase):
                         message.status.error.description
                     ))
         else:
-            print "use the --debug-mode flag to test message delivery"
+            print("use the --debug-mode flag to test message delivery")
 
     def test_send_invalid_message_sid(self):
         print("\n")
@@ -163,4 +163,4 @@ class AppsSmsViewsTestCase(TestCase):
                 seperator()
                 print(e)
         else:
-            print "use the --debug-mode flag to test message delivery"
+            print("use the --debug-mode flag to test message delivery")
