@@ -84,7 +84,7 @@ def get_messaging_service_sid(request):
         if phone:
             try:
                 message = Message.objects.filter(
-                    messenger__user=request.user
+                    messenger__user=request.user.sender.get(phone=phone)
                 ).filter(recipient=phone).order_by('-date_created')[0]
                 results['messaging_service_sid'] = '{}'.format(
                     message.messenger.messaging_service_sid
