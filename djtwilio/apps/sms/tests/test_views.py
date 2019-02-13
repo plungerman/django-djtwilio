@@ -6,7 +6,6 @@ from django.core.urlresolvers import reverse
 from djtwilio.apps.sms.data import CtcBlob
 from djtwilio.apps.sms.models import Error, Message, Status
 from djtwilio.core.client import twilio_client
-from djtwilio.core.utils import create_test_user
 
 from djtools.utils.logging import seperator
 from djzbar.utils.informix import get_session
@@ -24,11 +23,9 @@ class AppsSmsViewsTestCase(TestCase):
 
     def setUp(self):
 
-        self.user = create_test_user()
-        self.account = self.user.sender.get(
-            account__sid=settings.TWILIO_ACCOUNT_SID
-        ).account
-        self.twilio_client = twilio_client(self.user.sender.account)
+        self.user = User.objects.get(pk=settings.TEST_USER_ID)
+        sender = self.user.sender.get(default=True)
+        self.twilio_client = twilio_client(sender.account)
         self.recipient = settings.TWILIO_TEST_PHONE_TO
         self.body = settings.TWILIO_TEST_MESSAGE
         self.mssid_invalid = settings.TWILIO_TEST_MESSAGING_SERVICE_SID_INVALID
@@ -42,7 +39,11 @@ class AppsSmsViewsTestCase(TestCase):
 
         user = self.user
         all_messages = Message.objects.all().order_by('date_created')
-        user_messages = user.message_messenger.all().order_by('-date_created')
+        messages = []
+        for sender in user.sender.all():
+            for m in sender.messenger.all().order_by('-date_created'):
+                print(m)
+                messages.append(m)
 
     def test_detail(self):
 

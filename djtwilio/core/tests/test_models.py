@@ -1,21 +1,18 @@
 from django.conf import settings
 from django.test import TestCase
 
-from djtwilio.core.utils import create_test_user
-
 from djtools.utils.logging import seperator
 
 
 class CoreModelsTestCase(TestCase):
 
-    fixtures = ['account.json']
+    fixtures = [
+        'errors.json','account.json','status.json','user.json','message.json',
+        'profile','sender.json'
+    ]
 
     def setUp(self):
-
-        self.user = create_test_user()
-        self.account = self.user.sender.get(
-            account__sid=settings.TWILIO_ACCOUNT_SID
-        ).account
+        pass
 
     def test_user_account(self):
         print "\n"
