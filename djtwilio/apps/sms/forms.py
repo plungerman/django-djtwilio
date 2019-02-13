@@ -31,7 +31,7 @@ class SendForm(forms.Form):
         max_length=16,
         widget=forms.TextInput(attrs={'class': 'required form-control'}),
     )
-    messaging_service_sid = forms.CharField()
+    phone_from = forms.CharField()
     message = forms.CharField(
         widget=forms.Textarea(attrs={'class': 'required form-control'}),
         help_text = '<span id="chars">160</span> characters remaining'
@@ -51,7 +51,7 @@ class SendForm(forms.Form):
         for s in senders:
             choices.append((s.id, "{} ({})".format(s.phone, s.nickname)))
 
-        self.fields['messaging_service_sid'] = forms.ChoiceField(
+        self.fields['phone_from'] = forms.ChoiceField(
             label = "From", choices=choices,
             widget=forms.Select(attrs={'class': 'required form-control'})
         )

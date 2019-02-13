@@ -201,14 +201,16 @@ def send(request):
         if form.is_valid():
             die = False
             data = form.cleaned_data
-            sender = Sender.objects.get(pk=data['messaging_service_sid'])
+            sender = Sender.objects.get(pk=data['phone'])
+            phrum = sender.phone
+            if data.get('bulk'):
+                phrum = sender.messaging_service_sid
             recipient = data['phone_to']
             body = data['message']
             client = twilio_client(sender.account)
             try:
                 response = client.messages.create(
-                    to = recipient,
-                    from_=sender.phone,
+                    to = recipient, from_=phrum,
                     messaging_service_sid = sender.messaging_service_sid,
                     # use parentheses to prevent extra whitespace
                     body = (body),
