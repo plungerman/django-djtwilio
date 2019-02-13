@@ -2,6 +2,7 @@
 from django import forms
 from django.conf import settings
 
+from djtwilio.core.models import Sender
 from djtwilio.apps.sms.models import Status
 
 from djzbar.utils.informix import do_sql
@@ -38,18 +39,20 @@ class SendForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
+        user = self.request.user
         super(SendForm, self).__init__(*args, **kwargs)
 
+        if user.is_superuser:
+            senders = Sender.objects.all()
+        else:
+            senders = user.sender.all()
 
         choices = [("","---Phone number---")]
-        for s in self.request.user.sender.all():
-            choices.append((s.messaging_service_sid, "{} ({})".format(
-                s.phone, s.nickname
-            )))
+        for s in senders:
+            choices.append((s.id, "{} ({})".format(s.phone, s.nickname)))
 
         self.fields['messaging_service_sid'] = forms.ChoiceField(
-            label = "From",
-            choices=choices,
+            label = "From", choices=choices,
             widget=forms.Select(attrs={'class': 'required form-control'})
         )
 

@@ -2,16 +2,15 @@
 {% block style %}
 <!-- Bootstrap core CSS-->
 <link href="https://www.carthage.edu/static/vendor/bootstrap-admin4.0.0/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-<!-- Custom fonts for this template-->
-<link href="https://www.carthage.edu/static/vendor/bootstrap-admin4.0.0./vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 <!-- Page level plugin CSS-->
 <link href="https://www.carthage.edu/static/vendor/bootstrap-admin4.0.0/vendor/datatables/dataTables.bootstrap4.css" rel="stylesheet">
 <!-- Custom styles for this template-->
 <link href="https://www.carthage.edu/static/vendor/bootstrap-admin4.0.0/css/sb-admin.min.css" rel="stylesheet">
-{% endblock %}
-{% block extra_style %}
+<!-- font awesome -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
     rel="stylesheet">
+{% endblock %}
+{% block extra_style %}
 <link href="https://www.carthage.edu/themes/shared/css/tables.css"
     rel="stylesheet" type="text/css">
 <!-- print CSS -->
@@ -33,10 +32,11 @@ nav a:hover {color:#fff;}
 nav .input-group-btn {font-size:1.3em;}
 .navbar-toggler-icon {color:yellow;}
 .dropdown-menu {padding: 5px; background-color:#563d7c;}
-.dropdown { padding: 5px; width:120px; }
+.dropdown { margin-right:10px; padding: 5px;  }
 .success a { color: #007bff; }
 .panel-primary > .panel-heading {color: inherit;}
 .btn {padding: .1rem .2rem;font-size:inherit;}
+.message-status {cursor: pointer;}
 dt, dd {line-height:.85em;}
 dt {overflow: hidden; white-space: nowrap;}
 dd {overflow: hidden;white-space: nowrap;}
@@ -73,21 +73,6 @@ $(function() {
 {% endblock %}
 {% block navbar-top-links %}
   <ul class="navbar-nav ml-auto">
-    {% if not user.is_anonymous %}
-    <li class="nav-item">
-      <form class="form-inline my-2 my-lg-0 mr-sm-3 mr-lg-3" action="{# url 'search_students' #}" method="post">
-        {% csrf_token %}
-        <div class="input-group">
-          <input class="form-control" name="student" placeholder="Student ID..." type="text">
-          <span class="input-group-btn">
-            <button class="btn btn-primary" type="submit">
-              <i class="fa fa-search"></i>
-            </button>
-          </span>
-        </div>
-      </form>
-    </li>
-    {% endif %}
     <li class="dropdown user-dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
             <i class="fa fa-user"></i> {{user.first_name|default:"Dashboard"}}
@@ -132,6 +117,14 @@ $(function() {
       <span class="nav-link-text">Send Messages</span>
     </a>
   </li>
+  {% if user.is_superuser %}
+  <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Administration">
+    <a class="nav-link" href="{% url 'admin:index' %}">
+      <i class="fa fa-fw fa fa-cog" aria-hidden="true"></i>
+      <span class="nav-link-text">Administration</span>
+    </a>
+  </li>
+  {% endif %}
   <li class="nav-item">
     <a class="nav-link text-center" data-toggle="tooltip" data-placement="right" title="Expand Menu" id="sidenavToggler">
       <i class="fa fa-fw fa-angle-double-left"></i>
