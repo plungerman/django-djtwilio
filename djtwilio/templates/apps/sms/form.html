@@ -34,12 +34,12 @@ $(function() {
       $.ajax({
         type: "POST",
         async: true,
-        url:  "{% url 'get_messaging_service_sid' %}",
+        url:  "{% url 'get_sender' %}",
         dataType: "json",
         data: $data,
         success: function(data) {
           if (data['message'] == "Success") {
-            $("#id_messaging_service_sid").val(data['messaging_service_sid']);
+            $("#id_phone_from").val(data['sender']);
             $("#id_student_number").val(data['student_number']);
           }
         }
