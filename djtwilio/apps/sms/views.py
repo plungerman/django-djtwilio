@@ -236,8 +236,7 @@ def send_form(request):
             use_required_attribute=False
         )
         form_bulk = BulkForm(
-            request.POST, request=request, prefix='bulk',
-            use_required_attribute=False
+            request.POST, prefix='bulk', use_required_attribute=False
         )
         user = request.user
         if request.POST.get('bulk'):
