@@ -76,25 +76,27 @@ def list(request):
     group='Admissions SMS', session_var='DJTWILIO_AUTH',
     redirect_url=reverse_lazy('access_denied')
 )
-def get_messaging_service_sid(request):
+def get_sender(request):
 
-    results = {'messaging_service_sid':'','student_number':'','message':""}
+    results = {'sender':'','student_number':'','message':""}
     if request.method=='POST':
         phone = request.POST.get('phone_to')
         if phone:
-            try:
-                message = Message.objects.filter(
-                    messenger__user=request.user.sender.get(phone=phone)
-                ).filter(recipient=phone).order_by('-date_created')[0]
-                results['messaging_service_sid'] = '{}'.format(
-                    message.messenger.messaging_service_sid
-                )
+            sids = []
+            for s in request.user.sender.all():
+                sids.append(s.id)
+            messages = Message.objects.filter(recipient=phone).filter(
+                messenger__id__in=sids
+            ).order_by('-date_created')
+            if messages:
+                message = messages[0]
+                results['sender'] = '{}'.format(message.messenger.id)
                 results['student_number'] = '{}'.format(
                     message.student_number
                 )
                 msg = "Success"
-            except:
-                msg = "No messages sent to that phone number."
+            else:
+                msg = "No phone number provided."
         else:
             msg = "No phone number provided."
     else:
@@ -201,7 +203,7 @@ def send(request):
         if form.is_valid():
             die = False
             data = form.cleaned_data
-            sender = Sender.objects.get(pk=data['phone'])
+            sender = Sender.objects.get(pk=data['phone_from'])
             phrum = sender.phone
             if data.get('bulk'):
                 phrum = sender.messaging_service_sid
