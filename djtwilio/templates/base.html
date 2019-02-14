@@ -13,6 +13,8 @@
 {% block extra_style %}
 <link href="https://www.carthage.edu/themes/shared/css/tables.css"
     rel="stylesheet" type="text/css">
+<link href="/static/djtwilio/css/bs.css"
+    rel="stylesheet" type="text/css">
 <!-- print CSS -->
 <link href="https://www.carthage.edu/themes/shared/css/print.css"
     rel="stylesheet">
@@ -26,6 +28,7 @@
 .card-header { font-size:1.2em; padding: .25rem .5rem;}
 .card-footer { padding: .25rem .5rem;}
 .card {min-height: 160px;}
+#id_bulk-description {height:100px;}
 .content-wrapper { margin-top:60px; }
 nav a {color: #cbbde2;}
 nav a:hover {color:#fff;}
@@ -112,7 +115,7 @@ $(function() {
     </a>
   </li>
   <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Send Messages">
-    <a class="nav-link" href="{% url 'sms_send' %}">
+    <a class="nav-link" href="{% url 'sms_send_form' %}">
       <i class="fa fa-fw fa fa-send"></i>
       <span class="nav-link-text">Send Messages</span>
     </a>

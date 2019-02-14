@@ -8,25 +8,48 @@
 <script src="https://www.carthage.edu/static/vendor/cleave.js/cleave.min.js"></script>
 <script src="https://www.carthage.edu/static/vendor/cleave.js/addons/cleave-phone.us.js"></script>
 <script>
-var cleavePhone = new Cleave('#id_phone_to', {
+var cleavePhone = new Cleave('#id_indi-phone_to', {
   phone: true,
   phoneRegionCode: 'US',
   delimiter: '-'
 });
 $(function() {
+  $('#bulkSwitch').on('click', function (e) {
+    $pressed = $(this).attr('aria-pressed');
+    if ($pressed == "false") {
+      $('#bulkForm').slideDown('200');
+      $('#indiForm').slideUp('200');
+    } else {
+      $('#bulkForm').slideUp('200');
+      $('#indiForm').slideDown('200');
+    }
+  });
   var maxLength = 160;
-  $('textarea').keyup(function() {
+  $('#id_indi-message').keyup(function() {
     var length = $(this).val().length;
     var length = maxLength-length;
-    $('#chars').text(length);
+    $('#indi-chars').text(length);
 
     if($(this).val().length > maxLength){
-      $("#id_message").css('color','red');
+      $("#id_indi-message").css('color','red');
     }else{
-      $("#id_message").css('color','black');
+      $("#id_indi-message").css('color','black');
     }
 
   });
+  $('#id_bulk-message').keyup(function() {
+    var length = $(this).val().length;
+    var length = maxLength-length;
+    $('#bulk-chars').text(length);
+
+    if($(this).val().length > maxLength){
+      $("#id_bulk-message").css('color','red');
+    }else{
+      $("#id_bulk-message").css('color','black');
+    }
+
+  });
+  $('#bulkForm').slideUp('200');
   $("#id_phone_to").on("change", function(){
       var $data = {
         "phone_to": $(this).val()
@@ -75,10 +98,18 @@ $(function() {
         <ul>
     </div>
     {% endif %}
-    {% include "includes/required_text.html" %}
-    <form method="post" action=".">
+    <h5>Bulk</h5>
+    <button id="bulkSwitch" type="button" class="btn btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off">
+      <div class="handle"></div>
+    </button>
+    <form method="post" action="." id="indiForm">
         {% csrf_token %}
-        {% bootstrap_form form %}
+        {% bootstrap_form form_indi %}
+        <input class="btn btn-primary btn-lg" type="submit" value="Submit">
+    </form>
+    <form method="post" action="." id="bulkForm">
+        {% csrf_token %}
+        {% bootstrap_form form_bulk %}
         <input class="btn btn-primary btn-lg" type="submit" value="Submit">
     </form>
   </div>

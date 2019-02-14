@@ -7,18 +7,14 @@ from djtwilio.apps.sms import views
 urlpatterns = [
     url(
         r'^send/$',
-        views.send, name='sms_send'
+        views.send_form, name='sms_send_form'
     ),
     url(
         r'^send/success/$',
         TemplateView.as_view(
             template_name='core/admissions/sms/success.html'
         ),
-        name='sms_send_success'
-    ),
-    url(
-        r'^send/bulk/$',
-        views.send, name='sms_send_bulk'
+        name='sms_send_form_success'
     ),
     url(
         r'^status-callback/$',

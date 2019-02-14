@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 
-from djtwilio.apps.sms.forms import SendForm, StatusCallbackForm
+from djtwilio.apps.sms.forms import BulkForm, IndiForm, StatusCallbackForm
 from djtwilio.apps.sms.models import Error, Message, Status
 from djtwilio.apps.sms.errors import MESSAGE_DELIVERY_CODES
 from djtwilio.core.client import twilio_client
@@ -41,7 +41,7 @@ def detail(request, sid, medium='screen'):
     template = 'apps/sms/detail_{}.html'.format(medium)
     if message.messenger.user != user and not user.is_superuser:
         response = HttpResponseRedirect(
-            reverse('sms_send')
+            reverse('sms_send_form')
         )
     else:
         response = render(
@@ -175,100 +175,106 @@ def status_callback(request):
     )
 
 
+def _send(client, sender, recipient, body, cid, bulk=False):
+    if bulk:
+        phrum=sender.messaging.service_sid
+    else:
+        phrum=sender.phone
+    try:
+        apicall = client.messages.create(
+            # use parentheses around body to prevent extra whitespace
+            to=recipient, from_=phrum, body=(body),
+            status_callback = 'https://{}{}'.format(
+                settings.SERVER_URL,
+                reverse('sms_status_callback')
+            )
+        )
+        # create Message object
+        message = Message.objects.create(
+            messenger = sender,
+            recipient = recipient,
+            student_number = cid,
+            body = body
+        )
+        sid = apicall.sid
+        # create Status object
+        status = Status.objects.create(SmsSid=sid, MessageSid=sid)
+        message.status = status
+        if bulk:
+            message.bulk = bulk
+        message.save()
+    except TwilioRestException as e:
+        sid = False
+        messages.add_message(
+            request, messages.ERROR, e, extra_tags='alert alert-danger'
+        )
+
+    return sid
+
+
 @portal_auth_required(
     group='Admissions SMS', session_var='DJTWILIO_AUTH',
     redirect_url=reverse_lazy('access_denied')
 )
 @csrf_exempt
-def send(request):
+def send_form(request):
 
-    initial = {}
-    earl = None
-    sid = 0
-    if settings.DEBUG:
-        initial = {
-            #'phone_to': settings.TWILIO_TEST_PHONE_TO,
-            'message': settings.TWILIO_TEST_MESSAGE
-        }
-
-    form = SendForm(initial=initial, request=request)
     template = 'apps/sms/form.html'
+    form_bulk = BulkForm(prefix='bulk', use_required_attribute=False)
+    form_indi = IndiForm(
+        prefix='indi', request=request, use_required_attribute=False
+    )
     response = render(
-        request, template, {'form': form}
+        request, template, {
+            'form_indi': form_indi, 'form_bulk': form_bulk
+        }
     )
 
     if request.method=='POST':
-        form = SendForm(request.POST, request=request)
+        form_indi = IndiForm(
+            request.POST, request=request, prefix='indi',
+            use_required_attribute=False
+        )
+        form_bulk = BulkForm(
+            request.POST, request=request, prefix='bulk',
+            use_required_attribute=False
+        )
         user = request.user
-        if form.is_valid():
-            die = False
-            data = form.cleaned_data
-            sender = Sender.objects.get(pk=data['phone_from'])
-            phrum = sender.phone
-            if data.get('bulk'):
-                phrum = sender.messaging_service_sid
-            recipient = data['phone_to']
-            body = data['message']
-            client = twilio_client(sender.account)
-            try:
-                response = client.messages.create(
-                    to = recipient, from_=phrum,
-                    messaging_service_sid = sender.messaging_service_sid,
-                    # use parentheses to prevent extra whitespace
-                    body = (body),
-                    status_callback = 'https://{}{}'.format(
-                        settings.SERVER_URL,
-                        reverse('sms_status_callback')
-                    )
-                )
-            except TwilioRestException as e:
-                die = True
-                messages.add_message(
-                    request, messages.ERROR, e, extra_tags='alert alert-danger'
-                )
-
-                response = HttpResponseRedirect(
-                    reverse('sms_send')
-                )
-
-            if not die:
-                # create Message object
-                message = Message.objects.create(
-                    messenger = sender,
-                    recipient = recipient,
-                    student_number = data.get('student_number'),
-                    body = body
-                )
-                sid = response.sid
-                # create Status object
-                status = Status.objects.create(SmsSid=sid, MessageSid=sid)
-                message.status = status
-                message.save()
-                messages.add_message(
-                    request, messages.SUCCESS, """
-                        Your message has been sent. View the
-                        <a data-target="#messageStatus" data-toggle="modal"
-                          data-load-url="{}" class="message-status text-primary">
-                          message status</a>.
-                    """.format(reverse('sms_detail', args=[sid,'modal'])),
-                    extra_tags='alert alert-success'
-                )
-
-                response = HttpResponseRedirect(
-                    reverse('sms_send')
-                )
+        if request.POST.get('bulk'):
+            pass
         else:
-            response = render(
-                request, template, {'form': form}
-            )
+            if form_indi.is_valid():
+                data = form_indi.cleaned_data
+                sender = Sender.objects.get(pk=data['phone_from'])
+                body = data['message']
+
+                recipient = data['phone_to']
+                client = twilio_client(sender.account)
+                sid = _send(
+                    client, sender, recipient, body, data.get('student_number')
+                )
+                if sid:
+                    messages.add_message(
+                        request, messages.SUCCESS, """
+                            Your message has been sent. View the
+                            <a data-target="#messageStatus" data-toggle="modal"
+                            data-load-url="{}" class="message-status text-primary">
+                            message status</a>.
+                        """.format(reverse('sms_detail', args=[sid,'modal'])),
+                        extra_tags='alert alert-success'
+                    )
+
+                response = HttpResponseRedirect(
+                    reverse('sms_send_form')
+                )
+            else:
+                response = render(
+                    request, template, {
+                        'form_indi': form_indi, 'form_bulk': form_bulk
+                    }
+                )
 
     return response
-
-
-def send_bulk(request):
-    return render(
-        request, 'apps/sms/form_bulk.html'
-    )
 
 
 def search(request):
