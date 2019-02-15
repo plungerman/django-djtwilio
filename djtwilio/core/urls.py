@@ -67,6 +67,6 @@ urlpatterns = [
     ),
     # redirect home request to sms for now
     url(
-        r'^$', RedirectView.as_view(url=reverse_lazy('sms_send'))
+        r'^$', RedirectView.as_view(url=reverse_lazy('sms_send_form'))
     ),
 ]

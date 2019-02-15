@@ -15,7 +15,7 @@ class SendFormTestCase(TestCase):
 
     def setUp(self):
         self.factory = RequestFactory()
-        request = self.factory.get(reverse('sms_send'))
+        request = self.factory.get(reverse('sms_send_form'))
 
     def test_send_form_valid_data(self):
         form = SendForm({

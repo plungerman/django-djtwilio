@@ -26,7 +26,7 @@ class CoreViewsTestCase(TestCase):
         print("Test Auth")
         seperator()
         print("earl:")
-        earl = reverse('sms_send')
+        earl = reverse('sms_send_form')
         print(earl)
         # get SMS send page
         response = self.client.get(earl)

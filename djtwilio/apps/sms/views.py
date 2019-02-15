@@ -175,7 +175,7 @@ def status_callback(request):
     )
 
 
-def _send(client, sender, recipient, body, cid, bulk=False):
+def _send(request, client, sender, recipient, body, cid, bulk=False):
     if bulk:
         phrum=sender.messaging.service_sid
     else:
@@ -250,7 +250,8 @@ def send_form(request):
                 recipient = data['phone_to']
                 client = twilio_client(sender.account)
                 sid = _send(
-                    client, sender, recipient, body, data.get('student_number')
+                    request, client, sender, recipient, body,
+                    data.get('student_number')
                 )
                 if sid:
                     messages.add_message(

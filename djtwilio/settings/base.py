@@ -246,10 +246,8 @@ LOGGING = {
     'handlers': {
         'logfile': {
             'level':'DEBUG',
-            'class':'logging.handlers.RotatingFileHandler',
+            'class': 'logging.FileHandler',
             'filename': LOG_FILENAME,
-            'maxBytes': 50000,
-            'backupCount': 2,
             'formatter': 'standard',
         },
         'console':{
@@ -265,11 +263,6 @@ LOGGING = {
         }
     },
     'loggers': {
-        '': {
-            'handlers':['logfile'],
-            'propagate': True,
-            'level':'DEBUG',
-        },
         'djtwilio': {
             'handlers':['logfile'],
             'propagate': True,
