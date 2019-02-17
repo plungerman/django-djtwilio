@@ -51,14 +51,6 @@ def sender_manager(request, sid=None, action=None):
         if form.is_valid():
             data = form.save(commit=False)
             data.user = request.user
-            if data.default:
-                try:
-                    sender = user.sender.get(default=True)
-                    sender.default = False
-                    sender.save()
-                except:
-                    # there is no default yet
-                    pass
             data.save()
             message = "Your new phone has been created."
             if action:

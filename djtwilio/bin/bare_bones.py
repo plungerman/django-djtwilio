@@ -8,7 +8,6 @@ sys.path.append('/usr/local/lib/python2.7/dist-packages/')
 sys.path.append('/data2/django_1.11/')
 sys.path.append('/data2/django_projects/')
 sys.path.append('/data2/django_third/')
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'djtwilio.settings.development')
 
 from django.conf import settings
 

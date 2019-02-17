@@ -39,19 +39,8 @@ $(document).ready(function() {
         </div>
       {% endfor %}
     {% endif %}
-    {% if errors %}
-    <div class="error-message">
-        <p>Some messages did not go through to the recipients phone:</p>
-        <ul>
-        {% for e in errors %}
-            <li>
-                <a href="{% url 'detail' e.sid %}">{{e.to}}</a>
-            </li>
-        {% endfor %}
-        <ul>
-    </div>
-    {% endif %}
     {% include "includes/required_text.html" %}
+    {% include "includes/errors_text.html" %}
     <form method="post" action=".">
         {% csrf_token %}
         {% bootstrap_form form %}

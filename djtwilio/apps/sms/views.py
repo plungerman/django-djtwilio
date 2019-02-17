@@ -29,14 +29,15 @@ EARL = settings.INFORMIX_EARL
     session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
 )
 def bulk_detail(request, bid):
-
+    user = request.user
     bulk = get_object_or_404(Bulk, pk=bid)
-    if bulk.messaging_service.user != user and not user.is_superuser:
-        response = HttpResponseRedirect(
-            reverse('sms_send_form')
-        )
+    if bulk.user != user and not user.is_superuser:
+        response = HttpResponseRedirect(reverse('sms_send_form'))
     else:
-        response = render(request, 'apps/sms/bulk_detail.html', {'bulk': bulk,})
+        objects = Message.objects.filter(bulk=bulk)
+        response = render(
+            request, 'apps/sms/bulk_detail.html', {'bulk':bulk, 'objects': objects}
+        )
 
     return response
 
@@ -256,23 +257,26 @@ def send_form(request):
             use_required_attribute=False
         )
         form_bulk = BulkForm(
-            request.POST, prefix='bulk', use_required_attribute=False
+            request.POST, request.FILES, request=request, prefix='bulk',
+            use_required_attribute=False
         )
         user = request.user
         if request.POST.get('bulk-submit'):
             bulk = True
             if form_bulk.is_valid():
                 data = form_bulk.cleaned_data
-                sender = Sender.objects.get(default=True)
+                bulk = form_bulk.save(commit=False)
+                bulk.user = request.user
+                bulk.save()
+                sender = Sender.objects.get(pk=data['messaging_service'])
                 body = data['message']
                 client = twilio_client(sender.account)
                 messages.add_message(
                     request, messages.SUCCESS, """
                         Your messages have been sent. View the
-                        <a data-target="#messageStatus" data-toggle="modal"
-                        data-load-url="{}" class="message-status text-primary">
+                        <a href="{}" class="message-status text-primary">
                         delivery report</a>.
-                    """.format(reverse('sms_bulk_detail', args=[bid])),
+                    """.format(reverse('sms_bulk_detail', args=[bulk.id])),
                     extra_tags='alert alert-success'
                 )
                 response = HttpResponseRedirect(
@@ -304,7 +308,9 @@ def send_form(request):
                     reverse('sms_send_form')
                 )
     else:
-        form_bulk = BulkForm(prefix='bulk', use_required_attribute=False)
+        form_bulk = BulkForm(
+            prefix='bulk', request=request, use_required_attribute=False
+        )
         form_indi = IndiForm(
             prefix='indi', request=request, use_required_attribute=False
         )

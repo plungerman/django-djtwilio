@@ -3,8 +3,6 @@ from django.conf import settings
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
-from djtwilio.core.utils import create_test_user
-
 from djtools.utils.logging import seperator
 
 from djzbar.utils.informix import get_session

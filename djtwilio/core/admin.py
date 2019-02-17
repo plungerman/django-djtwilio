@@ -10,10 +10,9 @@ class AccountAdmin(admin.ModelAdmin):
 class SenderAdmin(admin.ModelAdmin):
     list_display = (
         'last_name','first_name','nickname','phone','messaging_service_sid',
-        'default'
     )
     ordering = (
-        'user__last_name','user__first_name','phone','default'
+        'user__last_name','user__first_name','phone'
     )
     search_fields = (
         'user__last_name','user__first_name','user__email','user__username',

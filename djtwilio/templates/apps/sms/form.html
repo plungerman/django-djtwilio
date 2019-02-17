@@ -110,15 +110,25 @@ $(function() {
     <button id="bulkSwitch" type="button" class="btn btn-toggle" data-toggle="button" aria-pressed="false" autocomplete="off">
       <div class="handle"></div>
     </button>
-    <form method="post" action="." id="indiForm">
-        {% csrf_token %}
-        {% bootstrap_form form_indi %}
-        <input class="btn btn-primary btn-lg" type="submit" value="Submit" name="indi-submit">
+    <form method="post" action="." id="indiForm" style="margin-bottom:20px;">
+      {% if form_indi.errors %}
+        <div class="alert alert-danger mt-4">
+        {{ form_indi.errors }}
+        </div>
+      {% endif %}
+      {% csrf_token %}
+      {% bootstrap_form form_indi %}
+      <input class="btn btn-primary btn-lg" type="submit" value="Submit" name="indi-submit">
     </form>
-    <form method="post" action="." id="bulkForm">
-        {% csrf_token %}
-        {% bootstrap_form form_bulk %}
-        <input class="btn btn-primary btn-lg" type="submit" value="Submit" name="bulk-submit">
+    <form method="post" action="." id="bulkForm" style="margin-bottom:20px;" enctype="multipart/form-data">
+      {% if form_bulk.errors %}
+      <div class="alert alert-danger mt-4">
+        {{ form_bulk.errors }}
+      </div>
+      {% endif %}
+      {% csrf_token %}
+      {% bootstrap_form form_bulk %}
+      <input class="btn btn-primary btn-lg" type="submit" value="Submit" name="bulk-submit">
     </form>
   </div>
 </div>

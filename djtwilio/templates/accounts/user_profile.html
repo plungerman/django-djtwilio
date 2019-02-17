@@ -8,7 +8,7 @@
 <div class="row">
     <div class="col-lg-12">
        <h1>
-        Manage Your Twilio Numbers
+        Manage Your Twilio Senders
         <small class="float-right" style="margin-right:20px;">
         <a href="#"><i class="fa fa-home fa-2x green"></i></a>
         </small>
@@ -28,35 +28,33 @@
 {% endif %}
 <div class="card">
   <div class="card-header">
-    <i class="fa fa-table"></i> Phone numbers
+    <i class="fa fa-table"></i> Phone numbers and Messaging Service IDs
     <a href="{% url 'sender_manager' %}">
     <i class="fa fa-plus-circle green blue-tooltip" data-toggle="tooltip"
       data-placement="right" aria-hidden="true"
-      title="Add another Phone number"></i></a>
+      title="Add another Phone Number or SID"></i></a>
   </div>
   <div class="card-body" style="margin-bottom:20px">
-    <p>The green background denotes your default phone number.</p>
     <div class="table-responsive">
       <table class="table table-sm table-hover">
         <thead>
           <tr>
           <th scope="col">#</th>
-          <th scope="col">Phone Number</th>
-          <th scope="col">Messaging Services ID</th>
+          <th scope="col">Phone Number / SID</th>
           <th scope="col">Nickname</th>
           </tr>
         </thead>
         <tbody>
           {% for s in user.sender.all %}
-          <tr{% if s.default %} class="table-success"{% endif %}>
+          <tr>
           <td>{{forloop.counter}}</td>
           <td>
-            <a href="{% url 'sender_update' s.id 'update' %}"
-              class="blue-tooltip" data-toggle="tooltip" data-placement="right"
-              title="Update this phone number">
-              {{s.phone}}</a>
+            {% if s.phone %}
+                {{s.phone}}
+            {% else %}
+                {{s.messaging_service_sid}}
+            {% endif %}
           </td>
-          <td>{{s.messaging_service_sid}}</td>
           <td>{{s.nickname}}</td>
           </tr>
           {% endfor %}

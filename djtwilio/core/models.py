@@ -46,32 +46,16 @@ class Sender(models.Model):
         max_length=128,
         null=True, blank=True
     )
-    default = models.BooleanField(
-        default = False
-    )
 
     def __unicode__(self):
         return "{} [{}] ({})".format(
             self.phone, self.messaging_service_sid, self.nickname
         )
 
-    class Meta:
-        unique_together = ('user', 'nickname',)
-
     def clean(self):
-        if not self.default:
-            return
-        try:
-            existing = self.__class__.objects.get(
-                ~Q(pk = self.id), user=self.user, default=True,
-            )
-            raise ValidationError("You already have a default phone number.")
-        except:
-            return
-
-        if not self.phone or not self.messaging_service_sid:
+        if not self.phone and not self.messaging_service_sid:
             raise ValidationError(
-                "You must provide either a phone number of messaging service ID"
+              "You must provide either a phone number of messaging service ID"
             )
 
 
@@ -99,7 +83,9 @@ def create_user_profile(sender, instance, created, **kwargs):
 def create_user_sender(sender, instance, created, **kwargs):
     if created and not kwargs.get('raw', False):
         Sender.objects.create(
-            user=instance, nickname="Default phone", default=True
+            user=instance, nickname="{} {}'s Phone".format(
+                instance.first_name, instance.last_name
+            )
         )
 
 @receiver(post_save, sender=User)

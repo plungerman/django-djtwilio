@@ -55,6 +55,9 @@ class Bulk(models.Model):
         help_text="CSV File"
     )
 
+    def get_slug(self):
+        return 'files/bulk/'
+
 
 class Status(models.Model):
     """
