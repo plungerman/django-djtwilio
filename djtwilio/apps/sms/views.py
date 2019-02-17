@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 
 from djtwilio.apps.sms.forms import BulkForm, IndiForm, StatusCallbackForm
-from djtwilio.apps.sms.models import Error, Message, Status
+from djtwilio.apps.sms.models import Bulk, Error, Message, Status
 from djtwilio.apps.sms.errors import MESSAGE_DELIVERY_CODES
 from djtwilio.core.client import twilio_client
 from djtwilio.core.models import Sender
@@ -26,8 +26,38 @@ EARL = settings.INFORMIX_EARL
 
 
 @portal_auth_required(
-    group='Admissions SMS', session_var='DJTWILIO_AUTH',
-    redirect_url=reverse_lazy('access_denied')
+    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
+)
+def bulk_detail(request, bid):
+
+    bulk = get_object_or_404(Bulk, pk=bid)
+    if bulk.messaging_service.user != user and not user.is_superuser:
+        response = HttpResponseRedirect(
+            reverse('sms_send_form')
+        )
+    else:
+        response = render(request, 'apps/sms/bulk_detail.html', {'bulk': bulk,})
+
+    return response
+
+
+@portal_auth_required(
+    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
+)
+def bulk_list(request):
+
+    if user.is_superuser:
+        bulk = Bulk.objects.all()
+    else:
+        bulk = Bulk.objects.get(messaging_service__user = request.user)
+
+    return render(
+        request, 'apps/sms/bulk_list.html', {'bulk': bulk,}
+    )
+
+
+@portal_auth_required(
+    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
 )
 def detail(request, sid, medium='screen'):
 
@@ -52,8 +82,7 @@ def detail(request, sid, medium='screen'):
 
 
 @portal_auth_required(
-    group='Admissions SMS', session_var='DJTWILIO_AUTH',
-    redirect_url=reverse_lazy('access_denied')
+    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
 )
 def list(request):
 
@@ -73,8 +102,7 @@ def list(request):
 
 @csrf_exempt
 @portal_auth_required(
-    group='Admissions SMS', session_var='DJTWILIO_AUTH',
-    redirect_url=reverse_lazy('access_denied')
+    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
 )
 def get_sender(request):
 
@@ -213,22 +241,14 @@ def _send(request, client, sender, recipient, body, cid, bulk=False):
 
 
 @portal_auth_required(
-    group='Admissions SMS', session_var='DJTWILIO_AUTH',
-    redirect_url=reverse_lazy('access_denied')
+    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
 )
 @csrf_exempt
 def send_form(request):
 
+    bulk = False
+    response = False
     template = 'apps/sms/form.html'
-    form_bulk = BulkForm(prefix='bulk', use_required_attribute=False)
-    form_indi = IndiForm(
-        prefix='indi', request=request, use_required_attribute=False
-    )
-    response = render(
-        request, template, {
-            'form_indi': form_indi, 'form_bulk': form_bulk
-        }
-    )
 
     if request.method=='POST':
         form_indi = IndiForm(
@@ -239,14 +259,30 @@ def send_form(request):
             request.POST, prefix='bulk', use_required_attribute=False
         )
         user = request.user
-        if request.POST.get('bulk'):
-            pass
+        if request.POST.get('bulk-submit'):
+            bulk = True
+            if form_bulk.is_valid():
+                data = form_bulk.cleaned_data
+                sender = Sender.objects.get(default=True)
+                body = data['message']
+                client = twilio_client(sender.account)
+                messages.add_message(
+                    request, messages.SUCCESS, """
+                        Your messages have been sent. View the
+                        <a data-target="#messageStatus" data-toggle="modal"
+                        data-load-url="{}" class="message-status text-primary">
+                        delivery report</a>.
+                    """.format(reverse('sms_bulk_detail', args=[bid])),
+                    extra_tags='alert alert-success'
+                )
+                response = HttpResponseRedirect(
+                    reverse('sms_send_form')
+                )
         else:
             if form_indi.is_valid():
                 data = form_indi.cleaned_data
                 sender = Sender.objects.get(pk=data['phone_from'])
                 body = data['message']
-
                 recipient = data['phone_to']
                 client = twilio_client(sender.account)
                 sid = _send(
@@ -267,12 +303,18 @@ def send_form(request):
                 response = HttpResponseRedirect(
                     reverse('sms_send_form')
                 )
-            else:
-                response = render(
-                    request, template, {
-                        'form_indi': form_indi, 'form_bulk': form_bulk
-                    }
-                )
+    else:
+        form_bulk = BulkForm(prefix='bulk', use_required_attribute=False)
+        form_indi = IndiForm(
+            prefix='indi', request=request, use_required_attribute=False
+        )
+
+    if not response:
+        response = render(
+            request, template, {
+                'form_indi': form_indi, 'form_bulk': form_bulk, 'bulk': bulk
+            }
+        )
 
     return response
 

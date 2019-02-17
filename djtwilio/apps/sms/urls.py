@@ -29,6 +29,14 @@ urlpatterns = [
         views.detail, name='sms_detail_default'
     ),
     url(
+        r'^bulk/list/$',
+        views.bulk_list, name='sms_bulk_list'
+    ),
+    url(
+        r'^bulk/(?P<bid>\w+)/detail/$',
+        views.bulk_detail, name='sms_bulk_detail'
+    ),
+    url(
         r'^get-sender/$',
         views.get_sender, name='get_sender'
     ),

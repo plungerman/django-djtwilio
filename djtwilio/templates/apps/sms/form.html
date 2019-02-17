@@ -14,6 +14,14 @@ var cleavePhone = new Cleave('#id_indi-phone_to', {
   delimiter: '-'
 });
 $(function() {
+  {% if bulk %}
+  $('#bulkForm').slideDown('200');
+  $('#indiForm').slideUp('200');
+  $('#bulkSwitch').attr('aria-pressed', 'true');
+  $('#bulkSwitch').addClass('focus active');
+  {% else %}
+  $('#bulkForm').slideUp('200');
+  {% endif %}
   $('#bulkSwitch').on('click', function (e) {
     $pressed = $(this).attr('aria-pressed');
     if ($pressed == "false") {
@@ -49,7 +57,6 @@ $(function() {
     }
 
   });
-  $('#bulkForm').slideUp('200');
   $("#id_phone_to").on("change", function(){
       var $data = {
         "phone_to": $(this).val()
@@ -79,7 +86,8 @@ $(function() {
 <h3>Send a message</h3>
 {% if messages %}
   {% for message in messages %}
-    <div id="messages" class="{{ message.tags }}">
+    <div id="messages" class="alert-dismissable alert-link {{ message.tags }}">
+      <button class="close" type="button" data-dismiss="alert" aria-hidden="true">×</button>
       <strong>{{ message|safe }}</strong>
     </div>
   {% endfor %}
@@ -105,12 +113,12 @@ $(function() {
     <form method="post" action="." id="indiForm">
         {% csrf_token %}
         {% bootstrap_form form_indi %}
-        <input class="btn btn-primary btn-lg" type="submit" value="Submit">
+        <input class="btn btn-primary btn-lg" type="submit" value="Submit" name="indi-submit">
     </form>
     <form method="post" action="." id="bulkForm">
         {% csrf_token %}
         {% bootstrap_form form_bulk %}
-        <input class="btn btn-primary btn-lg" type="submit" value="Submit">
+        <input class="btn btn-primary btn-lg" type="submit" value="Submit" name="bulk-submit">
     </form>
   </div>
 </div>

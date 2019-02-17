@@ -13,20 +13,19 @@ class StudentNumberForm(forms.Form):
         widget=forms.TextInput(attrs={'placeholder': 'Student ID'})
     )
 
+
 class SenderForm(forms.ModelForm):
 
     phone = USPhoneNumberField(
         label = "Phone number",
-        help_text = "Format: XXX XXX XXXX",
-        required = True
+        help_text = "Format: XXX XXX XXXX"
     )
     messaging_service_sid = forms.CharField(
         label = "Messaging service ID",
         max_length = 34,
         help_text = """
             A 34 character code that is associated with the phone number
-        """,
-        required = True
+        """
     )
     account = forms.ModelChoiceField(
         label = "Account",
@@ -51,3 +50,13 @@ class SenderForm(forms.ModelForm):
             )
 
         return sid
+
+    def clean(self):
+        cd = self.cleaned_data
+        if not cd.get('phone') or not cd.get('messaging_service_sid'):
+            self._errors['messaging_service_sid'] = self.error_class(
+                ["Provide either a phone or a service SID."]
+            )
+            self._errors['phone'] = self.error_class(
+                ["Provide either a phone or a service SID."]
+            )

@@ -69,6 +69,11 @@ class Sender(models.Model):
         except:
             return
 
+        if not self.phone or not self.messaging_service_sid:
+            raise ValidationError(
+                "You must provide either a phone number of messaging service ID"
+            )
+
 
 class Profile(models.Model):
     user = models.OneToOneField(

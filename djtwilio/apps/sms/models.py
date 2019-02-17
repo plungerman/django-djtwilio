@@ -1,5 +1,6 @@
 from django.db import models
 from django.dispatch import receiver
+from django.contrib.auth.models import User
 
 from djtools.fields.helpers import upload_to_path
 
@@ -34,6 +35,10 @@ class Bulk(models.Model):
     """
     Sending messages in bulk
     """
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='bulk_sender'
+    )
     date_created = models.DateTimeField(
         auto_now_add=True
     )
