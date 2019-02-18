@@ -1,6 +1,7 @@
 from django.db import models
 from django.dispatch import receiver
 from django.contrib.auth.models import User
+from django.core.validators import FileExtensionValidator
 
 from djtools.fields.helpers import upload_to_path
 
@@ -50,9 +51,11 @@ class Bulk(models.Model):
     )
     distribution = models.FileField(
         "Distribution CSV File",
-        upload_to=upload_to_path,
-        max_length=768,
-        help_text="CSV File"
+        upload_to=upload_to_path, max_length=768,
+        validators=[
+            FileExtensionValidator(allowed_extensions=['csv','CSV','txt','TXT'])
+        ],
+        help_text="CSV File: Last Name, First Name, Phone, College ID"
     )
 
     def get_slug(self):

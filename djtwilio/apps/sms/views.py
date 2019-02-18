@@ -47,10 +47,13 @@ def bulk_detail(request, bid):
 )
 def bulk_list(request):
 
+    user = request.user
     if user.is_superuser:
-        bulk = Bulk.objects.all()
+        bulk = Bulk.objects.all().order_by('-date_created')
     else:
-        bulk = Bulk.objects.get(messaging_service__user = request.user)
+        bulk = Bulk.objects.filter(
+            messaging_service__user = user
+        ).order_by('-date_created')
 
     return render(
         request, 'apps/sms/bulk_list.html', {'bulk': bulk,}
@@ -60,10 +63,28 @@ def bulk_list(request):
 @portal_auth_required(
     session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
 )
+def individual_list(request):
+
+    user = request.user
+    if user.is_superuser:
+        messages = Message.objects.all().order_by('-date_created')
+    else:
+        messages = []
+        for sender in user.sender.all():
+            for m in sender.messenger.all().order_by('-date_created'):
+                messages.append(m)
+
+    return render(
+        request, 'apps/sms/individual_list.html', {'messages': messages,}
+    )
+
+
+@portal_auth_required(
+    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
+)
 def detail(request, sid, medium='screen'):
 
     user = request.user
-
     try:
         message = Message.objects.get(status__MessageSid=sid)
     except:
@@ -85,19 +106,25 @@ def detail(request, sid, medium='screen'):
 @portal_auth_required(
     session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
 )
-def list(request):
+def home(request):
 
+    limit = 100
     user = request.user
     if user.is_superuser:
-        messages = Message.objects.all().order_by('date_created')
+        bulk = Bulk.objects.all().order_by('-date_created')[:limit]
+        messages = Message.objects.all().order_by('-date_created')[:limit]
     else:
+        bulk = Bulk.objects.filter(
+            messaging_service__user=request.user
+        ).order_by('-date_created')[:100]
         messages = []
+        limit = limit / user.sender.count()
         for sender in user.sender.all():
-            for m in sender.messenger.all().order_by('-date_created'):
+            for m in sender.messenger.all().order_by('-date_created')[:limit]:
                 messages.append(m)
 
     return render(
-        request, 'apps/sms/list.html', {'objects': messages,}
+        request, 'apps/sms/home.html', {'messages': messages,'bulk':bulk}
     )
 
 

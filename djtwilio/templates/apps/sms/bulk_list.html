@@ -1,0 +1,11 @@
+{% extends "apps/sms/home.html" %}
+{% block title %}
+    Bulk Messages &mdash; Twilio Apps &mdash; Carthage College
+{% endblock %}
+{% block content %}
+{% if bulk %}
+  {% with True as total %}
+  {% include "apps/sms/bulk_list.inc.html" %}
+  {% endwith %}
+{% endif %}
+{% endblock %}

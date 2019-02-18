@@ -54,6 +54,7 @@ pre {
     white-space: -o-pre-wrap;    /* Opera 7 */
     word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
+.green, .glyphicon-ok { color: #008000; }
 /* Overrides for BS form classes */
 .form-group.required label:after {
   content:" *";
@@ -72,7 +73,7 @@ $(function() {
 {% endblock %}
 {% block body_tag %}{% endblock %}
 {% block navbar-header %}
-  <a href="{# url 'home' #}" class="mr-sm-3 mr-lg-3"><i class="fa fa-home fa-2x green"></i></a>
+  <a href="{# url 'home' #}" class="mr-sm-3 mr-lg-3"><i class="fa fa-home fa-2x"></i></a>
   <a class="navbar-brand" href="{# url 'home' #}">Twilio Manager</a>
 {% endblock %}
 {% block navbar-top-links %}
@@ -110,7 +111,7 @@ $(function() {
 {% block navbar-sidenav %}
 <ul class="navbar-nav navbar-sidenav">
   <li class="nav-item" data-toggle="tooltip" data-placement="right" title="My Messages">
-    <a class="nav-link" href="{% url 'sms_list' %}">
+    <a class="nav-link" href="{% url 'sms_home' %}">
       <i class="fa fa-fw fa fa-inbox"></i>
       <span class="nav-link-text">My messages</span>
     </a>

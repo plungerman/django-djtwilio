@@ -1,13 +1,13 @@
 from django.conf.urls import url
-from django.views.generic import TemplateView
+from django.core.urlresolvers import reverse_lazy
+from django.views.generic import RedirectView, TemplateView
 
 from djtwilio.apps.sms import views
 
 
 urlpatterns = [
     url(
-        r'^send/$',
-        views.send_form, name='sms_send_form'
+        r'^send/$', views.send_form, name='sms_send_form'
     ),
     url(
         r'^send/success/$',
@@ -29,23 +29,23 @@ urlpatterns = [
         views.detail, name='sms_detail_default'
     ),
     url(
-        r'^bulk/list/$',
-        views.bulk_list, name='sms_bulk_list'
+        r'^bulk/list/$', views.bulk_list, name='sms_bulk_list'
     ),
     url(
         r'^bulk/(?P<bid>\w+)/detail/$',
         views.bulk_detail, name='sms_bulk_detail'
     ),
     url(
-        r'^get-sender/$',
-        views.get_sender, name='get_sender'
+        r'^get-sender/$', views.get_sender, name='sms_get_sender'
     ),
     url(
         r'^list/$',
-        views.list, name='sms_list'
+        views.individual_list, name='sms_individual_list'
     ),
     url(
-        r'^search/$',
-        views.search, name='sms_search'
+        r'^search/$', views.search, name='sms_search'
     ),
+    url(
+        r'^$', views.home, name='sms_home'
+    )
 ]

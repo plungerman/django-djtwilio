@@ -1,0 +1,52 @@
+<div class="card mb-3">
+  {% if not total %}
+  <div class="card-header">
+    <a href="{% url 'sms_individual_list' %}">
+      <i class="fa fa-list-alt blue-tooltip" aria-hidden="true"
+        data-toggle="tooltip" data-placement="top"
+        title="View All Bulk Messages"></i></a>
+    Individual Messages
+    <i class="fa fa-leaf green blue-tooltip" aria-hidden="true"
+      data-toggle="tooltip" data-placement="top" aria-hidden="true"
+      title="The 100 most recent Individual Messages are list below"></i>
+  </div>
+  {% endif %}
+  <div class="card-body" style="margin-bottom:20px">
+    <div class="table-responsive">
+    <table class="table table-bordered table-hover data-table" width="100%" cellspacing="0">
+    <thead>
+      <tr>
+        <th>To</th>
+        <th>From</th>
+        <th>Date Sent</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for m in messages %}
+      <tr>
+        <td>
+            <a href="{% url 'sms_detail_default' m.status.MessageSid %}">
+              {{m.recipient}}
+            </a>
+        </td>
+        <td>{{m.messenger.phone}}</td>
+        <td>
+          {{m.date_created|date:'Y-m-d H:i:s'}}
+        </td>
+        <td data-toggle="tooltip" data-placement="left" title="{{m.status.error.message}}">
+          {{m.status.MessageStatus}}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+      <tfoot>
+        <th>To</th>
+        <th>From</th>
+        <th>Date Sent</th>
+        <th>Status</th>
+      </tfoot>
+    </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,51 @@
+{% if bulk %}
+<div class="card mb-3">
+  {% if not total %}
+  <div class="card-header">
+    <a href="{% url 'sms_bulk_list' %}">
+      <i class="fa fa-list-alt blue-tooltip" aria-hidden="true"
+        data-toggle="tooltip" data-placement="top"
+        title="View All Bulk Messages"></i></a>
+    Bulk Messages
+    <i class="fa fa-leaf green blue-tooltip" aria-hidden="true"
+      data-toggle="tooltip" data-placement="top" aria-hidden="true"
+      title="The 100 most recent Bulk Messages are list below"></i>
+  </div>
+  {% endif %}
+  <div class="card-body">
+    <div class="table-responsive">
+    <table class="table table-bordered table-hover data-table" width="100%" cellspacing="0">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Date Sent</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for b in bulk %}
+      <tr>
+        <td>
+            <a href="{% url 'sms_bulk_detail' b.id %}">
+              {{b.name}}
+            </a>
+        </td>
+        <td data-toggle="tooltip" data-placement="left" title="Click to download distribution list">
+            <a href="{{b.distribution.url}}">{{b.description}}</a>
+        </td>
+        <td>
+          {{b.date_created|date:'Y-m-d H:i:s'}}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+      <tfoot>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Date Sent</th>
+      </tfoot>
+    </table>
+    </div>
+  </div>
+</div>
+{% endif %}

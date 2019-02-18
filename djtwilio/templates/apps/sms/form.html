@@ -64,7 +64,7 @@ $(function() {
       $.ajax({
         type: "POST",
         async: true,
-        url:  "{% url 'get_sender' %}",
+        url:  "{% url 'sms_get_sender' %}",
         dataType: "json",
         data: $data,
         success: function(data) {

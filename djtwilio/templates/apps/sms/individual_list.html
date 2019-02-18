@@ -1,0 +1,18 @@
+{% extends "apps/sms/home.html" %}
+{% block title %}
+    Individual Messages &mdash; Twilio Apps &mdash; Carthage College
+{% endblock %}
+{% block breadcrumb %}
+<div class="row">
+    <div class="col-lg-12">
+       <h1>Individual Messages</h1>
+    </div>
+</div>
+{% endblock %}
+{% block content %}
+{% if messages %}
+  {% with True as total %}
+  {% include "apps/sms/individual_list.inc.html" %}
+  {% endwith %}
+{% endif %}
+{% endblock %}

@@ -30,7 +30,7 @@ table.dataTable thead span.sort-icon {
 <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>
 <script>
 $(document).ready(function() {
-  var table = $('#data-table').DataTable({
+  var table = $('.data-table').DataTable({
     'order': [[ 2, 'desc' ]],
     'lengthMenu': [
       [25, 50, 100, 250, 500, 1000, 2000, -1],
@@ -48,60 +48,15 @@ $(document).ready(function() {
 {% block breadcrumb %}
 <div class="row">
     <div class="col-lg-12">
-       <h1>
-        Your Sent Messages
-        <small class="float-right" style="margin-right:20px;">
-        <a href="#"><i class="fa fa-home fa-2x green"></i></a>
-        </small>
-        </h1>
+       <h1>Sent Messages</h1>
     </div>
 </div>
 {% endblock %}
 {% block content %}
-{% include "includes/form.inc.html" %}
-{% if objects %}
-<div class="card mb-3">
-  <div class="card-header">
-    <i class="fa fa-table"></i> Data
-  </div>
-  <div class="card-body" style="margin-bottom:20px">
-    <div class="table-responsive">
-    <table class="table table-bordered table-hover" width="100%" cellspacing="0" id="data-table">
-    <thead>
-      <tr>
-        <th>To</th>
-        <th>From</th>
-        <th>Date Sent</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for o in objects %}
-      <tr>
-        <td>
-            <a href="{% url 'sms_detail_default' o.status.MessageSid %}">
-              {{o.recipient}}
-            </a>
-        </td>
-        <td>{{o.messenger.phone}}</td>
-        <td>
-          {{o.date_created|date:'Y-m-d H:i:s'}}
-        </td>
-        <td data-toggle="tooltip" data-placement="left" title="{{o.status.error.message}}">
-          {{o.status.MessageStatus}}
-        </td>
-      </tr>
-    {% endfor %}
-    </tbody>
-      <tfoot>
-        <th>To</th>
-        <th>From</th>
-        <th>Date Sent</th>
-        <th>Status</th>
-      </tfoot>
-    </table>
-    </div>
-  </div>
-</div>
+{% if bulk %}
+  {% include "apps/sms/bulk_list.inc.html" %}
+{% endif %}
+{% if messages %}
+  {% include "apps/sms/individual_list.inc.html" %}
 {% endif %}
 {% endblock %}
