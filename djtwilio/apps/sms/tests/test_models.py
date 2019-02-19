@@ -20,7 +20,7 @@ class AppsSmsModelsTestCase(TestCase):
         print("create a message object")
         seperator()
         message = Message.objects.create(
-            messenger = self.user.sender.get(default=True),
+            messenger = self.user.sender.get(pk=settings.TWILIO_TEST_SENDER_ID),
             recipient = settings.TWILIO_TEST_PHONE_TO,
             body = settings.TWILIO_TEST_MESSAGE
         )

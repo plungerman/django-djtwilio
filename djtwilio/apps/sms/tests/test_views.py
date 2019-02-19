@@ -24,7 +24,7 @@ class AppsSmsViewsTestCase(TestCase):
     def setUp(self):
 
         self.user = User.objects.get(pk=settings.TEST_USER_ID)
-        sender = self.user.sender.get(default=True)
+        sender = self.user.sender.get(pk=settings.TWILIO_TEST_SENDER_ID)
         self.twilio_client = twilio_client(sender.account)
         self.recipient = settings.TWILIO_TEST_PHONE_TO
         self.body = settings.TWILIO_TEST_MESSAGE

@@ -38,8 +38,7 @@ class CoreViewsTestCase(TestCase):
         )
         self.assertTrue(login)
         response = self.client.get(earl)
-        # not certain why this 302 and not 200 but whatevs
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         print("URL:")
         print(response.request['PATH_INFO'])
         print("Auth Success")
