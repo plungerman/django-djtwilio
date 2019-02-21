@@ -204,7 +204,10 @@ TWILIO_API_URL = 'https://api.twilio.com/2010-04-01/'
 TWILIO_ACCOUNT_SID = ''
 TWILIO_AUTH_TOKEN = ''
 TWILIO_FORGERY_PROTECTION = True
-TWILIO_TEST_STUDENT_ID=0
+TWILIO_TEST_BULK_NAME=''
+TWILIO_TEST_BULK_DESCRIPTION=''
+TWILIO_TEST_BULK_SENDER_ID=0
+TWILIO_TEST_COLLEGE_ID=0
 TWILIO_TEST_PHONE_TO = ''
 TWILIO_TEST_PHONE_OPT_OUT = ''
 TWILIO_TEST_MESSAGE = 'Who does your taxes?'
@@ -212,6 +215,7 @@ TWILIO_TEST_MESSAGE_SID = ''
 TWILIO_TEST_DEPARTMENT = 'Admissions'
 TWILIO_TEST_STATUS_DICT = {}
 TWILIO_TEST_SENDER_ID=0
+TWILIO_TEST_MESSAGING_SERVICE_SID_INVALID = ''
 TWILIO_ADDMISSIONS_GROUP = 'Admissions SMS'
 TWILIO_ADMISSIONS_REPS = {}
 # auth tests
@@ -220,7 +224,9 @@ TEST_PASSWORD = ''
 TEST_EMAIL = ''
 TEST_USER_ID = ''
 # logging
-LOG_FILEPATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs/')
+LOG_FILEPATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs/'
+)
 LOG_FILENAME = LOG_FILEPATH + 'debug.log'
 LOGGING = {
     'version': 1,

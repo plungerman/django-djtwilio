@@ -6,21 +6,15 @@ from djtwilio.apps.sms.models import (
 
 
 class MessageAdmin(admin.ModelAdmin):
-    pass
-    '''
     list_display = (
         'messenger', 'recipient', 'bulk', 'date_created'
     )
     date_hierarchy = 'date_created'
-    ordering = (
-        'date_created'
-    )
+    ordering = ('date_created',)
     readonly_fields = (
         'messenger','bulk'
     )
-    search_fields = (
-        'body'
-    )
+    search_fields = ('body',)
     list_per_page = 500
     raw_id_fields = ('messenger',)
 
@@ -29,7 +23,6 @@ class MessageAdmin(admin.ModelAdmin):
 
     def last_name(self, obj):
         return obj.messenger.user.last_name
-    '''
 
 
 class ErrorAdmin(admin.ModelAdmin):
@@ -43,7 +36,9 @@ class BulkAdmin(admin.ModelAdmin):
 
 
 class StatusAdmin(admin.ModelAdmin):
-    pass
+    list_display = (
+        'To', 'From', 'error', 'date_created'
+    )
 
 
 admin.site.register(Message, MessageAdmin)

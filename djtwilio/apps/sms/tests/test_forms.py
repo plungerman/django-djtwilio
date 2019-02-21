@@ -11,7 +11,7 @@ from unittest import skip
 
 
 @skip("skip for now until we can figure out a way to fake a request w/ a user")
-class IndiFormTestCase(TestCase):
+class AppsSmsIndiFormTestCase(TestCase):
 
     def setUp(self):
         self.factory = RequestFactory()

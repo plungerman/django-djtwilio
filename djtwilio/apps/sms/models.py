@@ -5,10 +5,10 @@ from django.core.validators import FileExtensionValidator
 
 from djtools.fields.helpers import upload_to_path
 
-from djtwilio.core.client import twilio_client
 from djtwilio.core.models import Sender
 
 from twilio.base.exceptions import TwilioRestException
+from twilio.rest import Client
 
 
 class Error(models.Model):
@@ -26,7 +26,7 @@ class Error(models.Model):
     )
 
     def __unicode__(self):
-        return "[{}] {}".format(
+        return u"[{}] {}".format(
             self.code,
             self.message
         )
@@ -57,6 +57,9 @@ class Bulk(models.Model):
         ],
         help_text="CSV File: Last Name, First Name, Phone, College ID"
     )
+
+    def __unicode__(self):
+        return self.name
 
     def get_slug(self):
         return 'files/bulk/'
@@ -115,6 +118,9 @@ class Status(models.Model):
         null=True, blank=True
     )
 
+    def __unicode__(self):
+        return u"{}".format(self.MessageStatus)
+
 
 class Message(models.Model):
     """
@@ -153,15 +159,16 @@ class Message(models.Model):
         count = 0
         sid = self.status.MessageSid
         status = 'delivered'
-        client = twilio_client(self.messenger.profile.account)
-        ms = client.messages(sid).fetch()
+        account = self.messenger.profile
+        c = Client(account.sid, account.token)
+        ms = c.messages(sid).fetch()
         while ms.status != status:
             # we limit the loop to 100 for now. the REST API end point
             # can take some time to return a status, which could be:
             # accepted, queued, sending, sent, receiving, or received.
             # and then finally delivered, undelivered, or failed.
             if count < 100:
-                ms = client.messages(sid).fetch()
+                ms = c.messages(sid).fetch()
             else:
                 break
             count += 1
@@ -171,9 +178,10 @@ class Message(models.Model):
         return ms
 
     def is_valid_number(self):
-        client = twilio_client(self.messenger.profile.account)
+        account = self.messenger.profile
+        c = Client(account.sid, account.token)
         try:
-            response = client.lookups.phone_numbers(self.recipient).fetch(
+            response = c.lookups.phone_numbers(self.recipient).fetch(
                 type='carrier'
             )
             return True

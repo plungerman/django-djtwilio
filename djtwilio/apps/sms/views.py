@@ -9,14 +9,15 @@ from django.views.decorators.csrf import csrf_exempt
 from djtwilio.apps.sms.forms import BulkForm, IndiForm, StatusCallbackForm
 from djtwilio.apps.sms.models import Bulk, Error, Message, Status
 from djtwilio.apps.sms.errors import MESSAGE_DELIVERY_CODES
-from djtwilio.core.client import twilio_client
+from djtwilio.core.utils import send_message
 from djtwilio.core.models import Sender
 from djtwilio.apps.sms.data import CtcBlob
 
+from djtools.utils.cypher import AESCipher
 from djzbar.utils.informix import get_session
 from djzbar.decorators.auth import portal_auth_required
 
-from twilio.base.exceptions import TwilioRestException
+from twilio.rest import Client
 
 import re
 import json
@@ -166,52 +167,54 @@ def get_sender(request):
 
 
 @csrf_exempt
-def status_callback(request):
+def status_callback(request, mid):
 
     if request.method=='POST':
-        sid = request.POST.get('MessageSid')
-        if re.match("^[A-Za-z0-9]*$", sid):
-            try:
-                status = Status.objects.get(MessageSid=sid)
-                if status.MessageStatus != 'delivered':
-                    form = StatusCallbackForm(request.POST, instance=status)
-                    if form.is_valid():
-                        status = form.save(commit=False)
-                        if status.ErrorCode:
-                            error = Error.objects.get(code=status.ErrorCode)
-                            status.error = error
-                        status.save()
-                        # update informix
-                        if status.MessageStatus == 'delivered':
-                            message = Message.objects.get(status__id=status.id)
-                            # create the ctc_blob object with the value of
-                            # the message body for txt
-                            session = get_session(EARL)
-                            # informix does not like unicode for their blob and
-                            # it has to be a string, so here we deal with
-                            # non-standar characters that do not work with
-                            # python strings
-                            body = unicodedata.normalize(
-                                'NFKD', message.body).encode('ascii','ignore')
-                            blob = CtcBlob(txt=body)
-                            session.add(blob)
-                            session.flush()
+        try:
+            cipher = AESCipher(bs=16)
+            mid = cipher.decrypt(mid)
+            message = Message.objects.get(pk=mid)
+            status = message.status
+            if status.MessageStatus != 'delivered':
+                form = StatusCallbackForm(request.POST, instance=status)
+                if form.is_valid():
+                    status = form.save(commit=False)
+                    if status.ErrorCode:
+                        error = Error.objects.get(code=status.ErrorCode)
+                        status.error = error
+                    status.save()
+                    # update informix
+                    if status.MessageStatus == 'delivered':
+                        message = Message.objects.get(status__id=status.id)
+                        # create the ctc_blob object with the value of
+                        # the message body for txt
+                        session = get_session(EARL)
+                        # informix does not like unicode for their blob and
+                        # it has to be a string, so here we deal with
+                        # non-standar characters that do not work with
+                        # python strings
+                        body = unicodedata.normalize(
+                            'NFKD', message.body
+                        ).encode('ascii','ignore')
+                        blob = CtcBlob(txt=body)
+                        session.add(blob)
+                        session.flush()
 
-                            sql = '''
-                                INSERT INTO ctc_rec (
-                                    id, tick, add_date, due_date, cmpl_date,
-                                    resrc, bctc_no, stat
-                                )
-                                VALUES (
-                                    {},"ADM",TODAY,TODAY,TODAY,"TEXTOUT",{},"C"
-                                )
-                            '''.format(
-                                    message.student_number, blob.bctc_no
+                        sql = '''
+                            INSERT INTO ctc_rec (
+                                id, tick, add_date, due_date, cmpl_date,
+                                resrc, bctc_no, stat
                             )
+                            VALUES (
+                                {},"ADM",TODAY,TODAY,TODAY,"TEXTOUT",{},"C"
+                            )
+                        '''.format(
+                                message.student_number, blob.bctc_no
+                        )
 
-                            session.execute(sql)
-                            session.commit()
-                            session.close()
+                        session.execute(sql)
+                        session.commit()
+                        session.close()
 
                         msg = "Success"
                     else:
@@ -219,9 +222,7 @@ def status_callback(request):
                 else:
                     msg = "MessageStatus has already been set to 'delivered'"
             except:
-                msg = "No message mataching Sid"
-        else:
-            msg = "Invalid message Sid"
+                msg = "No message mataching message ID"
     else:
         # requires POST
         msg = "Requires POST"
@@ -229,43 +230,6 @@ def status_callback(request):
     return HttpResponse(
         msg, content_type='text/plain; charset=utf-8'
     )
-
-
-def _send(request, client, sender, recipient, body, cid, bulk=False):
-    if bulk:
-        phrum=sender.messaging.service_sid
-    else:
-        phrum=sender.phone
-    try:
-        apicall = client.messages.create(
-            # use parentheses around body to prevent extra whitespace
-            to=recipient, from_=phrum, body=(body),
-            status_callback = 'https://{}{}'.format(
-                settings.SERVER_URL,
-                reverse('sms_status_callback')
-            )
-        )
-        # create Message object
-        message = Message.objects.create(
-            messenger = sender,
-            recipient = recipient,
-            student_number = cid,
-            body = body
-        )
-        sid = apicall.sid
-        # create Status object
-        status = Status.objects.create(SmsSid=sid, MessageSid=sid)
-        message.status = status
-        if bulk:
-            message.bulk = bulk
-        message.save()
-    except TwilioRestException as e:
-        sid = False
-        messages.add_message(
-            request, messages.ERROR, e, extra_tags='alert alert-danger'
-        )
-
-    return sid
 
 
 @portal_auth_required(
@@ -297,7 +261,12 @@ def send_form(request):
                 bulk.save()
                 sender = Sender.objects.get(pk=data['messaging_service'])
                 body = data['message']
-                client = twilio_client(sender.account)
+                '''
+                message = send_message(
+                    Client(sender.account.sid, sender.account.token),
+                    sender, recipient, body, data.get('student_number')
+                )
+                '''
                 messages.add_message(
                     request, messages.SUCCESS, """
                         Your messages have been sent. View the
@@ -315,20 +284,29 @@ def send_form(request):
                 sender = Sender.objects.get(pk=data['phone_from'])
                 body = data['message']
                 recipient = data['phone_to']
-                client = twilio_client(sender.account)
-                sid = _send(
-                    request, client, sender, recipient, body,
-                    data.get('student_number')
+                sent = send_message(
+                    Client(sender.account.sid, sender.account.token),
+                    sender, recipient, body, data.get('student_number')
                 )
-                if sid:
+                if sent['message']:
                     messages.add_message(
                         request, messages.SUCCESS, """
-                            Your message has been sent. View the
-                            <a data-target="#messageStatus" data-toggle="modal"
-                            data-load-url="{}" class="message-status text-primary">
-                            message status</a>.
-                        """.format(reverse('sms_detail', args=[sid,'modal'])),
-                        extra_tags='alert alert-success'
+                          Your message has been sent. View the
+                          <a data-target="#messageStatus" data-toggle="modal"
+                          data-load-url="{}" class="message-status text-primary">
+                          message status</a>.
+                        """.format(
+                            reverse(
+                                'sms_detail', args=[
+                                    sent['message'].status.MessageSid,'modal'
+                                ]
+                            )
+                        ), extra_tags='alert alert-success'
+                    )
+                else:
+                    messages.add_message(
+                        request, messages.ERROR, sent['response'],
+                        extra_tags='alert alert-danger'
                     )
 
                 response = HttpResponseRedirect(

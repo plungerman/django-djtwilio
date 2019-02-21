@@ -2,18 +2,23 @@ from django.conf import settings
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.test.client import RequestFactory
 
 from djtwilio.apps.sms.data import CtcBlob
 from djtwilio.apps.sms.models import Error, Message, Status
-from djtwilio.core.client import twilio_client
+from djtwilio.core.utils import send_message
 
 from djtools.utils.logging import seperator
+from djtools.utils.cypher import AESCipher
 from djzbar.utils.informix import get_session
 
-from twilio.twiml.messaging_response import MessagingResponse
 from twilio.base.exceptions import TwilioRestException
+from twilio.rest import Client
+
+from unittest import skip
 
 
+#@skip("skip for now until bulk test if built")
 class AppsSmsViewsTestCase(TestCase):
 
     fixtures = [
@@ -24,14 +29,17 @@ class AppsSmsViewsTestCase(TestCase):
     def setUp(self):
 
         self.user = User.objects.get(pk=settings.TEST_USER_ID)
-        sender = self.user.sender.get(pk=settings.TWILIO_TEST_SENDER_ID)
-        self.twilio_client = twilio_client(sender.account)
+        self.sender = self.user.sender.get(pk=settings.TWILIO_TEST_SENDER_ID)
+        self.twilio = Client(self.sender.account.sid, self.sender.account.token)
         self.recipient = settings.TWILIO_TEST_PHONE_TO
         self.body = settings.TWILIO_TEST_MESSAGE
         self.mssid_invalid = settings.TWILIO_TEST_MESSAGING_SERVICE_SID_INVALID
         self.sid = settings.TWILIO_TEST_MESSAGE_SID
+        self.cid = settings.TWILIO_TEST_COLLEGE_ID
         self.earl = settings.INFORMIX_EARL
+        self.factory = RequestFactory()
 
+    @skip("skip for now until bulk test if built")
     def test_list(self):
 
         print("\n")
@@ -45,6 +53,7 @@ class AppsSmsViewsTestCase(TestCase):
                 print(m)
                 messages.append(m)
 
+    @skip("skip for now until bulk test if built")
     def test_detail(self):
 
         print("\n")
@@ -55,13 +64,16 @@ class AppsSmsViewsTestCase(TestCase):
         message = Message.objects.get(status__MessageSid=self.sid)
         template = 'apps/sms/detail_{}.html'.format(medium)
 
+    #@skip("skip for now until bulk test if built")
     def test_status_callback(self):
 
         print("\n")
         print("status callback")
         status_dict = settings.TWILIO_TEST_STATUS_DICT
+        cipher = AESCipher(bs=16)
+        mid = cipher.encrypt(str(settings.TWILIO_TEST_MESSAGE_ID))
         response = self.client.post(
-            reverse('sms_status_callback'), status_dict
+            reverse('sms_status_callback',args=[mid]), status_dict
         )
         print(response)
 
@@ -78,77 +90,69 @@ class AppsSmsViewsTestCase(TestCase):
                 (id, tick, add_date, due_date, cmpl_date, resrc, bctc_no, stat)
             VALUES
                 ({},"ADM",TODAY,TODAY,TODAY,"TEXTOUT",{},"C")
-        '''.format(settings.TWILIO_TEST_STUDENT_ID, blob.bctc_no)
+        '''.format(settings.TWILIO_TEST_COLLEGE_ID, blob.bctc_no)
 
         print("insert sql statement:\n{}".format(sql))
 
         session.execute(sql)
         session.commit()
 
-    def test_send_valid(self):
+    def test_send_individual_valid(self):
         print("\n")
-        print("send an sms message")
+        print("send an individual sms message")
         seperator()
-        die = False
         if settings.DEBUG:
-            try:
-                response = self.twilio_client.messages.create(
-                    to = self.recipient,
-                    messaging_service_sid = self.user.profile.message_sid,
-                    # use parentheses to prevent extra whitespace
-                    body = (self.body),
-                    status_callback = 'https://{}{}'.format(
-                        settings.SERVER_URL,
-                        reverse('sms_status_callback')
-                    )
-                )
-            except TwilioRestException as e:
-                die = True
-                print("REST Error message:")
-                seperator()
-                print(e)
+            #request = self.factory.get(reverse('sms_send_form'))
+            cipher = AESCipher(bs=16)
+            mid = cipher.encrypt(str(settings.TWILIO_TEST_MESSAGE_ID))
+            print("encrypted message ID = {}".format(mid))
+            callback = 'https://{}{}{}'.format(
+                settings.SERVER_URL, settings.ROOT_URL,
+                reverse('sms_status_callback', args=[mid])
+            )
+            print(callback)
+            sent = send_message(
+                self.twilio, self.sender, self.recipient, self.body, self.cid,
+                callback
+            )
 
-            if not die:
-                # create message object
-                message = Message.objects.create(
-                    messenger = self.user,
-                    recipient = self.recipient,
-                    body = self.body
-                )
-                print(response.__dict__)
-                print("response sid:")
-                sid = response.sid
-                status = Status.objects.create(SmsSid=sid, MessageSid=sid)
-                message.status = status
-                message.save()
-                ms = message.get_status()
-                if ms.status == 'delivered':
-                    print("Success: message sent")
+            if sent['message']:
+                message = sent['message']
+                if sent['response'].status == 'delivered':
+                    print("""Your message has been sent. View the
+                        <a data-target="#messageStatus" data-toggle="modal"
+                        data-load-url="{}" class="message-status text-primary">
+                        message status</a>.
+                    """.format(
+                        reverse('sms_detail',args=[message.status.MessageSid,'modal'])
+                    ))
                     print(message.__dict__)
                 else:
-                    error = Error.objects.get(code=ms.error_code)
-                    message.status.error = error
-                    print("Fail: message was not sent: '{}'".format(
-                        ms.error_code
-                    ))
-                    print("Error message: {}".format(
-                        message.status.error.message
-                    ))
-                    print("Error description: {}".format(
-                        message.status.error.description
-                    ))
+                    print("message status was not 'delivered': {}".format(message.status))
+                    #print(sent['response'].__dict__)
+                    #print(message.__dict__)
+            else:
+                print("send message not 'delivered'")
+                print(sent['response'])
         else:
+            print(
+                "{} to {} ({}) from {}".format(
+                    self.body, self.recipient, self.cid,
+                    self.sender.messaging_service_sid
+                )
+            )
+
             print("use the --debug-mode flag to test message delivery")
 
-    def test_send_invalid_message_sid(self):
+    @skip("skip for now until bulk test if built")
+    def test_send_individual_invalid_message_sid(self):
         print("\n")
         print("send an sms message from invalid message sid")
         seperator()
 
         if settings.DEBUG:
-
             try:
-                response = self.twilio_client.messages.create(
+                response = self.twilio.messages.create(
                     to = self.recipient,
                     messaging_service_sid = self.mssid_invalid,
                     # use parentheses to prevent extra whitespace
@@ -159,7 +163,6 @@ class AppsSmsViewsTestCase(TestCase):
                     )
                 )
             except TwilioRestException as e:
-                die = True
                 print("REST Error message:")
                 seperator()
                 print(e)

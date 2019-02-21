@@ -7,8 +7,11 @@ from djtools.utils.logging import seperator
 
 from djzbar.utils.informix import get_session
 
+from unittest import skip
 
-class CoreViewsTestCase(TestCase):
+
+@skip("skip for now until bulk test if built")
+class AppsSmsAuthTestCase(TestCase):
 
     fixtures = [ 'user.json','profile','sender.json','account.json' ]
 
