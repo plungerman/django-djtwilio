@@ -167,13 +167,36 @@ def get_sender(request):
 
 
 @csrf_exempt
+def reply_callback(request, mid):
+    """
+    MessageSid    A 34 character unique identifier for the message. May be used to later retrieve this message from the REST API.
+    SmsSid    Same value as MessageSid. Deprecated and included for backward compatibility.
+    AccountSid    The 34 character id of the Account this message is associated with.
+    MessagingServiceSid    The 34 character id of the Messaging Service associated with the message.
+    From    The phone number or Channel address that sent this message.
+    To    The phone number or Channel address of the recipient.
+    Body    The text body of the message. Up to 1600 characters long.
+    NumMedia    The number of media items associated with your message
+
+    see: https://www.twilio.com/docs/sms/twiml#request-parameters
+    """
+    if request.method=='POST':
+        msg = 'yay'
+    else:
+        # requires POST
+        msg = "Requires POST"
+
+    return HttpResponse(
+        msg, content_type='text/plain; charset=utf-8'
+    )
+
+
+@csrf_exempt
 def status_callback(request, mid):
 
     if request.method=='POST':
         try:
-            cipher = AESCipher(bs=16)
-            mid = cipher.decrypt(mid)
-            message = Message.objects.get(pk=mid)
+            cipher =message = Message.objects.get(pk=mid)
             status = message.status
             if status.MessageStatus != 'delivered':
                 form = StatusCallbackForm(request.POST, instance=status)
@@ -185,7 +208,6 @@ def status_callback(request, mid):
                     status.save()
                     # update informix
                     if status.MessageStatus == 'delivered':
-                        message = Message.objects.get(status__id=status.id)
                         # create the ctc_blob object with the value of
                         # the message body for txt
                         session = get_session(EARL)
@@ -217,12 +239,12 @@ def status_callback(request, mid):
                         session.close()
 
                         msg = "Success"
-                    else:
-                        msg = "Invalid POST data"
                 else:
-                    msg = "MessageStatus has already been set to 'delivered'"
-            except:
-                msg = "No message mataching message ID"
+                    msg = "Invalid POST data"
+            else:
+                msg = "MessageStatus has already been set to 'delivered'"
+        except:
+            msg = "No message mataching message ID"
     else:
         # requires POST
         msg = "Requires POST"
@@ -257,16 +279,52 @@ def send_form(request):
             if form_bulk.is_valid():
                 data = form_bulk.cleaned_data
                 bulk = form_bulk.save(commit=False)
-                bulk.user = request.user
+                bulk.sender = request.user.sender.get(
+                    user=user, messaging_service_sid=bulk.messaging_service
+                )
                 bulk.save()
+                with open(bulk.distribution.path, 'rb') as f:
+                    reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
+                    for r in reader:
+                        body = "greetings {} {},\n{}".format(r[1], r[0], self.body)
+                        if settings.DEBUG:
+                            cipher = AESCipher(bs=16)
+                            mid = cipher.encrypt(str(settings.TWILIO_TEST_MESSAGE_ID))
+                            callback = 'https://{}{}{}'.format(
+                                settings.SERVER_URL, settings.ROOT_URL,
+                                reverse('sms_status_callback', args=[mid]
+                                )
+                            )
+                            sent = send_message(
+                            self.twilio, self.sender, r[2], body, r[3], callback, bulk
+                            )
+                            if sent['message']:
+                                message = sent['message']
+                                if sent['response'] == 'delivered':
+                                    print("""Your message has been sent. View the
+                                        <a data-target="#messageStatus" data-toggle="modal"
+                                        data-load-url="{}" class="message-status text-primary">
+                                        message status</a>.
+                                    """.format(
+                                        reverse('sms_detail',args=[message.status.MessageSid,'modal'])
+                                    ))
+                                    print(message.__dict__)
+                                else:
+                                    print("message status was not 'delivered': {}".format(message.status))
+                                    print(message.status)
+                                    print(sent['response'].__dict__)
+                                    print(message.__dict__)
+                            else:
+                                print("send message failed")
+                                print(sent['response'])
+
+                '''
                 sender = Sender.objects.get(pk=data['messaging_service'])
                 body = data['message']
-                '''
                 message = send_message(
                     Client(sender.account.sid, sender.account.token),
                     sender, recipient, body, data.get('student_number')
                 )
-                '''
                 messages.add_message(
                     request, messages.SUCCESS, """
                         Your messages have been sent. View the
@@ -278,6 +336,7 @@ def send_form(request):
                 response = HttpResponseRedirect(
                     reverse('sms_send_form')
                 )
+                '''
         else:
             if form_indi.is_valid():
                 data = form_indi.cleaned_data

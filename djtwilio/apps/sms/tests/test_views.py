@@ -18,7 +18,7 @@ from twilio.rest import Client
 from unittest import skip
 
 
-#@skip("skip for now until bulk test if built")
+@skip("skip for now until bulk test if built")
 class AppsSmsViewsTestCase(TestCase):
 
     fixtures = [

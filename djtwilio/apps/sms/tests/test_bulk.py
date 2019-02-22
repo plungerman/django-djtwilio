@@ -1,11 +1,11 @@
 from django.conf import settings
 from django.test import TestCase
-from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
 from djtwilio.apps.sms.models import Bulk, Error, Message, Status
 from djtwilio.core.utils import send_message
 
+from djtools.utils.cypher import AESCipher
 from djtools.utils.logging import seperator
 
 from twilio.base.exceptions import TwilioRestException
@@ -17,8 +17,7 @@ import csv
 import os
 
 
-
-@skip("skip for now until bulk test if built")
+#@skip("skip for now until bulk test if built")
 class AppsSmsBulkTestCase(TestCase):
 
     fixtures = [
@@ -28,7 +27,6 @@ class AppsSmsBulkTestCase(TestCase):
 
     def setUp(self):
 
-        self.user = User.objects.get(pk=settings.TEST_USER_ID)
         self.sender = self.user.sender.get(pk=settings.TWILIO_TEST_BULK_SENDER_ID)
         self.twilio = Client(self.sender.account.sid, self.sender.account.token)
         self.bulk_name = settings.TWILIO_TEST_BULK_NAME
@@ -43,26 +41,27 @@ class AppsSmsBulkTestCase(TestCase):
         print("\n")
         print("send an sms message en masse")
         seperator()
-        die = False
         phile = '{}/{}'.format(
             os.path.dirname(os.path.abspath(__file__)), 'sms.csv'
         )
         bulk = Bulk(
-            user=self.user, name=self.bulk_name, distribution=phile,
+            sender=self.sender, name=self.bulk_name, distribution=phile,
             description=self.bulk_description
         )
         bulk.save()
-        print("bulk object = {}".format(bulk.__dict__))
+        # django throws a SuspiciousFileOperation error because the csv file
+        # lives outside of MEDIA_ROOT directory
+        self.assertEqual(phile, str(bulk.distribution))
         with open(phile, 'rb') as f:
-            reader = csv.reader(f, delimiter='|', quoting=csv.QUOTE_NONE)
+            reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
             for r in reader:
                 body = "greetings {} {},\n{}".format(r[1], r[0], self.body)
                 if settings.DEBUG:
+                    cipher = AESCipher(bs=16)
+                    mid = cipher.encrypt(str(settings.TWILIO_TEST_MESSAGE_ID))
                     callback = 'https://{}{}{}'.format(
                         settings.SERVER_URL, settings.ROOT_URL,
-                        reverse(
-                            'sms_status_callback',
-                            args=[settings.TWILIO_TEST_MESSAGE_ID]
+                        reverse('sms_status_callback', args=[mid]
                         )
                     )
                     sent = send_message(
@@ -76,11 +75,17 @@ class AppsSmsBulkTestCase(TestCase):
                                 data-load-url="{}" class="message-status text-primary">
                                 message status</a>.
                             """.format(
-                                reverse('sms_detail',args=[message.status.MessageSid,'modal'])
+                                reverse(
+                                    'sms_detail',args=[
+                                        message.status.MessageSid,'modal'
+                                    ]
+                                )
                             ))
                             print(message.__dict__)
                         else:
-                            print("message status was not 'delivered': {}".format(message.status))
+                            print("message status was not 'delivered': {}".format(
+                                message.status
+                            ))
                             print(message.status)
                             print(sent['response'].__dict__)
                             print(message.__dict__)

@@ -17,7 +17,12 @@ urlpatterns = [
         name='sms_send_form_success'
     ),
     url(
-        r'^status-callback/(?P<mid>(.*))/$',
+        r'^callback/reply/$',
+        views.reply_callback, name='sms_reply_callback'
+    ),
+    # our Message() object ID
+    url(
+        r'^callback/(?P<mid>(.*))/status/$',
         views.status_callback, name='sms_status_callback'
     ),
     url(

@@ -1,6 +1,5 @@
 from django.db import models
 from django.dispatch import receiver
-from django.contrib.auth.models import User
 from django.core.validators import FileExtensionValidator
 
 from djtools.fields.helpers import upload_to_path
@@ -36,8 +35,8 @@ class Bulk(models.Model):
     """
     Sending messages in bulk
     """
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE,
+    sender = models.ForeignKey(
+        Sender, on_delete=models.CASCADE,
         related_name='bulk_sender'
     )
     date_created = models.DateTimeField(
@@ -53,9 +52,12 @@ class Bulk(models.Model):
         "Distribution CSV File",
         upload_to=upload_to_path, max_length=768,
         validators=[
-            FileExtensionValidator(allowed_extensions=['csv','CSV','txt','TXT'])
+            FileExtensionValidator(allowed_extensions=['csv','CSV'])
         ],
-        help_text="CSV File: Last Name, First Name, Phone, College ID"
+        help_text="""
+            CSV File: Last Name, First Name, Phone, College ID,
+            separated by a tab
+        """
     )
 
     def __unicode__(self):
