@@ -30,7 +30,13 @@
               {{m.recipient}}
             </a>
         </td>
-        <td>{{m.messenger.phone}}</td>
+        <td>
+            {% if m.messenger.phone %}
+            {{m.messenger.phone}}
+            {% else %}
+            {{m.messenger.messaging_service_sid}}
+            {% endif %}
+        </td>
         <td>
           {{m.date_created|date:'Y-m-d H:i:s'}}
         </td>

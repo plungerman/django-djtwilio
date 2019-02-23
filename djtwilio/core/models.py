@@ -42,15 +42,18 @@ class Sender(models.Model):
         Account, on_delete=models.CASCADE,
         null=True, blank=True
     )
-    nickname = models.CharField(
+    alias = models.CharField(
         max_length=128,
         null=True, blank=True
     )
 
     def __unicode__(self):
-        return "{} [{}] ({})".format(
-            self.phone, self.messaging_service_sid, self.nickname
-        )
+        if self.phone:
+            handle = self.phone
+        else:
+            handle = self.messaging_service_sid
+
+        return "{} ({})".format(self.alias, handle)
 
     def clean(self):
         if not self.phone and not self.messaging_service_sid:
@@ -83,7 +86,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 def create_user_sender(sender, instance, created, **kwargs):
     if created and not kwargs.get('raw', False):
         Sender.objects.create(
-            user=instance, nickname="{} {}'s Phone".format(
+            user=instance, alias="{} {}'s SMS sender".format(
                 instance.first_name, instance.last_name
             )
         )

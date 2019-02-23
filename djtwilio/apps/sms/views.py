@@ -20,10 +20,12 @@ from djzbar.decorators.auth import portal_auth_required
 from twilio.rest import Client
 
 import re
+import csv
 import json
 import unicodedata
 
 EARL = settings.INFORMIX_EARL
+
 
 
 @portal_auth_required(
@@ -32,7 +34,7 @@ EARL = settings.INFORMIX_EARL
 def bulk_detail(request, bid):
     user = request.user
     bulk = get_object_or_404(Bulk, pk=bid)
-    if bulk.user != user and not user.is_superuser:
+    if bulk.sender.user != user and not user.is_superuser:
         response = HttpResponseRedirect(reverse('sms_send_form'))
     else:
         objects = Message.objects.filter(bulk=bulk)
@@ -263,68 +265,32 @@ def send_form(request):
     bulk = False
     response = False
     template = 'apps/sms/form.html'
+    user = request.user
 
     if request.method=='POST':
         form_indi = IndiForm(
-            request.POST, request=request, prefix='indi',
-            use_required_attribute=False
+            request.POST, request=request, prefix='indi', use_required_attribute=False
         )
         form_bulk = BulkForm(
-            request.POST, request.FILES, request=request, prefix='bulk',
-            use_required_attribute=False
+            request.POST, request.FILES, prefix='bulk', use_required_attribute=False
         )
-        user = request.user
+        if user.is_superuser:
+            sids = Sender.objects.filter(messaging_service_sid__isnull=False)
+        else:
+            sids = user.sender.filter(messaging_service_sid__isnull=False)
+        form_bulk.fields['sender'].queryset = sids
         if request.POST.get('bulk-submit'):
             bulk = True
             if form_bulk.is_valid():
                 data = form_bulk.cleaned_data
-                bulk = form_bulk.save(commit=False)
-                bulk.sender = request.user.sender.get(
-                    user=user, messaging_service_sid=bulk.messaging_service
-                )
-                bulk.save()
+                bulk = form_bulk.save()
                 with open(bulk.distribution.path, 'rb') as f:
                     reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
                     for r in reader:
-                        body = "greetings {} {},\n{}".format(r[1], r[0], self.body)
-                        if settings.DEBUG:
-                            cipher = AESCipher(bs=16)
-                            mid = cipher.encrypt(str(settings.TWILIO_TEST_MESSAGE_ID))
-                            callback = 'https://{}{}{}'.format(
-                                settings.SERVER_URL, settings.ROOT_URL,
-                                reverse('sms_status_callback', args=[mid]
-                                )
-                            )
-                            sent = send_message(
-                            self.twilio, self.sender, r[2], body, r[3], callback, bulk
-                            )
-                            if sent['message']:
-                                message = sent['message']
-                                if sent['response'] == 'delivered':
-                                    print("""Your message has been sent. View the
-                                        <a data-target="#messageStatus" data-toggle="modal"
-                                        data-load-url="{}" class="message-status text-primary">
-                                        message status</a>.
-                                    """.format(
-                                        reverse('sms_detail',args=[message.status.MessageSid,'modal'])
-                                    ))
-                                    print(message.__dict__)
-                                else:
-                                    print("message status was not 'delivered': {}".format(message.status))
-                                    print(message.status)
-                                    print(sent['response'].__dict__)
-                                    print(message.__dict__)
-                            else:
-                                print("send message failed")
-                                print(sent['response'])
-
-                '''
-                sender = Sender.objects.get(pk=data['messaging_service'])
-                body = data['message']
-                message = send_message(
-                    Client(sender.account.sid, sender.account.token),
-                    sender, recipient, body, data.get('student_number')
-                )
+                        sent = send_message(
+                            Client(bulk.sender.account.sid, bulk.sender.account.token),
+                            bulk.sender, r[2], data['message'], r[3], bulk=bulk
+                        )
                 messages.add_message(
                     request, messages.SUCCESS, """
                         Your messages have been sent. View the
@@ -333,10 +299,7 @@ def send_form(request):
                     """.format(reverse('sms_bulk_detail', args=[bulk.id])),
                     extra_tags='alert alert-success'
                 )
-                response = HttpResponseRedirect(
-                    reverse('sms_send_form')
-                )
-                '''
+                response = HttpResponseRedirect( reverse('sms_send_form') )
         else:
             if form_indi.is_valid():
                 data = form_indi.cleaned_data
@@ -372,12 +335,16 @@ def send_form(request):
                     reverse('sms_send_form')
                 )
     else:
-        form_bulk = BulkForm(
-            prefix='bulk', request=request, use_required_attribute=False
-        )
+        form_bulk = BulkForm( prefix='bulk', use_required_attribute=False )
         form_indi = IndiForm(
             prefix='indi', request=request, use_required_attribute=False
         )
+
+        if user.is_superuser:
+            sids = Sender.objects.filter(messaging_service_sid__isnull=False)
+        else:
+            sids = user.sender.filter(messaging_service_sid__isnull=False)
+        form_bulk.fields['sender'].queryset = sids
 
     if not response:
         response = render(

@@ -9,7 +9,7 @@ class AccountAdmin(admin.ModelAdmin):
 
 class SenderAdmin(admin.ModelAdmin):
     list_display = (
-        'last_name','first_name','nickname','phone','messaging_service_sid',
+        'last_name','first_name','alias','phone','messaging_service_sid',
     )
     ordering = (
         'user__last_name','user__first_name','phone'

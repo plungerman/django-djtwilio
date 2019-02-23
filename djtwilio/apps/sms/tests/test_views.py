@@ -18,7 +18,7 @@ from twilio.rest import Client
 from unittest import skip
 
 
-@skip("skip for now until bulk test if built")
+#@skip("skip for now until bulk test if built")
 class AppsSmsViewsTestCase(TestCase):
 
     fixtures = [
@@ -39,7 +39,7 @@ class AppsSmsViewsTestCase(TestCase):
         self.earl = settings.INFORMIX_EARL
         self.factory = RequestFactory()
 
-    @skip("skip for now until bulk test if built")
+    #@skip("skip for now until bulk test if built")
     def test_list(self):
 
         print("\n")
@@ -53,7 +53,7 @@ class AppsSmsViewsTestCase(TestCase):
                 print(m)
                 messages.append(m)
 
-    @skip("skip for now until bulk test if built")
+    #@skip("skip for now until bulk test if built")
     def test_detail(self):
 
         print("\n")
@@ -144,7 +144,7 @@ class AppsSmsViewsTestCase(TestCase):
 
             print("use the --debug-mode flag to test message delivery")
 
-    @skip("skip for now until bulk test if built")
+    #@skip("skip for now until bulk test if built")
     def test_send_individual_invalid_message_sid(self):
         print("\n")
         print("send an sms message from invalid message sid")

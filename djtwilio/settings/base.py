@@ -269,11 +269,11 @@ LOGGING = {
         }
     },
     'loggers': {
-        'djtwilio': {
-            'handlers':['logfile'],
-            'propagate': True,
-            'level':'DEBUG',
-        },
+        #'djtwilio': {
+            #'handlers':['logfile'],
+            #'propagate': True,
+            #'level':'DEBUG',
+        #},
         'djtwilio.apps.sms': {
             'handlers':['logfile'],
             'propagate': True,

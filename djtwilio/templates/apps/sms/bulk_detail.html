@@ -60,7 +60,11 @@ $(document).ready(function() {
 <div class="card mb-3">
   <div class="card-header">
     <i class="fa fa-table"></i>
-    <a href="{{bulk.distribution.url}}">{{bulk.name}}</a> sent on {{bulk.date_created}}
+    <a href="{{bulk.distribution.url}}">{{bulk.name}}</a>
+    sent on {{bulk.date_created}} from
+    <span class="green bold" data-toggle="tooltip" data-placement="right" title="{{bulk.sender.messaging_service_sid}}">
+        {{bulk.sender.nickname}}
+    </span>
     <p>{{bulk.description}}</p>
   </div>
   <div class="card-body" style="margin-bottom:20px">

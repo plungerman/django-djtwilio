@@ -21,7 +21,7 @@ class StatusCallbackForm(forms.ModelForm):
 
 class BulkForm(forms.ModelForm):
 
-    messaging_service = forms.CharField()
+    #sender = forms.CharField()
     message = forms.CharField(
         widget=forms.Textarea(attrs={'class': 'required form-control'}),
         help_text = '<span id="bulk-chars">160</span> characters remaining'
@@ -29,28 +29,7 @@ class BulkForm(forms.ModelForm):
 
     class Meta:
         model = Bulk
-        fields = ['name','description','distribution']
-
-    def __init__(self, *args, **kwargs):
-        request = kwargs.pop('request', None)
-        user = request.user
-        super(BulkForm, self).__init__(*args, **kwargs)
-
-        if user.is_superuser:
-            senders = Sender.objects.filter(messaging_service_sid__isnull=False)
-        else:
-            senders = user.sender.filter(messaging_service_sid__isnull=False)
-
-        choices = [("","---Messaging Service SID---")]
-        for s in senders:
-            choices.append(
-                (s.id, "{} ({})".format(s.nickname, s.messaging_service_sid))
-            )
-
-        self.fields['messaging_service'] = forms.ChoiceField(
-            label = "Messaging Service", choices=choices,
-            widget=forms.Select(attrs={'class': 'required form-control'})
-        )
+        fields = ['name','description','distribution','sender']
 
 
 class IndiForm(forms.Form):
@@ -77,13 +56,13 @@ class IndiForm(forms.Form):
         super(IndiForm, self).__init__(*args, **kwargs)
 
         if user.is_superuser:
-            senders = Sender.objects.all()
+            senders = Sender.objects.filter(phone__isnull=False)
         else:
-            senders = user.sender.all()
+            senders = user.sender.filter(phone__isnull=False)
 
         choices = [("","---Phone number---")]
         for s in senders:
-            choices.append((s.id, "{} ({})".format(s.phone, s.nickname)))
+            choices.append((s.id, "{} ({})".format(s.phone, s.alias)))
 
         self.fields['phone_from'] = forms.ChoiceField(
             label = "From", choices=choices,

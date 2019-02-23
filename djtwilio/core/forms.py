@@ -33,8 +33,8 @@ class SenderForm(forms.ModelForm):
         queryset = Account.objects.all(),
         required = True
     )
-    nickname = forms.CharField(
-        label = "Nickname",
+    alias = forms.CharField(
+        label = "Alias",
         required = True
     )
 

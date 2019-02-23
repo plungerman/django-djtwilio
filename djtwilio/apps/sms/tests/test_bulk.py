@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 
 from djtwilio.apps.sms.models import Bulk, Error, Message, Status
 from djtwilio.core.utils import send_message
+from djtwilio.core.models import Sender
 
 from djtools.utils.cypher import AESCipher
 from djtools.utils.logging import seperator
@@ -27,7 +28,7 @@ class AppsSmsBulkTestCase(TestCase):
 
     def setUp(self):
 
-        self.sender = self.user.sender.get(pk=settings.TWILIO_TEST_BULK_SENDER_ID)
+        self.sender = Sender.objects.get(pk=settings.TWILIO_TEST_BULK_SENDER_ID)
         self.twilio = Client(self.sender.account.sid, self.sender.account.token)
         self.bulk_name = settings.TWILIO_TEST_BULK_NAME
         self.bulk_description = settings.TWILIO_TEST_BULK_DESCRIPTION

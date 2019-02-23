@@ -10,7 +10,7 @@ from djzbar.utils.informix import get_session
 from unittest import skip
 
 
-@skip("skip for now until bulk test if built")
+#@skip("skip for now until bulk test if built")
 class AppsSmsAuthTestCase(TestCase):
 
     fixtures = [ 'user.json','profile','sender.json','account.json' ]
