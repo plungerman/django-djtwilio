@@ -18,7 +18,7 @@ import csv
 import os
 
 
-#@skip("skip for now until bulk test if built")
+@skip("skip for now")
 class AppsSmsBulkTestCase(TestCase):
 
     fixtures = [

@@ -63,7 +63,7 @@ $(document).ready(function() {
     <a href="{{bulk.distribution.url}}">{{bulk.name}}</a>
     sent on {{bulk.date_created}} from
     <span class="green bold" data-toggle="tooltip" data-placement="right" title="{{bulk.sender.messaging_service_sid}}">
-        {{bulk.sender.nickname}}
+        {{bulk.sender.alias}}
     </span>
     <p>{{bulk.description}}</p>
   </div>
@@ -79,7 +79,7 @@ $(document).ready(function() {
     </thead>
     <tbody>
     {% for o in objects %}
-      <tr>
+      <tr data-toggle="tooltip" data-placement="bottom" title="{{o.body}}">
         <td>
             <a href="{% url 'sms_detail_default' o.status.MessageSid %}">
               {{o.recipient}}

@@ -39,7 +39,7 @@ class AppsSmsViewsTestCase(TestCase):
         self.earl = settings.INFORMIX_EARL
         self.factory = RequestFactory()
 
-    #@skip("skip for now until bulk test if built")
+    @skip("skip for now until bulk test if built")
     def test_list(self):
 
         print("\n")
@@ -53,7 +53,7 @@ class AppsSmsViewsTestCase(TestCase):
                 print(m)
                 messages.append(m)
 
-    #@skip("skip for now until bulk test if built")
+    @skip("skip for now until bulk test if built")
     def test_detail(self):
 
         print("\n")
@@ -64,7 +64,17 @@ class AppsSmsViewsTestCase(TestCase):
         message = Message.objects.get(status__MessageSid=self.sid)
         template = 'apps/sms/detail_{}.html'.format(medium)
 
-    #@skip("skip for now until bulk test if built")
+    @skip("skip for now until bulk test if built")
+    def test_reply_callback(self):
+
+        print("\n")
+        print("reply callback")
+        reply_dict = settings.TWILIO_TEST_REPLY_DICT
+        message = Message.objects.get(status__MessageSid=reply_dict['MessageSid'])
+        to = message.messenger.user.email
+        print(to)
+
+    @skip("skip for now until bulk test if built")
     def test_status_callback(self):
 
         print("\n")
@@ -97,12 +107,17 @@ class AppsSmsViewsTestCase(TestCase):
         session.execute(sql)
         session.commit()
 
+    #@skip("skip for now until bulk test if built")
     def test_send_individual_valid(self):
         print("\n")
         print("send an individual sms message")
         seperator()
+        #request = self.factory.get(reverse('sms_send_form'))
+
+        self.client.get(reverse('sms_send_form'))
+        session = self.client.session
+        print(session.__dict__)
         if settings.DEBUG:
-            #request = self.factory.get(reverse('sms_send_form'))
             cipher = AESCipher(bs=16)
             mid = cipher.encrypt(str(settings.TWILIO_TEST_MESSAGE_ID))
             print("encrypted message ID = {}".format(mid))
@@ -135,6 +150,11 @@ class AppsSmsViewsTestCase(TestCase):
                 print("send message not 'delivered'")
                 print(sent['response'])
         else:
+            convo = session.get(self.recipient, 0)
+            convo += 1
+            session[self.recipient] = convo
+            session.save()
+            print(session[self.recipient])
             print(
                 "{} to {} ({}) from {}".format(
                     self.body, self.recipient, self.cid,
@@ -144,7 +164,7 @@ class AppsSmsViewsTestCase(TestCase):
 
             print("use the --debug-mode flag to test message delivery")
 
-    #@skip("skip for now until bulk test if built")
+    @skip("skip for now until bulk test if built")
     def test_send_individual_invalid_message_sid(self):
         print("\n")
         print("send an sms message from invalid message sid")

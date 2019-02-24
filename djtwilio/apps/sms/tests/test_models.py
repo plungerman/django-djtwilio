@@ -9,7 +9,7 @@ from djtools.utils.logging import seperator
 from unittest import skip
 
 
-#@skip("skip for now until bulk test if built")
+@skip("skip for now until bulk test if built")
 class AppsSmsModelsTestCase(TestCase):
 
     fixtures = [ 'user.json','profile','sender.json','account.json' ]

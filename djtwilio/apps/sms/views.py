@@ -13,6 +13,7 @@ from djtwilio.core.utils import send_message
 from djtwilio.core.models import Sender
 from djtwilio.apps.sms.data import CtcBlob
 
+from djtools.utils.mail import send_mail
 from djtools.utils.cypher import AESCipher
 from djzbar.utils.informix import get_session
 from djzbar.decorators.auth import portal_auth_required
@@ -23,9 +24,10 @@ import re
 import csv
 import json
 import unicodedata
+import logging
 
+logger = logging.getLogger(__name__)
 EARL = settings.INFORMIX_EARL
-
 
 
 @portal_auth_required(
@@ -169,21 +171,59 @@ def get_sender(request):
 
 
 @csrf_exempt
-def reply_callback(request, mid):
+def reply_callback(request):
     """
-    MessageSid    A 34 character unique identifier for the message. May be used to later retrieve this message from the REST API.
-    SmsSid    Same value as MessageSid. Deprecated and included for backward compatibility.
-    AccountSid    The 34 character id of the Account this message is associated with.
-    MessagingServiceSid    The 34 character id of the Messaging Service associated with the message.
-    From    The phone number or Channel address that sent this message.
-    To    The phone number or Channel address of the recipient.
-    Body    The text body of the message. Up to 1600 characters long.
-    NumMedia    The number of media items associated with your message
-
     see: https://www.twilio.com/docs/sms/twiml#request-parameters
     """
     if request.method=='POST':
-        msg = 'yay'
+        post = request.POST
+        if settings.DEBUG:
+            logger.debug('MessageSid: {}'.format(post.get('MessageSid')))
+            logger.debug('SmsSid: {}'.format(post.get('SmsSid')))
+            logger.debug('AccountSid: {}'.format(post.get('AccountSid')))
+            logger.debug('MessagingServiceSid: {}'.format(post.get('MessagingServiceSid')))
+            logger.debug('From: {}'.format(post.get('From')))
+            logger.debug('To: {}'.format(post.get('To')))
+            logger.debug('Body: {}'.format(post.get('Body')))
+            logger.debug('NumMedia: {}'.format(post.get('NumMedia')))
+            logger.debug('FromCity: {}'.format(post.get('FromCity')))
+            logger.debug('FromState: {}'.format(post.get('FromState')))
+            logger.debug('FromZip: {}'.format(post.get('FromZip')))
+            logger.debug('FromCountry: {}'.format(post.get('FromCountry')))
+            logger.debug('ToCity: {}'.format(post.get('ToCity')))
+            logger.debug('ToState: {}'.format(post.get('ToState')))
+            logger.debug('ToZip: {}'.format(post.get('ToZip')))
+            logger.debug('ToCountry: {}'.format(post.get('ToCountry')))
+            #logger.debug(': {}'.format(post.get('')))
+        else:
+            try:
+                where = post.get('MessagingServiceSid')
+                if where:
+                    sender = Sender.objects.get(messaging_service_sid=where)
+                else:
+                    where = post.get('To')
+                    sender = Sender.objects.get(phone=where)
+                to = sender.user.email
+            except:
+                to = [settings.MANAGERS[0][1],]
+            subject = "[DJ Twilio] reply from one your contacts"
+            send_mail(
+                request, to, subject, settings.DEFAULT_FROM_EMAIL,
+                template, post, [settings.MANAGERS[0][1],]
+            )
+
+        frum = post.get('From')
+        session = request.session
+        logger.debug("session = {}".format(session.__dict__))
+        logger.debug("frum = {}".format(frum))
+        convo = session.get(frum, 0)
+        convo += 1
+        session[frum] = convo
+        logger.debug("session[frum] = {}".format(session[frum]))
+        msg = """"
+            We have sent an email to the original sender with your message.
+            They will respond to you presently.
+        """
     else:
         # requires POST
         msg = "Requires POST"
@@ -311,15 +351,20 @@ def send_form(request):
                     sender, recipient, body, data.get('student_number')
                 )
                 if sent['message']:
+
+                    convo = session.get(recipient, 0)
+                    convo += 1
+                    session[recipient] = convo
+
                     messages.add_message(
                         request, messages.SUCCESS, """
-                          Your message has been sent. View the
+                          {}) Your message has been sent. View the
                           <a data-target="#messageStatus" data-toggle="modal"
                           data-load-url="{}" class="message-status text-primary">
                           message status</a>.
                         """.format(
                             reverse(
-                                'sms_detail', args=[
+                                convo, 'sms_detail', args=[
                                     sent['message'].status.MessageSid,'modal'
                                 ]
                             )
