@@ -50,6 +50,7 @@ def sender_manager(request, sid=None, action=None):
         user = request.user
         if form.is_valid():
             data = form.save(commit=False)
+            data.phone = str(data.phone).translate(None, '.+()- ')
             data.user = request.user
             data.save()
             message = "Your new phone has been created."

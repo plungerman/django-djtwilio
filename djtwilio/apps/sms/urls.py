@@ -16,11 +16,12 @@ urlpatterns = [
         ),
         name='sms_send_form_success'
     ),
+    # response from API when recipient replies to an SMS
     url(
         r'^callback/reply/$',
-        views.reply_callback, name='sms_reply_callback'
+        views.status_callback, name='sms_reply_callback'
     ),
-    # our Message() object ID
+    # response from API with our Message() object ID encrypted in URL
     url(
         r'^callback/(?P<mid>(.*))/status/$',
         views.status_callback, name='sms_status_callback'

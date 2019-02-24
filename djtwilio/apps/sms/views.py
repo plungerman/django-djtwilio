@@ -172,9 +172,6 @@ def get_sender(request):
 
 @csrf_exempt
 def reply_callback(request):
-    """
-    see: https://www.twilio.com/docs/sms/twiml#request-parameters
-    """
     if request.method=='POST':
         post = request.POST
         if settings.DEBUG:
@@ -204,6 +201,14 @@ def reply_callback(request):
                     where = post.get('To')
                     sender = Sender.objects.get(phone=where)
                 to = sender.user.email
+                m = Message.objects.filter(recipient=post.get('To')).order_by(
+                    '-date_created').first()
+                status = Status(
+                )
+                reply = Message(
+                    messenger=sender, recipient=post.get('To'),
+                    student_number=m.student_number, body=post.get('Body'),
+                )
             except:
                 to = [settings.MANAGERS[0][1],]
             subject = "[DJ Twilio] reply from one your contacts"
@@ -234,20 +239,72 @@ def reply_callback(request):
 
 
 @csrf_exempt
-def status_callback(request, mid):
-
+def status_callback(request, mid=None):
+    """
+    see: https://www.twilio.com/docs/sms/twiml#request-parameters
+    """
     if request.method=='POST':
+        msg = ""
+        post = request.POST
         try:
-            cipher =message = Message.objects.get(pk=mid)
-            status = message.status
-            if status.MessageStatus != 'delivered':
-                form = StatusCallbackForm(request.POST, instance=status)
+            if mid:
+                cipher = AESCipher(bs=16)
+                mid = cipher.decrypt(mid)
+                message = Message.objects.get(pk=mid)
+                status = message.status
+            else:
+                status = None
+                # callback from the API when recipient has replied to an SMS
+                try:
+                    # remove extraneous characters and country code for US
+                    frum = str(post.get('From')).translate(None, '.+()- ')[1:]
+                    recipient = str(post.get('To')).translate(None, '.+()- ')
+                    logger.debug('frum: {}'.format(frum))
+                    # default sender
+                    where = post.get('MessagingServiceSid')
+                    if where:
+                        sender = Sender.objects.get(messaging_service_sid=where)
+                    else:
+                        where = recipient
+                        sender = Sender.objects.get(phone=where)
+                    email_to = sender.user.email
+                    m = Message.objects.filter(recipient=frum).order_by(
+                        '-date_created'
+                    ).first()
+                    message = Message(
+                        messenger=sender, recipient=recipient,
+                        student_number=m.student_number, body=post.get('Body')
+                    )
+                    message.save()
+                except Exception, e:
+                    logger.debug('call back child exception: {}'.format(str(e)))
+                    email_to = [settings.MANAGERS[0][1],]
+
+                if settings.DEBUG:
+                    email_to = [settings.MANAGERS[0][1],]
+
+                subject = "[DJ Twilio] reply from one your contacts"
+                send_mail(
+                    request, email_to, subject, settings.DEFAULT_FROM_EMAIL,
+                    "apps/sms/reply_email.html", post, [settings.MANAGERS[0][1],]
+                )
+
+            if message:
+                form = StatusCallbackForm(post, instance=status)
                 if form.is_valid():
                     status = form.save(commit=False)
                     if status.ErrorCode:
                         error = Error.objects.get(code=status.ErrorCode)
                         status.error = error
                     status.save()
+                    # if we do not have a message status, it is a reply
+                    if not message.status:
+                        status.MessageStatus = 'delivered'
+                        message.status = status
+                        msg = """"
+                            We have sent an email to the original sender with
+                            your message. They will respond to you presently.
+                        """
                     # update informix
                     if status.MessageStatus == 'delivered':
                         # create the ctc_blob object with the value of
@@ -279,17 +336,30 @@ def status_callback(request, mid):
                         session.execute(sql)
                         session.commit()
                         session.close()
-
-                        msg = "Success"
+                        if not msg:
+                            if settings.DEBUG:
+                                msg = status.MessageStatus
+                            else:
+                                logger.debug("msg = {}".format(msg))
                 else:
-                    msg = "Invalid POST data"
+                    if settings.DEBUG:
+                        msg = "Invalid POST data"
+                    else:
+                        logger.debug("msg = {}".format(msg))
             else:
-                msg = "MessageStatus has already been set to 'delivered'"
-        except:
-            msg = "No message mataching message ID"
+                if settings.DEBUG:
+                    msg = "No message found for status callback or reply callback"
+                else:
+                    logger.debug("msg = {}".format(msg))
+        except Exception, e:
+            logger.debug('call back parent exception: {}'.format(str(e)))
+            if settings.DEBUG:
+                msg = "No message mataching message ID"
     else:
-        # requires POST
-        msg = "Requires POST"
+        if settings.DEBUG:
+            msg = "Requires POST"
+        else:
+            logger.debug("msg = {}".format(msg))
 
     return HttpResponse(
         msg, content_type='text/plain; charset=utf-8'

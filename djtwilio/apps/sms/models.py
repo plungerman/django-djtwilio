@@ -91,10 +91,6 @@ class Status(models.Model):
         max_length = 34,
         null=True, blank=True
     )
-    SmsSid = models.CharField(
-        max_length = 34,
-        null=True, blank=True
-    )
     MessageStatus = models.CharField(
         max_length = 16,
         null=True, blank=True
@@ -111,12 +107,52 @@ class Status(models.Model):
         max_length = 34,
         null=True, blank=True
     )
+    # deprecated
+    SmsSid = models.CharField(
+        max_length = 34,
+        null=True, blank=True
+    )
+    # always 2010-04-01 at the moment
     ApiVersion = models.CharField(
         max_length = 16,
         null=True, blank=True
     )
     ErrorCode = models.CharField(
         max_length = 16,
+        null=True, blank=True
+    )
+    # values returned from API  when recipient replies to a message
+    NumMedia = models.IntegerField(null=True, blank=True)
+    ToCity= models.CharField(
+        max_length = 34,
+        null=True, blank=True
+    )
+    ToState = models.CharField(
+        max_length = 4,
+        null=True, blank=True
+    )
+    ToZip = models.CharField(
+        max_length = 12,
+        null=True, blank=True
+    )
+    ToCountry = models.CharField(
+        max_length = 4,
+        null=True, blank=True
+    )
+    FromCity= models.CharField(
+        max_length = 34,
+        null=True, blank=True
+    )
+    FromState = models.CharField(
+        max_length = 4,
+        null=True, blank=True
+    )
+    FromZip = models.CharField(
+        max_length = 12,
+        null=True, blank=True
+    )
+    FromCountry = models.CharField(
+        max_length = 4,
         null=True, blank=True
     )
 
