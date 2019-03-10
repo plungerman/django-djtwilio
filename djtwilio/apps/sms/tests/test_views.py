@@ -18,7 +18,7 @@ from twilio.rest import Client
 from unittest import skip
 
 
-#@skip("skip for now until bulk test if built")
+#@skip("skip for now until bulk test is built")
 class AppsSmsViewsTestCase(TestCase):
 
     fixtures = [
@@ -39,7 +39,7 @@ class AppsSmsViewsTestCase(TestCase):
         self.earl = settings.INFORMIX_EARL
         self.factory = RequestFactory()
 
-    @skip("skip for now until bulk test if built")
+    @skip("skip for now until bulk test is built")
     def test_list(self):
 
         print("\n")
@@ -53,7 +53,7 @@ class AppsSmsViewsTestCase(TestCase):
                 print(m)
                 messages.append(m)
 
-    @skip("skip for now until bulk test if built")
+    @skip("skip for now until bulk test is built")
     def test_detail(self):
 
         print("\n")
@@ -64,7 +64,7 @@ class AppsSmsViewsTestCase(TestCase):
         message = Message.objects.get(status__MessageSid=self.sid)
         template = 'apps/sms/detail_{}.html'.format(medium)
 
-    @skip("skip for now until bulk test if built")
+    @skip("skip for now until bulk test is built")
     def test_reply_callback(self):
 
         print("\n")
@@ -74,7 +74,7 @@ class AppsSmsViewsTestCase(TestCase):
         to = message.messenger.user.email
         print(to)
 
-    @skip("skip for now until bulk test if built")
+    @skip("skip for now until bulk test is built")
     def test_status_callback(self):
 
         print("\n")
@@ -107,7 +107,7 @@ class AppsSmsViewsTestCase(TestCase):
         session.execute(sql)
         session.commit()
 
-    #@skip("skip for now until bulk test if built")
+    #@skip("skip for now until bulk test is built")
     def test_send_individual_valid(self):
         print("\n")
         print("send an individual sms message")
@@ -164,7 +164,7 @@ class AppsSmsViewsTestCase(TestCase):
 
             print("use the --debug-mode flag to test message delivery")
 
-    @skip("skip for now until bulk test if built")
+    @skip("skip for now until bulk test is built")
     def test_send_individual_invalid_message_sid(self):
         print("\n")
         print("send an sms message from invalid message sid")
