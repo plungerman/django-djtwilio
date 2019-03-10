@@ -171,97 +171,40 @@ def get_sender(request):
 
 
 @csrf_exempt
-def reply_callback(request):
-    if request.method=='POST':
-        post = request.POST
-        if settings.DEBUG:
-            logger.debug('MessageSid: {}'.format(post.get('MessageSid')))
-            logger.debug('SmsSid: {}'.format(post.get('SmsSid')))
-            logger.debug('AccountSid: {}'.format(post.get('AccountSid')))
-            logger.debug('MessagingServiceSid: {}'.format(post.get('MessagingServiceSid')))
-            logger.debug('From: {}'.format(post.get('From')))
-            logger.debug('To: {}'.format(post.get('To')))
-            logger.debug('Body: {}'.format(post.get('Body')))
-            logger.debug('NumMedia: {}'.format(post.get('NumMedia')))
-            logger.debug('FromCity: {}'.format(post.get('FromCity')))
-            logger.debug('FromState: {}'.format(post.get('FromState')))
-            logger.debug('FromZip: {}'.format(post.get('FromZip')))
-            logger.debug('FromCountry: {}'.format(post.get('FromCountry')))
-            logger.debug('ToCity: {}'.format(post.get('ToCity')))
-            logger.debug('ToState: {}'.format(post.get('ToState')))
-            logger.debug('ToZip: {}'.format(post.get('ToZip')))
-            logger.debug('ToCountry: {}'.format(post.get('ToCountry')))
-            #logger.debug(': {}'.format(post.get('')))
-        else:
-            try:
-                where = post.get('MessagingServiceSid')
-                if where:
-                    sender = Sender.objects.get(messaging_service_sid=where)
-                else:
-                    where = post.get('To')
-                    sender = Sender.objects.get(phone=where)
-                to = sender.user.email
-                m = Message.objects.filter(recipient=post.get('To')).order_by(
-                    '-date_created').first()
-                status = Status(
-                )
-                reply = Message(
-                    messenger=sender, recipient=post.get('To'),
-                    student_number=m.student_number, body=post.get('Body'),
-                )
-            except:
-                to = [settings.MANAGERS[0][1],]
-            subject = "[DJ Twilio] reply from one your contacts"
-            send_mail(
-                request, to, subject, settings.DEFAULT_FROM_EMAIL,
-                template, post, [settings.MANAGERS[0][1],]
-            )
-
-        frum = post.get('From')
-        session = request.session
-        logger.debug("session = {}".format(session.__dict__))
-        logger.debug("frum = {}".format(frum))
-        convo = session.get(frum, 0)
-        convo += 1
-        session[frum] = convo
-        logger.debug("session[frum] = {}".format(session[frum]))
-        msg = """"
-            We have sent an email to the original sender with your message.
-            They will respond to you presently.
-        """
-    else:
-        # requires POST
-        msg = "Requires POST"
-
-    return HttpResponse(
-        msg, content_type='text/plain; charset=utf-8'
-    )
-
-
-@csrf_exempt
 def status_callback(request, mid=None):
     """
     see: https://www.twilio.com/docs/sms/twiml#request-parameters
     """
     if request.method=='POST':
-        msg = ""
         post = request.POST
+        if settings.DEBUG:
+            for k,v in post.items():
+                logger.debug('{}: {}'.format(k,v))
+        msg = ""
+        # message status for form instance
+        status = None
         try:
+            # exception will be thrown here if Message get() fails
             if mid:
                 cipher = AESCipher(bs=16)
                 mid = cipher.decrypt(mid)
                 message = Message.objects.get(pk=mid)
                 status = message.status
-            else:
-                status = None
+            form = StatusCallbackForm(post, instance=status)
+            if form.is_valid():
+                status = form.save(commit=False)
+                if status.ErrorCode:
+                    error = Error.objects.get(code=status.ErrorCode)
+                    status.error = error
+                status.save()
                 # callback from the API when recipient has replied to an SMS
                 try:
                     # remove extraneous characters and country code for US
-                    frum = str(post.get('From')).translate(None, '.+()- ')[1:]
-                    recipient = str(post.get('To')).translate(None, '.+()- ')
+                    frum = str(status.From).translate(None,'.+()- ')[1:]
+                    recipient = str(status.To).translate(None,'.+()- ')
                     logger.debug('frum: {}'.format(frum))
                     # default sender
-                    where = post.get('MessagingServiceSid')
+                    where = status.MessagingServiceSid
                     if where:
                         sender = Sender.objects.get(messaging_service_sid=where)
                     else:
@@ -273,7 +216,8 @@ def status_callback(request, mid=None):
                     ).first()
                     message = Message(
                         messenger=sender, recipient=recipient,
-                        student_number=m.student_number, body=post.get('Body')
+                        student_number=m.student_number, body=status.Body,
+                        status=status
                     )
                     message.save()
                 except Exception, e:
@@ -282,79 +226,74 @@ def status_callback(request, mid=None):
 
                 if settings.DEBUG:
                     email_to = [settings.MANAGERS[0][1],]
-
                 subject = "[DJ Twilio] reply from one your contacts"
+                logger.debug('subject: {}'.format(subject))
+                data = {
+                    'status':status.__dict__, 'orignal':m, 'response':message,
+                    'to':sender.user.email
+                }
                 send_mail(
                     request, email_to, subject, settings.DEFAULT_FROM_EMAIL,
-                    "apps/sms/reply_email.html", post, [settings.MANAGERS[0][1],]
+                    "apps/sms/reply_email.html", data, [settings.MANAGERS[0][1],]
                 )
-
-            if message:
-                form = StatusCallbackForm(post, instance=status)
-                if form.is_valid():
-                    status = form.save(commit=False)
-                    if status.ErrorCode:
-                        error = Error.objects.get(code=status.ErrorCode)
-                        status.error = error
-                    status.save()
-                    # if we do not have a message status, it is a reply
-                    if not message.status:
-                        status.MessageStatus = 'delivered'
-                        message.status = status
-                        msg = """"
-                            We have sent an email to the original sender with
-                            your message. They will respond to you presently.
-                        """
-                    # update informix
-                    if status.MessageStatus == 'delivered':
-                        # create the ctc_blob object with the value of
-                        # the message body for txt
-                        session = get_session(EARL)
-                        # informix does not like unicode for their blob and
-                        # it has to be a string, so here we deal with
-                        # non-standar characters that do not work with
-                        # python strings
-                        body = unicodedata.normalize(
-                            'NFKD', message.body
-                        ).encode('ascii','ignore')
-                        blob = CtcBlob(txt=body)
-                        session.add(blob)
-                        session.flush()
-
-                        sql = '''
-                            INSERT INTO ctc_rec (
-                                id, tick, add_date, due_date, cmpl_date,
-                                resrc, bctc_no, stat
-                            )
-                            VALUES (
-                                {},"ADM",TODAY,TODAY,TODAY,"TEXTOUT",{},"C"
-                            )
-                        '''.format(
-                                message.student_number, blob.bctc_no
-                        )
-
-                        session.execute(sql)
-                        session.commit()
-                        session.close()
-                        if not msg:
-                            if settings.DEBUG:
-                                msg = status.MessageStatus
-                            else:
-                                logger.debug("msg = {}".format(msg))
-                else:
+                # if we do not have a message status, it is a reply
+                if not mid:
+                    status.MessageStatus = 'received'
+                    message.status = status
+                    msg = """"
+                        We have sent an email to the original sender with
+                        your message. They will respond to you presently.
+                    """
                     if settings.DEBUG:
-                        msg = "Invalid POST data"
-                    else:
-                        logger.debug("msg = {}".format(msg))
+                        msg += sender.user.email
+                    status.save()
+                # update informix
+                if status.MessageStatus == 'delivered':
+                    # create the ctc_blob object with the value of
+                    # the message body for txt
+                    session = get_session(EARL)
+                    # informix does not like unicode for their blob and
+                    # it has to be a string, so here we deal with
+                    # non-standar characters that do not work with
+                    # python strings
+                    body = unicodedata.normalize(
+                        'NFKD', message.body
+                    ).encode('ascii','ignore')
+                    blob = CtcBlob(txt=body)
+                    session.add(blob)
+                    session.flush()
+                    sql = '''
+                        INSERT INTO ctc_rec (
+                            id, tick, add_date, due_date, cmpl_date,
+                            resrc, bctc_no, stat
+                        )
+                        VALUES (
+                            {},"ADM",TODAY,TODAY,TODAY,"TEXTOUT",{},"C"
+                        )
+                    '''.format(
+                        message.student_number, blob.bctc_no
+                    )
+                    session.execute(sql)
+                    session.commit()
+                    session.close()
+                    if not msg:
+                        if settings.DEBUG:
+                            msg = status.MessageStatus
+                        else:
+                            logger.debug("msg = {}".format(msg))
             else:
                 if settings.DEBUG:
-                    msg = "No message found for status callback or reply callback"
+                    msg = "Invalid POST data"
                 else:
                     logger.debug("msg = {}".format(msg))
         except Exception, e:
             logger.debug('call back parent exception: {}'.format(str(e)))
             if settings.DEBUG:
-                msg = "No message mataching message ID"
+                msg = """
+                    No message found for status callback or reply callback failed
+                """
+            else:
+                logger.debug("msg = {}".format(msg))
     else:
         if settings.DEBUG:
             msg = "Requires POST"

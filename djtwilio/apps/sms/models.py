@@ -87,7 +87,14 @@ class Status(models.Model):
         max_length=16,
         null=True, blank=True
     )
+    Body = models.TextField(
+        null=True, blank=True
+    )
     MessagingServiceSid = models.CharField(
+        max_length = 34,
+        null=True, blank=True
+    )
+    AccountSid = models.CharField(
         max_length = 34,
         null=True, blank=True
     )
@@ -95,12 +102,12 @@ class Status(models.Model):
         max_length = 16,
         null=True, blank=True
     )
-    AccountSid = models.CharField(
-        max_length = 34,
-        null=True, blank=True
-    )
     SmsStatus = models.CharField(
         max_length = 16,
+        null=True, blank=True
+    )
+    SmsMessageSid = models.CharField(
+        max_length = 34,
         null=True, blank=True
     )
     MessageSid = models.CharField(
@@ -123,6 +130,7 @@ class Status(models.Model):
     )
     # values returned from API  when recipient replies to a message
     NumMedia = models.IntegerField(null=True, blank=True)
+    NumSegments = models.IntegerField(null=True, blank=True)
     ToCity= models.CharField(
         max_length = 34,
         null=True, blank=True

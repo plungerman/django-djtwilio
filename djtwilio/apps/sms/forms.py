@@ -13,6 +13,31 @@ DEBUG = settings.INFORMIX_DEBUG
 
 
 class StatusCallbackForm(forms.ModelForm):
+    """
+    POST:
+    {
+        'Body': [''],
+        'MessageSid': [''],
+        'FromZip': [''],
+        'SmsStatus': [''],
+        'SmsMessageSid': [''],
+        'AccountSid': [''],
+        'MessagingServiceSid': [''],
+        'FromCity': [''],
+        'ApiVersion': ['2010-04-01'],
+        'To': [''],
+        'From': [''],
+        'NumMedia': [''],
+        'ToZip': [''],
+        'ToCountry': [''],
+        'NumSegments': ['1'],
+        'ToState': [''],
+        'SmsSid': [''],
+        'ToCity': [''],
+        'FromState': [''],
+        'FromCountry': ['']
+    }
+    """
 
     class Meta:
         model = Status
