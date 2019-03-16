@@ -5,15 +5,13 @@ import signal
 import sys
 
 # python
-sys.path.append('/usr/lib/python2.7/')
-sys.path.append('/usr/lib/python2.7/dist-packages/')
-sys.path.append('/usr/local/lib/python2.7/dist-packages/')
-sys.path.append('/data2/django_1.11/')
-sys.path.append('/data2/django_projects/')
-sys.path.append('/data2/django_third/')
+sys.path.append('/data2/python_venv/2.7/djtwilio/lib/python2.7/')
+sys.path.append('/data2/python_venv/2.7/djtwilio/lib/python2.7/site-packages/')
+sys.path.append('/data2/python_venv/2.7/djtwilio/lib/django_projects/')
+sys.path.append('/data2/python_venv/2.7/djtwilio/lib/django-djtwilio/')
 # django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'djtwilio.settings.development')
-os.environ.setdefault('PYTHON_EGG_CACHE', '/var/cache/python/.python-eggs')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djtwilio.settings.production")
+os.environ.setdefault('PYTHON_EGG_CACHE', '')
 os.environ.setdefault('TZ', 'America/Chicago')
 # informix
 os.environ['INFORMIXSERVER'] = ''
@@ -38,4 +36,3 @@ except Exception:
         os.kill(os.getpid(), signal.SIGINT)
         time.sleep(2.5)
     exit(-1)
-

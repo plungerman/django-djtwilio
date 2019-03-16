@@ -114,9 +114,6 @@ class AppsSmsViewsTestCase(TestCase):
         seperator()
         #request = self.factory.get(reverse('sms_send_form'))
 
-        self.client.get(reverse('sms_send_form'))
-        session = self.client.session
-        print(session.__dict__)
         if settings.DEBUG:
             cipher = AESCipher(bs=16)
             mid = cipher.encrypt(str(settings.TWILIO_TEST_MESSAGE_ID))
@@ -150,11 +147,6 @@ class AppsSmsViewsTestCase(TestCase):
                 print("send message not 'delivered'")
                 print(sent['response'])
         else:
-            convo = session.get(self.recipient, 0)
-            convo += 1
-            session[self.recipient] = convo
-            session.save()
-            print(session[self.recipient])
             print(
                 "{} to {} ({}) from {}".format(
                     self.body, self.recipient, self.cid,

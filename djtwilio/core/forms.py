@@ -3,7 +3,9 @@ from django import forms
 
 from djtwilio.core.models import Account, Sender
 
-from localflavor.us.forms import USPhoneNumberField, USZipCodeField
+from djtools.fields.localflavor import USPhoneNumberField
+
+from localflavor.us.forms import USZipCodeField
 
 
 class StudentNumberForm(forms.Form):

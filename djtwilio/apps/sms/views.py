@@ -360,24 +360,16 @@ def send_form(request):
                     sender, recipient, body, data.get('student_number')
                 )
                 if sent['message']:
-
-                    convo = session.get(recipient, 0)
-                    convo += 1
-                    session[recipient] = convo
-
                     messages.add_message(
                         request, messages.SUCCESS, """
-                          {}) Your message has been sent. View the
+                          Your message has been sent. View the
                           <a data-target="#messageStatus" data-toggle="modal"
                           data-load-url="{}" class="message-status text-primary">
                           message status</a>.
-                        """.format(
-                            reverse(
-                                convo, 'sms_detail', args=[
-                                    sent['message'].status.MessageSid,'modal'
-                                ]
-                            )
-                        ), extra_tags='alert alert-success'
+                        """.format(reverse('sms_detail', args=[
+                                sent['message'].status.MessageSid,'modal'
+                            ]
+                        )), extra_tags='alert alert-success'
                     )
                 else:
                     messages.add_message(

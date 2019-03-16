@@ -5,9 +5,8 @@ from django.conf import settings
 from djtwilio.core.models import Sender
 from djtwilio.apps.sms.models import Bulk, Status
 
+from djtools.fields.localflavor import USPhoneNumberField
 from djzbar.utils.informix import do_sql
-
-from localflavor.us.forms import USPhoneNumberField
 
 DEBUG = settings.INFORMIX_DEBUG
 
