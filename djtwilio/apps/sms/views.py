@@ -206,7 +206,7 @@ def status_callback(request, mid=None):
                     else:
                         where = recipient
                         sender = Sender.objects.get(phone=where)
-                    email_to = sender.user.email
+                    email_to = [sender.user.email,]
                     m = Message.objects.filter(recipient=frum).order_by(
                         '-date_created'
                     ).first()
@@ -289,9 +289,8 @@ def status_callback(request, mid=None):
             else:
                 logger.debug("msg = {}".format(msg))
     else:
+        msg = "Requires POST"
         if settings.DEBUG:
-            msg = "Requires POST"
-        else:
             logger.debug("msg = {}".format(msg))
 
     return HttpResponse(

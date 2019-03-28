@@ -135,7 +135,8 @@ $(function() {
       {% endif %}
       {% csrf_token %}
       {% bootstrap_form form_bulk %}
-      <input class="btn btn-primary btn-lg" type="submit" value="Submit" name="bulk-submit">
+      <input type="hidden" value="bulk" name="bulk-submit">
+      <input class="btn btn-primary btn-lg" type="submit" value="Submit">
     </form>
   </div>
 </div>
