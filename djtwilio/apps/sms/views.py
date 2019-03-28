@@ -184,7 +184,6 @@ def status_callback(request, mid=None):
             # exception will be thrown here if Message get() fails
             if mid:
                 cipher = AESCipher(bs=16)
-                logger.debug("mid = {}".format(mid))
                 mid = cipher.decrypt(mid)
                 message = Message.objects.get(pk=mid)
                 status = message.status
@@ -200,7 +199,6 @@ def status_callback(request, mid=None):
                     # remove extraneous characters and country code for US
                     frum = str(status.From).translate(None,'.+()- ')[1:]
                     recipient = str(status.To).translate(None,'.+()- ')
-                    logger.debug('frum: {}'.format(frum))
                     # default sender
                     where = status.MessagingServiceSid
                     if where:
@@ -223,7 +221,6 @@ def status_callback(request, mid=None):
                         to = sender.user.email
                         email_to = [settings.MANAGERS[0][1],]
                     subject = "[DJ Twilio] reply from one your contacts"
-                    logger.debug('subject: {}'.format(subject))
                     data = {
                         'status':status,'original':m,'response':message,'to':to
                     }

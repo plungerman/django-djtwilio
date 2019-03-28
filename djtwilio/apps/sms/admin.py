@@ -30,7 +30,9 @@ class ErrorAdmin(admin.ModelAdmin):
 
 
 class BulkAdmin(admin.ModelAdmin):
-    pass
+    list_display = (
+        'sender','name','description','date_created'
+    )
 
 
 class StatusAdmin(admin.ModelAdmin):
