@@ -79,6 +79,13 @@ $(function() {
     var loadurl = e.relatedTarget.dataset.loadUrl;
     $(this).find('.modal-body').load(loadurl);
   });
+
+  // disable submit button after submit
+  $('form').submit(function(e) {
+    $('input[type="submit"]').prop('disabled', true);
+    return true;
+  });
+
 });
 </script>
 {% endblock %}
