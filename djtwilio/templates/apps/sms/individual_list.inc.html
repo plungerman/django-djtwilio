@@ -31,11 +31,14 @@
             </a>
         </td>
         <td>
+            {% if m.status.MessageStatus == 'received' %}
+            {{m.status.From}}
+            {% else %}
             {% if m.messenger.phone %}
             {{m.messenger.phone}}
             {% else %}
             {{m.messenger.messaging_service_sid}}
-            {% endif %}
+            {% endif %}{% endif %}
         </td>
         <td>
           {{m.date_created|date:'Y-m-d H:i:s'}}

@@ -113,7 +113,7 @@ $(function() {
     <form method="post" action="." id="indiForm" style="margin-bottom:20px;">
       {% if form_indi.errors %}
         <div class="alert alert-danger mt-4">
-        {{ form_indi.errors }}
+          Please correct the errors below.
         </div>
       {% endif %}
       {% csrf_token %}
@@ -122,9 +122,9 @@ $(function() {
     </form>
     <form method="post" action="." id="bulkForm" style="margin-bottom:20px;" enctype="multipart/form-data">
       {% if form_bulk.errors %}
-      <div class="alert alert-danger mt-4">
-        {{ form_bulk.errors }}
-      </div>
+        <div class="alert alert-danger mt-4">
+          Please correct the errors below.
+        </div>
       {% endif %}
       {% csrf_token %}
       {% bootstrap_form form_bulk %}

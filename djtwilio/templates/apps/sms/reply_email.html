@@ -1,9 +1,13 @@
+{% if data.to %}to = {{data.to}}{% endif %}
+<h2>Reply</h2>
+<p>{{data.response.body}}</p>
 <pre>
-to = {{data.to}}
-
-status = {{data.status}}
-
-orignal = {{data.original}}
-
-response = {{data.response}}
+From.................{{data.status.From}}
+City.................{{data.status.FromCity}}
+State................{{data.status.FromState}}
+Zip..................{{data.status.FromZip}}
+Country..............{{data.status.FromCountry}}
+ID...................{{data.response.student_number}}
 </pre>
+<h2>Original Message</h2>
+<p>{{data.original.body}}</p>

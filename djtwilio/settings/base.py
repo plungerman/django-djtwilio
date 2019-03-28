@@ -6,9 +6,6 @@ Django settings for project.
 import os
 
 from djzbar.settings import INFORMIX_EARL_TEST as INFORMIX_EARL
-from djzbar.settings import JX_EARL_PROD
-from djzbar.settings import JX_EARL_TEST
-from djzbar.settings import INFORMIX_ODBC
 
 # Debug
 DEBUG = False
@@ -216,6 +213,7 @@ TWILIO_TEST_DEPARTMENT = 'Admissions'
 TWILIO_TEST_STATUS_DICT = {}
 TWILIO_TEST_SENDER_ID=0
 TWILIO_TEST_MESSAGING_SERVICE_SID_INVALID = ''
+TWILIO_GROUP = 'Twilio Manager'
 TWILIO_ADDMISSIONS_GROUP = 'Admissions SMS'
 TWILIO_ADMISSIONS_REPS = {}
 # auth tests

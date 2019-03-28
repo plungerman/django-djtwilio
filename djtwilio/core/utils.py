@@ -4,6 +4,8 @@ from django.core.urlresolvers import reverse
 
 from djtwilio.apps.sms.models import Message, Status
 
+from djtools.utils.cypher import AESCipher
+
 from twilio.base.exceptions import TwilioRestException
 
 
@@ -22,12 +24,11 @@ def send_message(client, sender, recipient, body, cid, callback=False, bulk=None
             student_number=cid, body=body, bulk=bulk, status=status
         )
         message.save()
-        # for some reason, when testing, the URL does not include ROOT_URL
-        # so we can send a URL from test case and use the proper URL here
+        cipher = AESCipher(bs=16)
         if not callback:
             callback = 'https://{}{}'.format(
                 settings.SERVER_URL, reverse(
-                    'sms_status_callback', args=[message.id]
+                  'sms_status_callback', args=[cipher.encrypt(str(message.id))]
                 )
             )
         apicall = client.messages.create(

@@ -56,9 +56,7 @@ def bulk_list(request):
     if user.is_superuser:
         bulk = Bulk.objects.all().order_by('-date_created')
     else:
-        bulk = Bulk.objects.filter(
-            messaging_service__user = user
-        ).order_by('-date_created')
+        bulk = Bulk.objects.filter(sender=user).order_by('-date_created')
 
     return render(
         request, 'apps/sms/bulk_list.html', {'bulk': bulk,}
@@ -119,9 +117,7 @@ def home(request):
         bulk = Bulk.objects.all().order_by('-date_created')[:limit]
         messages = Message.objects.all().order_by('-date_created')[:limit]
     else:
-        bulk = Bulk.objects.filter(
-            messaging_service__user=request.user
-        ).order_by('-date_created')[:100]
+        bulk = Bulk.objects.filter(sender__user=request.user).order_by('-date_created')[:100]
         messages = []
         limit = limit / user.sender.count()
         for sender in user.sender.all():
@@ -183,10 +179,12 @@ def status_callback(request, mid=None):
         msg = ""
         # message status for form instance
         status = None
-        try:
+        #try:
+        if True:
             # exception will be thrown here if Message get() fails
             if mid:
                 cipher = AESCipher(bs=16)
+                logger.debug("mid = {}".format(mid))
                 mid = cipher.decrypt(mid)
                 message = Message.objects.get(pk=mid)
                 status = message.status
@@ -198,7 +196,7 @@ def status_callback(request, mid=None):
                     status.error = error
                 status.save()
                 # callback from the API when recipient has replied to an SMS
-                try:
+                if not mid:
                     # remove extraneous characters and country code for US
                     frum = str(status.From).translate(None,'.+()- ')[1:]
                     recipient = str(status.To).translate(None,'.+()- ')
@@ -220,24 +218,19 @@ def status_callback(request, mid=None):
                         status=status
                     )
                     message.save()
-                except Exception, e:
-                    logger.debug('call back child exception: {}'.format(str(e)))
-                    email_to = [settings.MANAGERS[0][1],]
-
-                if settings.DEBUG:
-                    email_to = [settings.MANAGERS[0][1],]
-                subject = "[DJ Twilio] reply from one your contacts"
-                logger.debug('subject: {}'.format(subject))
-                data = {
-                    'status':status.__dict__, 'orignal':m, 'response':message,
-                    'to':sender.user.email
-                }
-                send_mail(
-                    request, email_to, subject, settings.DEFAULT_FROM_EMAIL,
-                    "apps/sms/reply_email.html", data, [settings.MANAGERS[0][1],]
-                )
-                # if we do not have a message status, it is a reply
-                if not mid:
+                    to = None
+                    if settings.DEBUG:
+                        to = sender.user.email
+                        email_to = [settings.MANAGERS[0][1],]
+                    subject = "[DJ Twilio] reply from one your contacts"
+                    logger.debug('subject: {}'.format(subject))
+                    data = {
+                        'status':status,'original':m,'response':message,'to':to
+                    }
+                    send_mail(
+                        request, email_to, subject, settings.DEFAULT_FROM_EMAIL,
+                        "apps/sms/reply_email.html", data, [settings.MANAGERS[0][1],]
+                    )
                     status.MessageStatus = 'received'
                     message.status = status
                     msg = """"
@@ -248,7 +241,7 @@ def status_callback(request, mid=None):
                         msg += sender.user.email
                     status.save()
                 # update informix
-                if status.MessageStatus == 'delivered':
+                if status.MessageStatus in ['delivered','received']:
                     # create the ctc_blob object with the value of
                     # the message body for txt
                     session = get_session(EARL)
@@ -262,16 +255,19 @@ def status_callback(request, mid=None):
                     blob = CtcBlob(txt=body)
                     session.add(blob)
                     session.flush()
+                    text_type = 'TEXTOUT'
+                    if status.MessageStatus == 'received':
+                        text_type = 'TEXTIN'
                     sql = '''
                         INSERT INTO ctc_rec (
                             id, tick, add_date, due_date, cmpl_date,
                             resrc, bctc_no, stat
                         )
                         VALUES (
-                            {},"ADM",TODAY,TODAY,TODAY,"TEXTOUT",{},"C"
+                            {},"ADM",TODAY,TODAY,TODAY,"{}",{},"C"
                         )
                     '''.format(
-                        message.student_number, blob.bctc_no
+                        message.student_number, text_type, blob.bctc_no
                     )
                     session.execute(sql)
                     session.commit()
@@ -286,7 +282,8 @@ def status_callback(request, mid=None):
                     msg = "Invalid POST data"
                 else:
                     logger.debug("msg = {}".format(msg))
-        except Exception, e:
+        #except Exception, e:
+        else:
             logger.debug('call back parent exception: {}'.format(str(e)))
             if settings.DEBUG:
                 msg = """

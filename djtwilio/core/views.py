@@ -14,7 +14,7 @@ from djzbar.decorators.auth import portal_auth_required
 
 
 @portal_auth_required(
-    group='Admissions SMS', session_var='DJTWILIO_AUTH',
+    group=settings.TWILIO_GROUP, session_var='DJTWILIO_AUTH',
     redirect_url=reverse_lazy('access_denied')
 )
 def search(request):
@@ -36,7 +36,7 @@ def search(request):
 
 
 @portal_auth_required(
-    group='Admissions SMS', session_var='DJTWILIO_AUTH',
+    group=settings.TWILIO_GROUP, session_var='DJTWILIO_AUTH',
     redirect_url=reverse_lazy('access_denied')
 )
 def sender_manager(request, sid=None, action=None):
@@ -74,7 +74,7 @@ def sender_manager(request, sid=None, action=None):
 
 
 @portal_auth_required(
-    group='Admissions SMS', session_var='DJTWILIO_AUTH',
+    group=settings.TWILIO_GROUP, session_var='DJTWILIO_AUTH',
     redirect_url=reverse_lazy('access_denied')
 )
 def user_profile(request):
