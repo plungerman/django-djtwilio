@@ -7,10 +7,25 @@ from django.core.urlresolvers import reverse, reverse_lazy
 
 from djtwilio.core.forms import SenderForm, StudentNumberForm
 from djtwilio.core.models import Sender
-from djtwilio.core.sql import SEARCH_ID
+from djtwilio.core.sql import SEARCH_ID, STUDENTS
 
 from djzbar.utils.informix import do_sql
 from djzbar.decorators.auth import portal_auth_required
+
+
+@portal_auth_required(
+    group=settings.TWILIO_GROUP, session_var='DJTWILIO_AUTH',
+    redirect_url=reverse_lazy('access_denied')
+)
+def student_list(request):
+
+    students = do_sql(
+        STUDENTS(year = '2019', term = 'RC')
+    )
+
+    return render(
+        request, 'core/student_list.html', {'students':students,}
+    )
 
 
 @portal_auth_required(

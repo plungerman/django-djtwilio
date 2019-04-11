@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}
+    Student List &mdash;
+    Twilio Apps &mdash;
+    Carthage College
+{% endblock %}
+{% block extra_style %}
+{{block.super}}
+<link href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css">
+<link href="https://cdn.datatables.net/buttons/1.5.1/css/buttons.dataTables.min.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+table.dataTable thead th {
+  background: transparent !important;
+  white-space: nowrap;
+}
+table.dataTable thead span.sort-icon {
+  display: inline-block;
+  padding-left: 5px;
+  width: 16px;
+  height: 16px;
+}
+.dataTables_wrapper{margin-bottom:20px;}
+.dataTables_length{margin-right:50px;}
+</style>
+{% endblock %}
+{% block extra_javascript %}
+<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/buttons/1.5.1/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.flash.min.js"></script>
+<script type="text/javascript" language="javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.html5.min.js"></script>
+<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/buttons/1.5.1/js/buttons.print.min.js"></script>
+<script>
+$(document).ready(function() {
+  var table = $('#data-table').DataTable({
+    'order': [[ 1, 'asc' ]],
+    'lengthMenu': [
+      [25, 50, 100, 250, 500, 1000, 2000, -1],
+      [25, 50, 100, 250, 500, 1000, 2000, 'All']
+    ],
+    dom: 'lfrBtip',
+    buttons: [{
+      extend: 'csv',
+      fieldSeparator: '\t',
+      header: false,
+      filename: 'student_list'
+    }, {
+      extend: 'excel',
+      filename: 'student_list'
+    }]
+  });
+  $("body").toggleClass("sidenav-toggled");
+});
+</script>
+{% endblock %}
+{% block breadcrumb %}
+<div class="row">
+    <div class="col-lg-12">
+       <h1>
+        Student List
+        <small class="float-right" style="margin-right:20px;">
+        <a href="#"><i class="fa fa-home fa-2x green"></i></a>
+        </small>
+        </h1>
+    </div>
+</div>
+{% endblock %}
+{% block content %}
+{% include "includes/form.inc.html" %}
+{% if students %}
+<div class="card mb-3">
+  <div class="card-header">
+    <i class="fa fa-table"></i> Data
+  </div>
+  <div class="card-body" style="margin-bottom:20px">
+    <div class="table-responsive">
+    <table class="table table-bordered table-hover" width="100%" cellspacing="0" id="data-table">
+    <thead>
+      <tr>
+        <th>Last Name</th>
+        <th>First Name</th>
+        <th>Mobile</th>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Residency</th>
+        <th>Address</th>
+        <th>City</th>
+        <th>State</th>
+        <th>Zip</th>
+        <th>Country</th>
+        <th>Phone</th>
+        <th>DOB</th>
+        <th>Gender</th>
+        <th>Class</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for s in students %}
+      <tr>
+        <td>{{s.lastname}}</td>
+        <td>{{s.firstname}}</td>
+        <td>{{s.mobile|default:""}}</td>
+        <td>{{s.id}}</td>
+        <td>{{s.ldap_name}}@carthage.edu</td>
+        <td>{{s.residency_status}}</td>
+        <td>{{s.addr_line1}} {{s.addr_line2}}</td>
+        <td>{{s.city}}</td>
+        <td>{{s.st}}</td>
+        <td>{{s.zip}}</td>
+        <td>{{s.ctry}}</td>
+        <td>{{s.phone}}</td>
+        <td>{{s.birth_date|date:'Y-m-d'}}</td>
+        <td>{{s.sex}}</td>
+        <td>{{s.cl}}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+      <tfoot>
+        <th>Last Name</th>
+        <th>First Name</th>
+        <th>Mobile</th>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Residency</th>
+        <th>Address</th>
+        <th>City</th>
+        <th>State</th>
+        <th>Zip</th>
+        <th>Country</th>
+        <th>Phone</th>
+        <th>DOB</th>
+        <th>Gender</th>
+        <th>Class</th>
+      </tfoot>
+    </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

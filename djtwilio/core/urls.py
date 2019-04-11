@@ -5,7 +5,7 @@ from django.views.generic import RedirectView, TemplateView
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 
-from djtwilio.core.views import sender_manager, user_profile
+from djtwilio.core import views
 
 from djauth.views import loggedout
 
@@ -37,15 +37,15 @@ urlpatterns = [
         name='auth_loggedout'
     ),
     url(
-        r'^accounts/profile/sender/manager/$', sender_manager,
+        r'^accounts/profile/sender/manager/$', views.sender_manager,
         name='sender_manager'
     ),
     url(
         r'^accounts/profile/sender/manager/(?P<sid>\w+)/(?P<action>[-\w]+)/$',
-        sender_manager, name='sender_update'
+        views.sender_manager, name='sender_update'
     ),
     url(
-        r'^accounts/profile/$', user_profile,
+        r'^accounts/profile/$', views.user_profile,
         name='user_profile'
     ),
     url(
@@ -57,6 +57,9 @@ urlpatterns = [
         TemplateView.as_view(
             template_name='denied.html'
         ), name='access_denied'
+    ),
+    url(
+        r'^core/student/list/$', views.student_list, name='student_list'
     ),
     # apps could have its own urls.py file eventually
     url(
