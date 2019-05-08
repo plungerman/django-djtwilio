@@ -194,7 +194,9 @@ def status_callback(request, mid=None):
                     error = Error.objects.get(code=status.ErrorCode)
                     status.error = error
                 status.save()
+
                 # callback from the API when recipient has replied to an SMS
+
                 if not mid:
                     # remove extraneous characters and country code for US
                     frum = str(status.From).translate(None,'.+()- ')[1:]
@@ -252,19 +254,24 @@ def status_callback(request, mid=None):
                     blob = CtcBlob(txt=body)
                     session.add(blob)
                     session.flush()
+                    # insert into database
                     text_type = 'TEXTOUT'
+                    if message.bulk:
+                        text_type = 'TEXTMASS'
+                    stat = 'C'
                     if status.MessageStatus == 'received':
                         text_type = 'TEXTIN'
+                        stat = 'E'
                     sql = '''
                         INSERT INTO ctc_rec (
                             id, tick, add_date, due_date, cmpl_date,
                             resrc, bctc_no, stat
                         )
                         VALUES (
-                            {},"ADM",TODAY,TODAY,TODAY,"{}",{},"C"
+                            {},"ADM",TODAY,TODAY,TODAY,"{}",{},"{}"
                         )
                     '''.format(
-                        message.student_number, text_type, blob.bctc_no
+                        message.student_number, text_type, blob.bctc_no, stat
                     )
                     session.execute(sql)
                     session.commit()
