@@ -327,7 +327,10 @@ def send_form(request):
                 data = form_bulk.cleaned_data
                 bulk = form_bulk.save()
                 with open(bulk.distribution.path, 'rb') as f:
-                    reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
+                    dialect = csv.Sniffer().sniff(f.read(1024))
+                    f.seek(0)
+                    delimiter = dialect.delimiter
+                    reader = csv.reader(f, delimiter=delimiter, quoting=csv.QUOTE_NONE)
                     for r in reader:
                         sent = send_message(
                             Client(bulk.sender.account.sid, bulk.sender.account.token),
