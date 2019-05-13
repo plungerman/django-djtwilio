@@ -178,7 +178,7 @@ def status_callback(request, mid=None):
         post = request.POST
         if settings.DEBUG:
             for k,v in post.items():
-                logger.debug('{}: {}'.format(k,v))
+                logger.debug(u'{}: {}'.format(k,v))
         # if we do not have an Account ID, it is not a legitimate request sent
         # from twilio and there is no need to go further
         account = get_object_or_404(Account, sid=post['AccountSid'])
@@ -246,7 +246,7 @@ def status_callback(request, mid=None):
                     )
                     status.MessageStatus = 'received'
                     message.status = status
-                    msg = """"
+                    msg = """
                         We have sent an email to the original sender with
                         your message. They will respond to you presently.
                     """
