@@ -128,7 +128,34 @@ class Status(models.Model):
         max_length = 16,
         null=True, blank=True
     )
-    # values returned from API  when recipient replies to a message
+    # voice call to a twilio number
+    # see: https://www.twilio.com/docs/voice/twiml
+    CallSid = models.CharField(
+        max_length = 34,
+        null=True, blank=True
+    )
+    CallStatus = models.CharField(
+        max_length = 16,
+        null=True, blank=True
+    )
+    Direction = models.CharField(
+        max_length = 16,
+        null=True, blank=True
+    )
+    ForwardedFrom = models.CharField(
+        max_length=16,
+        null=True, blank=True
+    )
+    CallerName = models.CharField(
+        max_length = 34,
+        null=True, blank=True
+    )
+    ParentCallSid = models.CharField(
+        max_length = 34,
+        null=True, blank=True
+    )
+    # values returned from API when recipient replies to a message
+    # calls a twilio number
     NumMedia = models.IntegerField(null=True, blank=True)
     NumSegments = models.IntegerField(null=True, blank=True)
     ToCity= models.CharField(

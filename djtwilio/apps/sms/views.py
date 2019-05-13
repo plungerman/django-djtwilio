@@ -10,7 +10,7 @@ from djtwilio.apps.sms.forms import BulkForm, IndiForm, StatusCallbackForm
 from djtwilio.apps.sms.models import Bulk, Error, Message, Status
 from djtwilio.apps.sms.errors import MESSAGE_DELIVERY_CODES
 from djtwilio.core.utils import send_message
-from djtwilio.core.models import Sender
+from djtwilio.core.models import Account, Sender
 from djtwilio.apps.sms.data import CtcBlob
 
 from djtools.utils.mail import send_mail
@@ -19,6 +19,8 @@ from djzbar.utils.informix import get_session
 from djzbar.decorators.auth import portal_auth_required
 
 from twilio.rest import Client
+from twilio.twiml.voice_response import Dial, VoiceResponse, Say
+
 
 import re
 import csv
@@ -171,32 +173,44 @@ def status_callback(request, mid=None):
     """
     see: https://www.twilio.com/docs/sms/twiml#request-parameters
     """
+    content_type='text/plain; charset=utf-8'
     if request.method=='POST':
         post = request.POST
         if settings.DEBUG:
             for k,v in post.items():
                 logger.debug('{}: {}'.format(k,v))
+        # if we do not have an Account ID, it is not a legitimate request sent
+        # from twilio and there is no need to go further
+        account = get_object_or_404(Account, sid=post['AccountSid'])
         msg = ""
         # message status for form instance
         status = None
-        #try:
-        if True:
-            # exception will be thrown here if Message get() fails
-            if mid:
-                cipher = AESCipher(bs=16)
-                mid = cipher.decrypt(mid)
-                message = Message.objects.get(pk=mid)
-                status = message.status
-            form = StatusCallbackForm(post, instance=status)
-            if form.is_valid():
-                status = form.save(commit=False)
-                if status.ErrorCode:
-                    error = Error.objects.get(code=status.ErrorCode)
-                    status.error = error
-                status.save()
-
+        if mid:
+            cipher = AESCipher(bs=16)
+            mid = cipher.decrypt(mid)
+            message = Message.objects.get(pk=mid)
+            status = message.status
+        form = StatusCallbackForm(post, instance=status)
+        if form.is_valid():
+            status = form.save(commit=False)
+            if status.ErrorCode:
+                error = Error.objects.get(code=status.ErrorCode)
+                status.error = error
+            status.save()
+            # callback from the API when someone makes a voice call
+            # to a phone number
+            if status.CallSid:
+                msg = VoiceResponse()
+                content_type='text/xml; charset=utf-8'
+                try:
+                    sender = Sender.objects.get(phone=status.To[2:])
+                    phone = sender.forward_phone
+                except:
+                    phone = settings.TWILIO_DEFAULT_FORWARD_PHONE
+                msg.dial(phone)
+                logger.debug('forwarding = {}'.format(msg))
+            else:
                 # callback from the API when recipient has replied to an SMS
-
                 if not mid:
                     # remove extraneous characters and country code for US
                     frum = str(status.From).translate(None,'.+()- ')[1:]
@@ -280,19 +294,10 @@ def status_callback(request, mid=None):
                         if settings.DEBUG:
                             msg = status.MessageStatus
                         else:
-                            logger.debug("msg = {}".format(msg))
-            else:
-                if settings.DEBUG:
-                    msg = "Invalid POST data"
-                else:
-                    logger.debug("msg = {}".format(msg))
-        #except Exception, e:
+                            logger.debug("msg = Success")
         else:
-            logger.debug('call back parent exception: {}'.format(str(e)))
             if settings.DEBUG:
-                msg = """
-                    No message found for status callback or reply callback failed
-                """
+                msg = "Invalid POST data"
             else:
                 logger.debug("msg = {}".format(msg))
     else:
@@ -300,9 +305,7 @@ def status_callback(request, mid=None):
         if settings.DEBUG:
             logger.debug("msg = {}".format(msg))
 
-    return HttpResponse(
-        msg, content_type='text/plain; charset=utf-8'
-    )
+    return HttpResponse(msg, content_type=content_type)
 
 
 @portal_auth_required(

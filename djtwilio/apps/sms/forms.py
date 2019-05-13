@@ -34,8 +34,17 @@ class StatusCallbackForm(forms.ModelForm):
         'SmsSid': [''],
         'ToCity': [''],
         'FromState': [''],
-        'FromCountry': ['']
+        'FromCountry': [''],
+        # these are for voice calls
+        'CallSid': [''],
+        'CallStatus': [''],
+        'Direction': [''],
+        'ForwardedFrom': [''],
+        'CallerName': [''],
+        'ParentCallSid': ['']
     }
+
+
     """
 
     class Meta:
@@ -80,13 +89,16 @@ class IndiForm(forms.Form):
         super(IndiForm, self).__init__(*args, **kwargs)
 
         if user.is_superuser:
-            senders = Sender.objects.filter(phone__isnull=False)
+            senders = Sender.objects.all().order_by('-alias')
         else:
-            senders = user.sender.filter(phone__isnull=False)
+            senders = user.sender.all().order_by('-alias')
 
-        choices = [("","---Phone number---")]
+        choices = [("","---Phone or Messaging Service---")]
         for s in senders:
-            choices.append((s.id, "{} ({})".format(s.phone, s.alias)))
+            phone = s.phone
+            if not phone:
+                phone = ''
+            choices.append((s.id, "{} {}".format(phone, s.alias)))
 
         self.fields['phone_from'] = forms.ChoiceField(
             label = "From", choices=choices,

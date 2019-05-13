@@ -8,6 +8,6 @@ ALLOWED_HOSTS =  [
 ]
 DEBUG = False
 #DEBUG = True
-#TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
+TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
 ROOT_URL = '/apps/twilio'
 LOGIN_REDIRECT_URL = ROOT_URL

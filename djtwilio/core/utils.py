@@ -10,10 +10,13 @@ from twilio.base.exceptions import TwilioRestException
 
 
 def send_message(client, sender, recipient, body, cid, callback=False, bulk=None):
+    # this seems like overkill but you never know
     if bulk:
         phrum=sender.messaging_service_sid
     else:
         phrum=sender.phone
+        if not phrum:
+            phrum = sender.messaging_service_sid
     try:
         # create Status object
         status = Status.objects.create()

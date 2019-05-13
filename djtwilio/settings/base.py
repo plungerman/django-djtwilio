@@ -24,8 +24,8 @@ SITE_ID = 1
 USE_I18N = False
 USE_L10N = False
 USE_TZ = False
-DEFAULT_CHARSET = 'utf-8'
-FILE_CHARSET = 'utf-8'
+DEFAULT_CHARSET = 'utf8'
+FILE_CHARSET = 'utf8'
 SERVER_URL = ''
 API_URL = '{}/{}'.format(SERVER_URL, 'api')
 LIVEWHALE_API_URL = 'https://{}'.format(SERVER_URL)
@@ -201,6 +201,7 @@ TWILIO_API_URL = 'https://api.twilio.com/2010-04-01/'
 TWILIO_ACCOUNT_SID = ''
 TWILIO_AUTH_TOKEN = ''
 TWILIO_FORGERY_PROTECTION = True
+TWILIO_DEFAULT_FORWARD_PHONE=''
 TWILIO_TEST_BULK_NAME=''
 TWILIO_TEST_BULK_DESCRIPTION=''
 TWILIO_TEST_BULK_SENDER_ID=0
@@ -267,11 +268,11 @@ LOGGING = {
         }
     },
     'loggers': {
-        #'djtwilio': {
-            #'handlers':['logfile'],
-            #'propagate': True,
-            #'level':'DEBUG',
-        #},
+        'djtwilio': {
+            'handlers':['logfile'],
+            'propagate': True,
+            'level':'DEBUG',
+        },
         'djtwilio.apps.sms': {
             'handlers':['logfile'],
             'propagate': True,

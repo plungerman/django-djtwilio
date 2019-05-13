@@ -31,7 +31,10 @@ class Sender(models.Model):
     )
     phone = models.CharField(
         max_length=12, verbose_name="Phone Number",
-        help_text="Format: XXX-XXX-XXXX",
+        null=True, blank=True
+    )
+    forward_phone = models.CharField(
+        max_length=12, verbose_name="Forwarding Phone Number",
         null=True, blank=True
     )
     messaging_service_sid = models.CharField(

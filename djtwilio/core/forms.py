@@ -21,7 +21,10 @@ class SenderForm(forms.ModelForm):
     phone = USPhoneNumberField(
         label = "Phone number",
         required = False,
-        help_text = "Format: XXX XXX XXXX"
+    )
+    forward_phone = USPhoneNumberField(
+        label = "Forwarding Phone number",
+        required = False,
     )
     messaging_service_sid = forms.CharField(
         label = "Messaging service ID",
