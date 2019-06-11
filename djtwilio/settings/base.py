@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'djtwilio.apps.sms',
     # needed for template tags
     'djtools',
+    'loginas',
 ]
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',

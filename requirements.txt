@@ -10,3 +10,4 @@ django-bootstrap4==0.0.8
 django-localflavor==2.1
 twilio==6.25.1
 pycryptodome==3.8.1
+django-loginas==0.3.6

@@ -37,7 +37,7 @@ class Bulk(models.Model):
     """
     sender = models.ForeignKey(
         Sender, on_delete=models.CASCADE,
-        related_name='bulk_sender'
+        verbose_name = "From", related_name='bulk_sender'
     )
     date_created = models.DateTimeField(
         auto_now_add=True

@@ -73,3 +73,4 @@ urlpatterns = [
         r'^$', RedirectView.as_view(url=reverse_lazy('sms_send_form'))
     ),
 ]
+urlpatterns += url("admin/", include('loginas.urls')),
