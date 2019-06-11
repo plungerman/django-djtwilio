@@ -43,7 +43,7 @@ class Bulk(models.Model):
         auto_now_add=True
     )
     name = models.CharField(
-        max_length=64
+        "Message Name (internal)", max_length=64
     )
     description = models.TextField(
         null=True, blank=True
