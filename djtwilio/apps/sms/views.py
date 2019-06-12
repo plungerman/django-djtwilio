@@ -21,7 +21,6 @@ from djzbar.decorators.auth import portal_auth_required
 from twilio.rest import Client
 from twilio.twiml.voice_response import Dial, VoiceResponse, Say
 
-
 import re
 import csv
 import json
@@ -215,17 +214,11 @@ def status_callback(request, mid=None):
                     # remove extraneous characters and country code for US
                     frum = str(status.From).translate(None,'.+()- ')[1:]
                     recipient = str(status.To).translate(None,'.+()- ')
-                    # default sender
-                    where = status.MessagingServiceSid
-                    if where:
-                        sender = Sender.objects.get(messaging_service_sid=where)
-                    else:
-                        where = recipient
-                        sender = Sender.objects.get(phone=where)
-                    email_to = [sender.user.email,]
+                    # obtain message our sender
                     m = Message.objects.filter(recipient=frum).order_by(
                         '-date_created'
                     ).first()
+                    sender = m.messenger
                     message = Message(
                         messenger=sender, recipient=recipient,
                         student_number=m.student_number, body=status.Body,
@@ -233,6 +226,7 @@ def status_callback(request, mid=None):
                     )
                     message.save()
                     to = None
+                    email_to = [sender.user.email,]
                     if settings.DEBUG:
                         to = sender.user.email
                         email_to = [settings.MANAGERS[0][1],]
@@ -387,7 +381,7 @@ def send_form(request):
                     reverse('sms_send_form')
                 )
     else:
-        form_bulk = BulkForm( prefix='bulk', use_required_attribute=False )
+        form_bulk = BulkForm(prefix='bulk', use_required_attribute=False)
         form_indi = IndiForm(
             prefix='indi', request=request, use_required_attribute=False
         )
