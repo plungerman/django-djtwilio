@@ -56,6 +56,7 @@ class BulkForm(forms.ModelForm):
 
     #sender = forms.CharField()
     message = forms.CharField(
+        label = "Message to Recipients",
         widget=forms.Textarea(attrs={'class': 'required form-control'}),
         help_text = '<span id="bulk-chars">160</span> characters remaining'
     )
@@ -79,6 +80,7 @@ class IndiForm(forms.Form):
     )
     phone_from = forms.CharField()
     message = forms.CharField(
+        label = "Message to Recipient",
         widget=forms.Textarea(attrs={'class': 'required form-control'}),
         help_text = '<span id="indi-chars">160</span> characters remaining'
     )
