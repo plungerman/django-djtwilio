@@ -7,7 +7,7 @@ from djtwilio.apps.sms.models import (
 
 class MessageAdmin(admin.ModelAdmin):
     list_display = (
-        'messenger', 'recipient', 'bulk', 'date_created'
+        'messenger', 'recipient', 'bulk', 'date_created', 'status'
     )
     date_hierarchy = 'date_created'
     ordering = ('-date_created',)
@@ -37,7 +37,7 @@ class BulkAdmin(admin.ModelAdmin):
 
 class StatusAdmin(admin.ModelAdmin):
     list_display = (
-        'To', 'From', 'error', 'date_created'
+        'To', 'From', 'error', 'date_created', 'MessageStatus'
     )
 
 
