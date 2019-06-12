@@ -46,6 +46,7 @@ class Bulk(models.Model):
         "Message Name (internal)", max_length=64
     )
     description = models.TextField(
+        "Message Description (optional, internal)",
         null=True, blank=True
     )
     distribution = models.FileField(
