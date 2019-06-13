@@ -6,6 +6,8 @@ Django settings for project.
 import os
 
 from djzbar.settings import INFORMIX_EARL_TEST as INFORMIX_EARL
+# sqlserver connection string
+MSSQL_EARL = ''
 
 # Debug
 DEBUG = False
