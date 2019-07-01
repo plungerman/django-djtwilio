@@ -193,7 +193,7 @@ def status_callback(request, mid=None):
         if form.is_valid():
             status = form.save(commit=False)
             if status.ErrorCode:
-                error = Error.objects.get(code=status.ErrorCode)
+                error = Error.objects.filter(code=status.ErrorCode).first()
                 status.error = error
             status.save()
             # callback from the API when someone makes a voice call
