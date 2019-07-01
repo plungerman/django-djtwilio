@@ -240,12 +240,6 @@ def status_callback(request, mid=None):
                     )
                     status.MessageStatus = 'received'
                     message.status = status
-                    msg = """
-                        We have sent an email to the original sender with
-                        your message. They will respond to you presently.
-                    """
-                    if settings.DEBUG:
-                        msg += sender.user.email
                     status.save()
                 # update informix
                 if status.MessageStatus in ['delivered','received']:
