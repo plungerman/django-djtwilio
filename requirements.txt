@@ -9,5 +9,5 @@ bootstrap-admin==0.3.4
 django-bootstrap4==0.0.8
 django-localflavor==2.1
 twilio==6.25.1
-pycryptodome==3.8.1
+pycryptodome==3.8.2
 django-loginas==0.3.6
