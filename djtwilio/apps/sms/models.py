@@ -242,6 +242,7 @@ class Document(models.Model):
             FileExtensionValidator(allowed_extensions=ALLOWED_EXTENSIONS)
         ],
         null=True,blank=True,
+        help_text="Files allowed: {}".format(ALLOWED_EXTENSIONS)
     )
 
     class Meta:
