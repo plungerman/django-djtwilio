@@ -3,6 +3,7 @@ from django import forms
 from django.conf import settings
 
 from djtwilio.core.models import Sender
+from djtwilio.apps.sms.models import Bulk, Document, Status
 from djtwilio.apps.sms.models import Bulk, Status
 
 from djtools.fields.localflavor import USPhoneNumberField
@@ -52,6 +53,12 @@ class StatusCallbackForm(forms.ModelForm):
         fields = '__all__'
 
 
+class DocumentForm(forms.ModelForm):
+    class Meta:
+        model = Document
+        fields = ['phile',]
+
+
 class BulkForm(forms.ModelForm):
 
     #sender = forms.CharField()
@@ -63,7 +70,7 @@ class BulkForm(forms.ModelForm):
 
     class Meta:
         model = Bulk
-        fields = ['name','description','distribution','sender']
+        fields = ['name','description','distribution','sender',]
 
 
 class IndiForm(forms.Form):

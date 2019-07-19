@@ -1,5 +1,6 @@
 from django.db import models
 from django.dispatch import receiver
+from django.contrib.auth.models import User
 from django.core.validators import FileExtensionValidator
 
 from djtools.fields.helpers import upload_to_path
@@ -8,6 +9,22 @@ from djtwilio.core.models import Sender
 
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
+
+ALLOWED_EXTENSIONS = [
+    'xls','xlsx','doc','docx','pdf','txt','png','jpg','jpeg'
+]
+
+ICONS = {
+    'xls': 'excel',
+    'xlsx': 'excel',
+    'pdf': 'pdf',
+    'doc': 'word',
+    'docx': 'word',
+    'txt': 'text',
+    'png': 'image',
+    'jpg': 'image',
+    'jpeg': 'image',
+}
 
 
 class Error(models.Model):
@@ -155,10 +172,14 @@ class Status(models.Model):
         max_length = 34,
         null=True, blank=True
     )
-    # values returned from API when recipient replies to a message
-    # calls a twilio number
     NumMedia = models.IntegerField(null=True, blank=True)
     NumSegments = models.IntegerField(null=True, blank=True)
+    subresource_uris = models.CharField(
+        max_length = 756,
+        null=True, blank=True
+    )
+    # values returned from API when recipient replies to a message or
+    # calls a twilio number
     ToCity= models.CharField(
         max_length = 34,
         null=True, blank=True
@@ -196,6 +217,49 @@ class Status(models.Model):
         return u"{}".format(self.MessageStatus)
 
 
+class Document(models.Model):
+    """
+    supporting documents
+    """
+    created_by = models.ForeignKey(
+        User, verbose_name="Created by",
+        related_name='doc_creator', on_delete=models.CASCADE
+    )
+    updated_by = models.ForeignKey(
+        User, verbose_name="Updated by", related_name='doc_updated',
+        on_delete=models.CASCADE, null=True, blank=True
+    )
+    created_at = models.DateTimeField(
+        "Date Created", auto_now_add=True
+    )
+    updated_at = models.DateTimeField(
+        "Date Updated", auto_now=True
+    )
+    phile = models.FileField(
+        "MMS files",
+        max_length=767, upload_to=upload_to_path,
+        validators=[
+            FileExtensionValidator(allowed_extensions=ALLOWED_EXTENSIONS)
+        ],
+        null=True,blank=True,
+    )
+
+    class Meta:
+        ordering  = ['-created_at']
+        get_latest_by = 'created_at'
+
+    def get_slug(self):
+        return 'files/mms/'
+
+    def get_icon(self):
+        ext = self.phile.path.rpartition(".")[-1]
+        try:
+            icon = ICONS[ext]
+        except:
+            icon = ICONS['file']
+        return icon
+
+
 class Message(models.Model):
     """
     An SMS data model
@@ -227,6 +291,15 @@ class Message(models.Model):
         related_name='message_status',
         null=True, blank=True
     )
+    phile = models.ForeignKey(
+        Document, on_delete=models.CASCADE,
+        verbose_name = "Send a file",
+        null=True, blank=True,
+        help_text="Files allowed: {}".format(ALLOWED_EXTENSIONS)
+    )
+
+    def get_slug(self):
+        return 'files/mms/'
 
     def get_status(self):
 

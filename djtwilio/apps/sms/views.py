@@ -6,7 +6,9 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 
-from djtwilio.apps.sms.forms import BulkForm, IndiForm, StatusCallbackForm
+from djtwilio.apps.sms.forms import (
+    BulkForm, DocumentForm, IndiForm, StatusCallbackForm
+)
 from djtwilio.apps.sms.models import Bulk, Error, Message, Status
 from djtwilio.apps.sms.errors import MESSAGE_DELIVERY_CODES
 from djtwilio.core.utils import send_message
@@ -308,11 +310,15 @@ def send_form(request):
     user = request.user
 
     if request.method=='POST':
-        form_indi = IndiForm(
-            request.POST, request=request, prefix='indi', use_required_attribute=False
+        form_doc = DocumentForm(
+            request.POST, request.FILES, prefix='doc', use_required_attribute=False
         )
         form_bulk = BulkForm(
             request.POST, request.FILES, prefix='bulk', use_required_attribute=False
+        )
+        form_indi = IndiForm(
+            request.POST, request.FILES, request=request, prefix='indi',
+            use_required_attribute=False
         )
         if user.is_superuser:
             sids = Sender.objects.filter(messaging_service_sid__isnull=False)
@@ -321,7 +327,13 @@ def send_form(request):
         form_bulk.fields['sender'].queryset = sids
         if request.POST.get('bulk-submit'):
             bulk = True
-            if form_bulk.is_valid():
+            if form_bulk.is_valid() and form_doc.is_valid():
+                doc = form_doc.cleaned_data
+                if doc['phile']:
+                    doc = form_doc.save(commit=False)
+                    doc.created_by = user
+                    doc.updated_by = user
+                    doc.save()
                 data = form_bulk.cleaned_data
                 bulk = form_bulk.save()
                 with open(bulk.distribution.path, 'rb') as f:
@@ -332,7 +344,8 @@ def send_form(request):
                     for r in reader:
                         sent = send_message(
                             Client(bulk.sender.account.sid, bulk.sender.account.token),
-                            bulk.sender, r[2], data['message'], r[3], bulk=bulk
+                            bulk.sender, r[2], data['message'], r[3], bulk=bulk,
+                            doc=doc
                         )
                 messages.add_message(
                     request, messages.SUCCESS, """
@@ -344,14 +357,21 @@ def send_form(request):
                 )
                 response = HttpResponseRedirect( reverse('sms_send_form') )
         else:
-            if form_indi.is_valid():
+            if form_indi.is_valid() and form_doc.is_valid():
                 data = form_indi.cleaned_data
+                doc = form_doc.cleaned_data
+                if doc['phile']:
+                    doc = form_doc.save(commit=False)
+                    doc.created_by = user
+                    doc.updated_by = user
+                    doc.save()
                 sender = Sender.objects.get(pk=data['phone_from'])
                 body = data['message']
                 recipient = data['phone_to']
                 sent = send_message(
                     Client(sender.account.sid, sender.account.token),
-                    sender, recipient, body, data.get('student_number')
+                    sender, recipient, body, data.get('student_number'),
+                    doc=doc
                 )
                 if sent['message']:
                     messages.add_message(
@@ -375,6 +395,7 @@ def send_form(request):
                     reverse('sms_send_form')
                 )
     else:
+        form_doc = DocumentForm(prefix='doc', use_required_attribute=False)
         form_bulk = BulkForm(prefix='bulk', use_required_attribute=False)
         form_indi = IndiForm(
             prefix='indi', request=request, use_required_attribute=False
@@ -389,7 +410,8 @@ def send_form(request):
     if not response:
         response = render(
             request, template, {
-                'form_indi': form_indi, 'form_bulk': form_bulk, 'bulk': bulk
+                'form_indi': form_indi, 'form_bulk': form_bulk, 'bulk': bulk,
+                'form_doc':form_doc
             }
         )
 
