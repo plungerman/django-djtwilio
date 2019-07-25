@@ -39,6 +39,9 @@
               <dd class="col-sm-4 col-4">{{message.status.MessageStatus|default:"&nbsp;"}}</dd>
             </dl>
             <pre class="p-3 alert-success border-dark rounded">{{message.body}}</pre>
+            {% if message.phile %}
+            <a href="{{message.phile.url}}">File</a>
+            {% endif %}
           </div>
           <div class="card-footer clearfix small z-1
             {% if message.status.error %}bg-warning{% else %}alert-secondary{% endif %}">

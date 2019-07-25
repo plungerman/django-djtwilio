@@ -325,15 +325,16 @@ def send_form(request):
         else:
             sids = user.sender.filter(messaging_service_sid__isnull=False)
         form_bulk.fields['sender'].queryset = sids
+        phile = None
         if request.POST.get('bulk-submit'):
             bulk = True
             if form_bulk.is_valid() and form_doc.is_valid():
                 doc = form_doc.cleaned_data
                 if doc['phile']:
-                    doc = form_doc.save(commit=False)
-                    doc.created_by = user
-                    doc.updated_by = user
-                    doc.save()
+                    phile = form_doc.save(commit=False)
+                    phile.created_by = user
+                    phile.updated_by = user
+                    phile.save()
                 data = form_bulk.cleaned_data
                 bulk = form_bulk.save()
                 with open(bulk.distribution.path, 'rb') as f:
@@ -345,7 +346,7 @@ def send_form(request):
                         sent = send_message(
                             Client(bulk.sender.account.sid, bulk.sender.account.token),
                             bulk.sender, r[2], data['message'], r[3], bulk=bulk,
-                            doc=doc
+                            doc=phile
                         )
                 messages.add_message(
                     request, messages.SUCCESS, """
@@ -361,17 +362,17 @@ def send_form(request):
                 data = form_indi.cleaned_data
                 doc = form_doc.cleaned_data
                 if doc['phile']:
-                    doc = form_doc.save(commit=False)
-                    doc.created_by = user
-                    doc.updated_by = user
-                    doc.save()
+                    phile = form_doc.save(commit=False)
+                    phile.created_by = user
+                    phile.updated_by = user
+                    phile.save()
                 sender = Sender.objects.get(pk=data['phone_from'])
                 body = data['message']
                 recipient = data['phone_to']
                 sent = send_message(
                     Client(sender.account.sid, sender.account.token),
                     sender, recipient, body, data.get('student_number'),
-                    doc=doc
+                    doc=phile
                 )
                 if sent['message']:
                     messages.add_message(

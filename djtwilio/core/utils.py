@@ -27,7 +27,6 @@ def send_message(client, sender, recipient, body, cid, callback=False, bulk=None
             student_number=cid, body=body, bulk=bulk, status=status,
             phile=doc
         )
-        message.save()
         cipher = AESCipher(bs=16)
         if not callback:
             callback = 'https://{}{}'.format(
