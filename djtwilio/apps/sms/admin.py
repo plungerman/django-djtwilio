@@ -12,7 +12,7 @@ class MessageAdmin(admin.ModelAdmin):
     date_hierarchy = 'date_created'
     ordering = ('-date_created',)
     readonly_fields = ('messenger','bulk')
-    search_fields = ('body',)
+    search_fields = ('body','recipient','student_number')
     list_per_page = 500
     raw_id_fields = ('messenger',)
 
