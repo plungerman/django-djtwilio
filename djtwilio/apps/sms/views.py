@@ -216,7 +216,7 @@ def status_callback(request, mid=None):
                     # remove extraneous characters and country code for US
                     frum = str(status.From).translate(None,'.+()- ')[1:]
                     recipient = str(status.To).translate(None,'.+()- ')
-                    # obtain message our sender
+                    # obtain message from our sender
                     m = Message.objects.filter(recipient=frum).order_by(
                         '-date_created'
                     ).first()
