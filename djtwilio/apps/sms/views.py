@@ -286,10 +286,7 @@ def status_callback(request, mid=None):
                         else:
                             logger.debug("msg = Success")
         else:
-            if settings.DEBUG:
-                msg = "Invalid POST data"
-            else:
-                logger.debug("msg = {}".format(msg))
+            msg = "Invalid POST data"
     else:
         msg = "Requires POST"
         if settings.DEBUG:
