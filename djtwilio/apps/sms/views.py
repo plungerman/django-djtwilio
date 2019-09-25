@@ -335,7 +335,9 @@ def send_form(request):
                 data = form_bulk.cleaned_data
                 bulk = form_bulk.save()
                 with open(bulk.distribution.path, 'rb') as f:
-                    dialect = csv.Sniffer().sniff(f.read(1024))
+                    # read 1MB chunks to ensure the sniffer works for files of any size
+                    # without running out of memory:
+                    dialect = csv.Sniffer().sniff(f.read(1024*1024))
                     f.seek(0)
                     delimiter = dialect.delimiter
                     reader = csv.reader(f, delimiter=delimiter, quoting=csv.QUOTE_NONE)
