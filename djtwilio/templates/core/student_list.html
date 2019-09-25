@@ -81,16 +81,7 @@ $(document).ready(function() {
         <th>Mobile</th>
         <th>ID</th>
         <th>Email</th>
-        <th>Residency</th>
-        <th>Address</th>
-        <th>City</th>
-        <th>State</th>
         <th>Zip</th>
-        <th>Country</th>
-        <th>Phone</th>
-        <th>DOB</th>
-        <th>Gender</th>
-        <th>Class</th>
       </tr>
     </thead>
     <tbody>
@@ -100,17 +91,8 @@ $(document).ready(function() {
         <td>{{s.firstname}}</td>
         <td>{{s.mobile|default:""}}</td>
         <td>{{s.id}}</td>
-        <td>{{s.ldap_name}}@carthage.edu</td>
-        <td>{{s.residency_status}}</td>
-        <td>{{s.addr_line1}} {{s.addr_line2}}</td>
-        <td>{{s.city}}</td>
-        <td>{{s.st}}</td>
+        <td>{{s.username}}@carthage.edu</td>
         <td>{{s.zip}}</td>
-        <td>{{s.ctry}}</td>
-        <td>{{s.phone}}</td>
-        <td>{{s.birth_date|date:'Y-m-d'}}</td>
-        <td>{{s.sex}}</td>
-        <td>{{s.cl}}</td>
       </tr>
     {% endfor %}
     </tbody>
@@ -120,16 +102,7 @@ $(document).ready(function() {
         <th>Mobile</th>
         <th>ID</th>
         <th>Email</th>
-        <th>Residency</th>
-        <th>Address</th>
-        <th>City</th>
-        <th>State</th>
         <th>Zip</th>
-        <th>Country</th>
-        <th>Phone</th>
-        <th>DOB</th>
-        <th>Gender</th>
-        <th>Class</th>
       </tfoot>
     </table>
     </div>

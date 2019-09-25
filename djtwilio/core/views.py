@@ -1,6 +1,7 @@
 from django.conf import settings
-from django.shortcuts import render
 from django.contrib import messages
+from django.shortcuts import render
+from django.core.cache import cache
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse, reverse_lazy
@@ -19,9 +20,13 @@ from djzbar.decorators.auth import portal_auth_required
 )
 def student_list(request):
 
-    students = do_sql(
-        STUDENTS(year = '2019', term = 'RC')
-    )
+    key = 'provisioning_vw_students_api'
+    students = cache.get(key)
+    if not students:
+        students = do_sql(
+            'SELECT * FROM provisioning_vw WHERE student is not null'
+        )
+        #cache.set(key, students, timeout=86400)
 
     return render(
         request, 'core/student_list.html', {'students':students,}
