@@ -113,28 +113,3 @@ class IndiForm(forms.Form):
             label = "From", choices=choices,
             widget=forms.Select(attrs={'class': 'required form-control'})
         )
-
-    def clean(self):
-        """
-        opt_out = "Y" should mean "do not send text".
-        """
-
-        opt_out = False
-        cd = self.cleaned_data
-        phone = cd.get('phone_to')
-        sql = 'SELECT * FROM aa_rec WHERE phone="{}"'.format(phone)
-        objects = do_sql(sql, key=DEBUG)
-        for o in objects:
-            sid = o.id
-            if o.opt_out == 'Y':
-                opt_out = True
-
-        if opt_out:
-            self._errors['phone_to'] = self.error_class(
-                ["This student has chosen to opt-out of phone contact."]
-            )
-        #else:
-            #if not self.cleaned_data.get('student_number'):
-                #self.cleaned_data['student_number'] = sid
-
-        return cd
