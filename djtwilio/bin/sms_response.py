@@ -1,7 +1,11 @@
+#! /usr/bin/env python2
+# -*- coding: utf-8 -*-
+
 from flask import Flask, request, redirect
 from twilio.twiml.messaging_response import MessagingResponse
 
 app = Flask(__name__)
+
 
 @app.route("/sms", methods=['GET', 'POST'])
 def incoming_sms():
@@ -23,6 +27,7 @@ def incoming_sms():
         resp.message("Goodbye")
 
     return str(resp)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,9 +1,10 @@
+#! /usr/bin/env python2
 # -*- coding: utf-8 -*-
-import os, sys
-import argparse
 
-# prime the app
+import argparse
 import django
+import sys
+
 django.setup()
 
 from django.conf import settings
@@ -22,27 +23,25 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument(
-    '-p', '--phone',
+    '-p',
+    '--phone',
     required=True,
     help="Phone number to which we are sending the SMS",
-    dest='phone'
+    dest='phone',
 )
 parser.add_argument(
     '--test',
     action='store_true',
     help="Dry run?",
-    dest='test'
+    dest='test',
 )
 
 
 def main():
-    """
-    Called when executed from command line
-    """
-
+    """Send an SMS from a messaging service SID."""
     client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-    status_callback_url = 'https://{}{}{}'.format(
-        settings.SERVER_URL, settings.ROOT_URL, reverse('sms_status_callback')
+    status_callback_url = 'https://{0}{1}{2}'.format(
+        settings.SERVER_URL, settings.ROOT_URL, reverse('sms_status_callback'),
     )
     if test:
         print(status_callback_url)
@@ -58,10 +57,6 @@ def main():
         print(message.sid)
 
 
-######################
-# shell command line
-######################
-
 if __name__ == '__main__':
 
     args = parser.parse_args()
@@ -69,6 +64,6 @@ if __name__ == '__main__':
     test = args.test
 
     if test:
-        print args
+        print(args)
 
     sys.exit(main())
