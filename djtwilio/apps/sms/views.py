@@ -357,7 +357,9 @@ def send_form(request):
                     phile.save()
                 data = form_bulk.cleaned_data
                 bulk = form_bulk.save()
-                # firstname, lastname, phone, cid
+                rep = 'rep_first'
+                indx = None
+                # firstname, lastname, phone, cid, rep_first
                 with open(bulk.distribution.path, 'rb') as phile:
                     # read 1MB chunks to ensure the sniffer works for files
                     # of any size without running out of memory:
@@ -368,18 +370,25 @@ def send_form(request):
                         phile, delimiter=delimiter, quoting=csv.QUOTE_NONE,
                     )
                     for row in reader:
-                        sent = send_message(
-                            Client(
-                                bulk.sender.account.sid,
-                                bulk.sender.account.token,
-                            ),
-                            bulk.sender,
-                            row[2],             # recipient
-                            data['message'],    # body
-                            row[3],             # cid
-                            bulk=bulk,
-                            doc=phile,
-                        )
+                        if rep in row:
+                            indx = row.index(rep)
+                            # skip header row
+                        else:
+                            body = data['message']
+                            if rep:
+                                body = body.replace(rep, rep)
+                            sent = send_message(
+                                Client(
+                                    bulk.sender.account.sid,
+                                    bulk.sender.account.token,
+                                ),
+                                bulk.sender,
+                                row[2],             # recipient
+                                body,               # body
+                                row[3],             # cid
+                                bulk=bulk,
+                                doc=phile,
+                            )
                 messages.add_message(
                     request, messages.SUCCESS, """
                         Your messages have been sent. View the
