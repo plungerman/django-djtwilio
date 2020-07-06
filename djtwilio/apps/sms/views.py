@@ -360,14 +360,14 @@ def send_form(request):
                 rep = 'rep_first'
                 indx = None
                 # firstname, lastname, phone, cid, rep_first
-                with open(bulk.distribution.path, 'rb') as phile:
+                with open(bulk.distribution.path, 'rb') as csvfile:
                     # read 1MB chunks to ensure the sniffer works for files
                     # of any size without running out of memory:
-                    dialect = csv.Sniffer().sniff(phile.read(1024*1024))
-                    phile.seek(0)
+                    dialect = csv.Sniffer().sniff(csvfile.read(1024*1024))
+                    csvfile.seek(0)
                     delimiter = dialect.delimiter
                     reader = csv.reader(
-                        phile, delimiter=delimiter, quoting=csv.QUOTE_NONE,
+                        csvfile, delimiter=delimiter, quoting=csv.QUOTE_NONE,
                     )
                     for row in reader:
                         if rep in row:
@@ -375,8 +375,8 @@ def send_form(request):
                             # skip header row
                         else:
                             body = data['message']
-                            if rep:
-                                body = body.replace(rep, rep)
+                            if indx:
+                                body = body.replace(rep, row[indx])
                             sent = send_message(
                                 Client(
                                     bulk.sender.account.sid,

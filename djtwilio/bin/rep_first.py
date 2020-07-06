@@ -16,7 +16,7 @@ def main():
     message = 'yours, rep_first'
     rep = 'rep_first'
     indx = None
-    export = 'test.csv'
+    export = os.path.join(settings.BASE_DIR, 'assets/files/test.csv')
     try:
         with open(export, 'rb') as phile:
             dialect = csv.Sniffer().sniff(phile.read(1024*1024))
@@ -31,7 +31,7 @@ def main():
                 else:
                     if indx:
                         message = message.replace(rep, row[indx])
-                print(message)
+                    print(message)
     except Exception as e:
         print("Exception: {}".format(str(e)))
         sys.exit(1)

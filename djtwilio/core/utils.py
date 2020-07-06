@@ -23,9 +23,13 @@ def send_message(client, sender, recipient, body, cid, callback=False, bulk=None
         # create Message object before API call
         recipient = str(recipient).translate(None, '.+()- ')
         message = Message.objects.create(
-            messenger=sender, recipient=recipient,
-            student_number=cid, body=body, bulk=bulk, status=status,
-            phile=doc
+            messenger=sender,
+            recipient=recipient,
+            student_number=cid,
+            body=body,
+            bulk=bulk,
+            status=status,
+            phile=doc,
         )
         cipher = AESCipher(bs=16)
         if not callback:
