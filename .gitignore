@@ -52,10 +52,18 @@ coverage.xml
 
 # Django stuff:
 *.log
+demo.py
+shell.py
 local.py
 development.py
+staging.py
+production.py
 wsgi.py
 migrations
+*.csv
+uwsgi.*.ini
+*_rsa
+*_rsa.pub
 #
 user.json
 sender.json

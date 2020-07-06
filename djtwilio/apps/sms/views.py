@@ -1,42 +1,52 @@
+# -*- coding: utf-8 -*-
+
+import csv
+import json
+import logging
+import re
+import unicodedata
+
 from django.conf import settings
-from django.shortcuts import render
 from django.contrib import messages
+from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.http import HttpResponseRedirect
+from django.http import Http404
 from django.views.decorators.csrf import csrf_exempt
-
-from djtwilio.apps.sms.forms import (
-    BulkForm, DocumentForm, IndiForm, StatusCallbackForm
-)
-from djtwilio.apps.sms.models import Bulk, Error, Message, Status
-from djtwilio.apps.sms.errors import MESSAGE_DELIVERY_CODES
-from djtwilio.core.utils import send_message
-from djtwilio.core.models import Account, Sender
-from djtwilio.apps.sms.data import CtcBlob
-
 from djtools.utils.mail import send_mail
 from djtools.utils.cypher import AESCipher
+from djtwilio.apps.sms.data import CtcBlob
+from djtwilio.apps.sms.forms import BulkForm
+from djtwilio.apps.sms.forms import DocumentForm
+from djtwilio.apps.sms.forms import IndiForm
+from djtwilio.apps.sms.forms import StatusCallbackForm
+from djtwilio.apps.sms.models import Bulk
+from djtwilio.apps.sms.models import Error
+from djtwilio.apps.sms.models import Message
+from djtwilio.apps.sms.models import Status
+from djtwilio.apps.sms.errors import MESSAGE_DELIVERY_CODES
+from djtwilio.core.models import Account
+from djtwilio.core.models import Sender
+from djtwilio.core.utils import send_message
 from djzbar.utils.informix import get_session
 from djzbar.decorators.auth import portal_auth_required
 
 from twilio.rest import Client
 from twilio.twiml.voice_response import Dial, VoiceResponse, Say
 
-import re
-import csv
-import json
-import unicodedata
-import logging
 
 logger = logging.getLogger(__name__)
 EARL = settings.INFORMIX_EARL
 
 
 @portal_auth_required(
-    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
+    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied'),
 )
 def bulk_detail(request, bid):
+    """View the details of a bulk message."""
     user = request.user
     bulk = get_object_or_404(Bulk, pk=bid)
     if bulk.sender.user != user and not user.is_superuser:
@@ -44,33 +54,32 @@ def bulk_detail(request, bid):
     else:
         objects = Message.objects.filter(bulk=bulk)
         response = render(
-            request, 'apps/sms/bulk_detail.html', {'bulk':bulk, 'objects': objects}
+            request,
+            'apps/sms/bulk_detail.html',
+            {'bulk':bulk, 'objects': objects},
         )
 
     return response
 
 
 @portal_auth_required(
-    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
+    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied'),
 )
 def bulk_list(request):
-
+    """Display all bulk messages for a user or all for superusers."""
     user = request.user
     if user.is_superuser:
         bulk = Bulk.objects.all().order_by('-date_created')
     else:
         bulk = Bulk.objects.filter(sender=user).order_by('-date_created')
-
-    return render(
-        request, 'apps/sms/bulk_list.html', {'bulk': bulk,}
-    )
+    return render(request, 'apps/sms/bulk_list.html', {'bulk': bulk})
 
 
 @portal_auth_required(
-    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
+    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied'),
 )
 def individual_list(request):
-
+    """Display all single recipient messages for a use all for superusers."""
     user = request.user
     if user.is_superuser:
         messages = Message.objects.all().order_by('-date_created')
@@ -79,66 +88,62 @@ def individual_list(request):
         for sender in user.sender.all():
             for m in sender.messenger.all().order_by('-date_created'):
                 messages.append(m)
-
     return render(
-        request, 'apps/sms/individual_list.html', {'messages': messages,}
+        request, 'apps/sms/individual_list.html', {'messages': messages},
     )
 
 
 @portal_auth_required(
-    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
+    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied'),
 )
 def detail(request, sid, medium='screen'):
-
+    """Display the details of a message."""
     user = request.user
     try:
         message = Message.objects.get(status__MessageSid=sid)
     except:
         raise Http404
-
     template = 'apps/sms/detail_{}.html'.format(medium)
     if message.messenger.user != user and not user.is_superuser:
         response = HttpResponseRedirect(
             reverse('sms_send_form')
         )
     else:
-        response = render(
-        request, template, {'message': message,}
-    )
-
+        response = render(request, template, {'message': message})
     return response
 
 
 @portal_auth_required(
-    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
+    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied'),
 )
 def home(request):
-
+    """Display the first 100 messages for a user."""
     limit = 100
     user = request.user
     if user.is_superuser:
         bulk = Bulk.objects.all().order_by('-date_created')[:limit]
         messages = Message.objects.all().order_by('-date_created')[:limit]
     else:
-        bulk = Bulk.objects.filter(sender__user=request.user).order_by('-date_created')[:100]
+        bulk = Bulk.objects.filter(sender__user=request.user).order_by(
+            '-date_created',
+        )[:limit]
         messages = []
         limit = limit / user.sender.count()
         for sender in user.sender.all():
             for m in sender.messenger.all().order_by('-date_created')[:limit]:
                 messages.append(m)
-
     return render(
-        request, 'apps/sms/home.html', {'messages': messages,'bulk':bulk}
+        request, 'apps/sms/home.html', {'messages': messages,'bulk':bulk},
     )
 
 
 @csrf_exempt
 @portal_auth_required(
-    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
+    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied'),
 )
 def get_sender(request):
-
-    results = {'sender':'','student_number':'','message':""}
+    """Return a message in json format from a POST request."""
+    results = {'sender': '', 'student_number': '', 'message': ""}
     if request.method=='POST':
         phone = request.POST.get('phone_to')
         if phone:
@@ -162,24 +167,22 @@ def get_sender(request):
     else:
         # requires POST
         msg = "Method must be POST."
-
     results['message'] = msg
     return HttpResponse(
-        json.dumps(results), content_type='application/json; charset=utf-8'
+        json.dumps(results), content_type='application/json; charset=utf-8',
     )
 
 
 @csrf_exempt
 def status_callback(request, mid=None):
-    """
-    see: https://www.twilio.com/docs/sms/twiml#request-parameters
-    """
+    """Handle the callback requests from the twilio API."""
+    # see: https://www.twilio.com/docs/sms/twiml#request-parameters
     content_type='text/plain; charset=utf-8'
     if request.method=='POST':
         post = request.POST
         if settings.DEBUG:
             for k,v in post.items():
-                logger.debug(u'{}: {}'.format(k,v))
+                logger.debug(u'{0}: {1}'.format(k,v))
         # if we do not have an Account ID, it is not a legitimate request sent
         # from twilio and there is no need to go further
         account = get_object_or_404(Account, sid=post['AccountSid'])
@@ -209,36 +212,46 @@ def status_callback(request, mid=None):
                 except:
                     phone = settings.TWILIO_DEFAULT_FORWARD_PHONE
                 msg.dial(phone)
-                logger.debug('forwarding = {}'.format(msg))
+                logger.debug('forwarding = {0}'.format(msg))
             else:
                 # callback from the API when recipient has replied to an SMS
                 if not mid:
                     # remove extraneous characters and country code for US
-                    frum = str(status.From).translate(None,'.+()- ')[1:]
-                    recipient = str(status.To).translate(None,'.+()- ')
+                    frum = str(status.From).translate(None, '.+()- ')[1:]
+                    recipient = str(status.To).translate(None, '.+()- ')
                     # obtain message from our sender
                     m = Message.objects.filter(recipient=frum).order_by(
-                        '-date_created'
+                        '-date_created',
                     ).first()
                     sender = m.messenger
                     message = Message(
-                        messenger=sender, recipient=recipient,
-                        student_number=m.student_number, body=status.Body,
-                        status=status
+                        messenger=sender,
+                        recipient=recipient,
+                        student_number=m.student_number,
+                        body=status.Body,
+                        status=status,
                     )
                     message.save()
                     to = None
-                    email_to = [sender.user.email,]
+                    email_to = [sender.user.email]
                     if settings.DEBUG:
                         to = sender.user.email
-                        email_to = [settings.MANAGERS[0][1],]
+                        email_to = [settings.MANAGERS[0][1]]
                     subject = "[DJ Twilio] reply from one your contacts"
                     data = {
-                        'status':status,'original':m,'response':message,'to':to
+                        'status': status,
+                        'original': m,
+                        'response': message,
+                        'to':to,
                     }
                     send_mail(
-                        request, email_to, subject, settings.DEFAULT_FROM_EMAIL,
-                        "apps/sms/reply_email.html", data, [settings.MANAGERS[0][1],]
+                        request,
+                        email_to,
+                        subject,
+                        settings.DEFAULT_FROM_EMAIL,
+                        'apps/sms/reply_email.html',
+                        data,
+                        [settings.MANAGERS[0][1]],
                     )
                     status.MessageStatus = 'received'
                     message.status = status
@@ -296,11 +309,11 @@ def status_callback(request, mid=None):
 
 
 @portal_auth_required(
-    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied')
+    session_var='DJTWILIO_AUTH', redirect_url=reverse_lazy('access_denied'),
 )
 @csrf_exempt
 def send_form(request):
-
+    """Send a message to the twilio API."""
     bulk = False
     response = False
     template = 'apps/sms/form.html'
@@ -308,14 +321,23 @@ def send_form(request):
 
     if request.method=='POST':
         form_doc = DocumentForm(
-            request.POST, request.FILES, prefix='doc', use_required_attribute=False
+            request.POST,
+            request.FILES,
+            prefix='doc',
+            use_required_attribute=False,
         )
         form_bulk = BulkForm(
-            request.POST, request.FILES, prefix='bulk', use_required_attribute=False
+            request.POST,
+            request.FILES,
+            prefix='bulk',
+            use_required_attribute=False,
         )
         form_indi = IndiForm(
-            request.POST, request.FILES, request=request, prefix='indi',
-            use_required_attribute=False
+            request.POST,
+            request.FILES,
+            request=request,
+            prefix='indi',
+            use_required_attribute=False,
         )
         if user.is_superuser:
             sids = Sender.objects.filter(messaging_service_sid__isnull=False)
@@ -323,6 +345,7 @@ def send_form(request):
             sids = user.sender.filter(messaging_service_sid__isnull=False)
         form_bulk.fields['sender'].queryset = sids
         phile = None
+        # bulk messaging
         if request.POST.get('bulk-submit'):
             bulk = True
             if form_bulk.is_valid() and form_doc.is_valid():
@@ -334,18 +357,28 @@ def send_form(request):
                     phile.save()
                 data = form_bulk.cleaned_data
                 bulk = form_bulk.save()
-                with open(bulk.distribution.path, 'rb') as f:
-                    # read 1MB chunks to ensure the sniffer works for files of any size
-                    # without running out of memory:
-                    dialect = csv.Sniffer().sniff(f.read(1024*1024))
-                    f.seek(0)
+                # firstname, lastname, phone, cid
+                with open(bulk.distribution.path, 'rb') as phile:
+                    # read 1MB chunks to ensure the sniffer works for files
+                    # of any size without running out of memory:
+                    dialect = csv.Sniffer().sniff(phile.read(1024*1024))
+                    phile.seek(0)
                     delimiter = dialect.delimiter
-                    reader = csv.reader(f, delimiter=delimiter, quoting=csv.QUOTE_NONE)
-                    for r in reader:
+                    reader = csv.reader(
+                        phile, delimiter=delimiter, quoting=csv.QUOTE_NONE,
+                    )
+                    for row in reader:
                         sent = send_message(
-                            Client(bulk.sender.account.sid, bulk.sender.account.token),
-                            bulk.sender, r[2], data['message'], r[3], bulk=bulk,
-                            doc=phile
+                            Client(
+                                bulk.sender.account.sid,
+                                bulk.sender.account.token,
+                            ),
+                            bulk.sender,
+                            row[2],             # recipient
+                            data['message'],    # body
+                            row[3],             # cid
+                            bulk=bulk,
+                            doc=phile,
                         )
                 messages.add_message(
                     request, messages.SUCCESS, """
@@ -356,7 +389,7 @@ def send_form(request):
                     extra_tags='alert alert-success'
                 )
                 response = HttpResponseRedirect( reverse('sms_send_form') )
-        else:
+        else:  # single recipient message, not bulk
             if form_indi.is_valid() and form_doc.is_valid():
                 data = form_indi.cleaned_data
                 doc = form_doc.cleaned_data
@@ -370,37 +403,46 @@ def send_form(request):
                 recipient = data['phone_to']
                 sent = send_message(
                     Client(sender.account.sid, sender.account.token),
-                    sender, recipient, body, data.get('student_number'),
-                    doc=phile
+                    sender,
+                    recipient,
+                    body,
+                    data.get('student_number'),
+                    doc=phile,
                 )
                 if sent['message']:
                     messages.add_message(
-                        request, messages.SUCCESS, """
+                        request,
+                        messages.SUCCESS,
+                        """
                           Your message has been sent. View the
                           <a data-target="#messageStatus" data-toggle="modal"
-                          data-load-url="{}" class="message-status text-primary">
+                          data-load-url="{0}" class="message-status text-primary">
                           message status</a>.
-                        """.format(reverse('sms_detail', args=[
-                                sent['message'].status.MessageSid,'modal'
-                            ]
-                        )), extra_tags='alert alert-success'
+                        """.format(
+                                reverse(
+                                    'sms_detail',
+                                    args=[
+                                        sent['message'].status.MessageSid,
+                                        'modal',
+                                    ]
+                                )
+                            ),
+                        extra_tags='alert alert-success',
                     )
-                else:
+                else:  # message fail
                     messages.add_message(
-                        request, messages.ERROR, sent['response'],
-                        extra_tags='alert alert-danger'
+                        request,
+                        messages.ERROR,
+                        sent['response'],
+                        extra_tags='alert alert-danger',
                     )
-
-                response = HttpResponseRedirect(
-                    reverse('sms_send_form')
-                )
+                response = HttpResponseRedirect(reverse('sms_send_form'))
     else:
         form_doc = DocumentForm(prefix='doc', use_required_attribute=False)
         form_bulk = BulkForm(prefix='bulk', use_required_attribute=False)
         form_indi = IndiForm(
-            prefix='indi', request=request, use_required_attribute=False
+            prefix='indi', request=request, use_required_attribute=False,
         )
-
         if user.is_superuser:
             sids = Sender.objects.filter(messaging_service_sid__isnull=False)
         else:
@@ -410,15 +452,11 @@ def send_form(request):
     if not response:
         response = render(
             request, template, {
-                'form_indi': form_indi, 'form_bulk': form_bulk, 'bulk': bulk,
-                'form_doc':form_doc
+                'form_indi': form_indi,
+                'form_bulk': form_bulk,
+                'bulk': bulk,
+                'form_doc':form_doc,
             }
         )
 
     return response
-
-
-def search(request):
-    return render(
-        request, 'apps/sms/search.html'
-    )

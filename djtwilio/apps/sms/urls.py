@@ -49,9 +49,6 @@ urlpatterns = [
         views.individual_list, name='sms_individual_list'
     ),
     url(
-        r'^search/$', views.search, name='sms_search'
-    ),
-    url(
         r'^$', views.home, name='sms_home'
     )
 ]
