@@ -41,7 +41,9 @@ def main():
     """Send an SMS from a messaging service SID."""
     client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
     status_callback_url = 'https://{0}{1}{2}'.format(
-        settings.SERVER_URL, settings.ROOT_URL, reverse('sms_status_callback'),
+        settings.SERVER_URL,
+        settings.ROOT_URL,
+        reverse('sms_status_callback', args=[666]),
     )
     if test:
         print(status_callback_url)
@@ -50,7 +52,7 @@ def main():
         message = client.messages.create(
             from_=settings.TWILIO_TEST_MESSAGING_SERVICE_SID, to=phone,
             body='who does your taxes?',
-            status_callback = status_callback_url
+            status_callback=status_callback_url
         )
 
         print(message.__dict__)
