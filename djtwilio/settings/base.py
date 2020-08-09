@@ -229,7 +229,11 @@ TEST_USER_ID = ''
 LOG_FILEPATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs/'
 )
-LOG_FILENAME = LOG_FILEPATH + 'debug.log'
+LOG_FILENAME = '{0}{1}'.format(LOG_FILEPATH, 'debug.log')
+DEBUG_LOG_FILENAME = '{0}{1}'.format(LOG_FILEPATH, 'debug.log')
+INFO_LOG_FILENAME = '{0}{1}'.format(LOG_FILEPATH, 'info.log')
+ERROR_LOG_FILENAME = '{0}{1}'.format(LOG_FILEPATH, 'error.log')
+CUSTOM_LOG_FILENAME = '{0}{1}'.format(LOG_FILEPATH, 'custom.log')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -248,8 +252,11 @@ LOGGING = {
     },
     'filters': {
         'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
     },
     'handlers': {
         'logfile': {
@@ -271,6 +278,35 @@ LOGGING = {
         }
     },
     'loggers': {
+        'custom_logfile': {
+            'level':'ERROR',
+            'filters': ['require_debug_true'], # do not run error logger in production
+            'class': 'logging.FileHandler',
+            'filename': CUSTOM_LOG_FILENAME,
+            'formatter': 'custom',
+        },
+        'info_logfile': {
+            'level':'INFO',
+            'class':'logging.handlers.RotatingFileHandler',
+            'backupCount': 10,
+            'maxBytes': 50000,
+            'filters': ['require_debug_false'], # run logger in production
+            'filename': INFO_LOG_FILENAME,
+            'formatter': 'simple',
+        },
+        'debug_logfile': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': DEBUG_LOG_FILENAME,
+            'formatter': 'verbose'
+        },
+        'error_logfile': {
+            'level': 'ERROR',
+            'filters': ['require_debug_true'], # do not run error logger in production
+            'class': 'logging.FileHandler',
+            'filename': ERROR_LOG_FILENAME,
+            'formatter': 'verbose'
+        },
         'djtwilio': {
             'handlers':['logfile'],
             'propagate': True,
