@@ -48,9 +48,10 @@ def main():
         print(phone)
     else:
         message = client.messages.create(
-            from_=settings.TWILIO_TEST_MESSAGING_SERVICE_SID, to=phone,
+            from_=settings.TWILIO_TEST_MESSAGING_SERVICE_SID,
+            to=phone,
             body='who does your taxes?',
-            status_callback = status_callback_url
+            status_callback=status_callback_url,
         )
 
         print(message.__dict__)
