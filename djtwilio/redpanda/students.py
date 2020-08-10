@@ -21,6 +21,17 @@ from djtwilio.core.utils import send_message
 from twilio.rest import Client
 
 
+# informix environment
+os.environ['INFORMIXSERVER'] = settings.INFORMIXSERVER
+os.environ['DBSERVERNAME'] = settings.DBSERVERNAME
+os.environ['INFORMIXDIR'] = settings.INFORMIXDIR
+os.environ['ODBCINI'] = settings.ODBCINI
+os.environ['ONCONFIG'] = settings.ONCONFIG
+os.environ['INFORMIXSQLHOSTS'] = settings.INFORMIXSQLHOSTS
+os.environ['LD_LIBRARY_PATH'] = settings.LD_LIBRARY_PATH
+os.environ['LD_RUN_PATH'] = settings.LD_RUN_PATH
+
+
 def main():
     """Send students notification to complete daily health check."""
     request = None
@@ -60,7 +71,7 @@ def main():
                 if student[6]:
                     body = base(first_name=student[2], earl=earl)
                     print(body)
-                    response = send_message(client, sender, student[6], body, row[0])
+                    response = send_message(client, sender, student[6], body, student[0])
                     #print(student[6])
                     #print(row[0])
                     mobi += 1
@@ -69,7 +80,6 @@ def main():
                     mail += 1
                     print(email)
                     context_data = {'earl': earl, 'peep': student}
-                    '''
                     send_mail(
                         request,
                         [email],
@@ -78,7 +88,6 @@ def main():
                         'redpanda/email_reminder.html',
                         context_data,
                     )
-                    '''
             else:
                 print('student not found in the portal: {0}'.format(student[0]))
 
