@@ -3,7 +3,9 @@
 
 import argparse
 import django
+import requests
 import sys
+
 
 django.setup()
 
@@ -46,9 +48,14 @@ def main():
         reverse('sms_status_callback', args=[666]),
     )
     if test:
+        #print(reverse('sms_status_callback', args=[666]))
+        #print(request.build_absolute_uri(reverse('sms_status_callback', args=(666, )))
+        #request = requests.get(reverse('sms_status_callback', args=(666, )))
+        #print(request.text)
         print(status_callback_url)
         print(phone)
     else:
+        print(status_callback_url)
         message = client.messages.create(
             from_=settings.TWILIO_TEST_MESSAGING_SERVICE_SID,
             to=phone,

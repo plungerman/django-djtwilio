@@ -5,9 +5,19 @@ Django settings for project.
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 
+from djimix.settings.local import DBSERVERNAME
+from djimix.settings.local import INFORMIX_ODBC
+from djimix.settings.local import INFORMIX_ODBC_TRAIN
+from djimix.settings.local import INFORMIXDIR
+from djimix.settings.local import INFORMIXSERVER
+from djimix.settings.local import INFORMIXSQLHOSTS
+from djimix.settings.local import LD_LIBRARY_PATH
+from djimix.settings.local import LD_RUN_PATH
+from djimix.settings.local import MSSQL_EARL
+from djimix.settings.local import ODBCINI
+from djimix.settings.local import ONCONFIG
+
 from djzbar.settings import INFORMIX_EARL_TEST as INFORMIX_EARL
-# sqlserver connection string
-MSSQL_EARL = ''
 
 # Debug
 DEBUG = False
@@ -18,6 +28,8 @@ ADMINS = (
 MANAGERS = ADMINS
 
 SECRET_KEY = ''
+ENCRYPTION_KEY = None
+
 ALLOWED_HOSTS = []
 
 LANGUAGE_CODE = 'en-us'
@@ -205,6 +217,9 @@ TWILIO_ACCOUNT_SID = ''
 TWILIO_AUTH_TOKEN = ''
 TWILIO_FORGERY_PROTECTION = True
 TWILIO_DEFAULT_FORWARD_PHONE=''
+TWILIO_REDPANDA_SENDER_ID = None
+TWILIO_REDPANDA_TEST_TUPLE = ()
+# tests
 TWILIO_TEST_BULK_NAME=''
 TWILIO_TEST_BULK_DESCRIPTION=''
 TWILIO_TEST_BULK_SENDER_ID=0
