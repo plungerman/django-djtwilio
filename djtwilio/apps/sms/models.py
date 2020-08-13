@@ -262,9 +262,8 @@ class Document(models.Model):
 
 
 class Message(models.Model):
-    """
-    An SMS data model
-    """
+    """An SMS data model."""
+
     date_created = models.DateTimeField(
         auto_now_add=True
     )
