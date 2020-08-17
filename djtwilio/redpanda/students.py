@@ -36,7 +36,7 @@ def main():
     """Send students notification to complete daily health check."""
     request = None
     frum = settings.DEFAULT_FROM_EMAIL
-    subject = "[Health Check] Daily Reminder"
+    subject = "Daily Health Check Reminder"
     # fetch our students
     #phile = os.path.join(settings.BASE_DIR, 'redpanda/students.sql')
     phile = os.path.join(settings.BASE_DIR, 'redpanda/staff.sql')
