@@ -33,3 +33,5 @@ WHERE
     CUR.prog = 'UNDG'
 AND
     CUR.subprog = 'TRAD'
+ORDER by
+    lastname
