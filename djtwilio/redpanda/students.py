@@ -39,9 +39,10 @@ logger = logging.getLogger('debug_logfile')
 
 def main():
     """Send students notification to complete daily health check."""
+    logger.debug('start')
     request = None
     frum = settings.DEFAULT_FROM_EMAIL
-    subject = "Daily Health Check Reminder: {sn}, {fn}".format
+    subject = "Daily Health Check Reminder:"
     # fetch our students
     phile = os.path.join(settings.BASE_DIR, 'redpanda/students.sql')
     with open(phile) as incantation:
@@ -65,11 +66,17 @@ def main():
             sql = "SELECT * FROM fwk_user WHERE HostID like '%{}'".format(student[0])
             row = xsql(sql, mssql_cnxn).fetchone()
             if row:
+                '''
                 earl = 'https://{0}{1}{2}?uid={3}'.format(
                     settings.REDPANDA_SERVER_URL,
                     settings.REDPANDA_ROOT_URL,
                     settings.REDPANDA_SHORT_URL_API,
                     row[0],
+                )
+                '''
+                earl = 'https://{0}{1}'.format(
+                    settings.REDPANDA_SERVER_URL,
+                    settings.REDPANDA_ROOT_URL,
                 )
                 print(earl)
                 #response = requests.get(earl)
@@ -82,8 +89,8 @@ def main():
                 )
                 print(body)
                 if student[6]:
-                    #response = send_message(client, sender, student[6], body, student[0])
-                    #print(response)
+                    response = send_message(client, sender, student[6], body, student[0])
+                    print(response)
                     print(student[6])
                     print(row[0])
                     mobi += 1
@@ -97,7 +104,7 @@ def main():
                     else:
                         smtp_count += 1
                     mail += 1
-                    email = '{0}@carthage.edu'.format(student[8])
+                    email = student[8]
                     print(email)
                     logger.debug(student[0])
                     context_data = {'earl': earl, 'student': student}
@@ -105,29 +112,24 @@ def main():
                     print(headers)
                     template = loader.get_template('redpanda/email_reminder.html')
                     rendered = template.render({'data':context_data,}, request)
-                    print(subject(sn=student[1], fn=student[2]))
-                    # subject(sn=student[1], fn=student[2]),
-                    subject = '{0}: {1}'.format(student[0], email)
-                    recipient_list = ['larry@carthage.edu']
-                    '''
                     try:
                         send_mail(
                             subject,
                             body,
-                            from_email,
-                            recipient_list,
+                            frum,
+                            [email],
                             fail_silently=False,
                             auth_user=auth_user,
                             auth_password=auth_pass,
                             html_message=rendered,
                         )
                     except Exception as e:
+                        print(e)
                         logger.debug(e)
                         logger.debug(student[0])
                         if smtp_count >= 50:
                             smtp_index += 1
                             smtp_count = 0
-                    '''
 
             else:
                 logger.debug('student not found in the portal: {0}'.format(student[0]))

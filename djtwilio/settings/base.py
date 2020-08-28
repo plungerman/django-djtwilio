@@ -316,9 +316,10 @@ LOGGING = {
         },
         'debug_logfile': {
             'level': 'DEBUG',
+            'handlers': ['logfile'],
             'class': 'logging.FileHandler',
             'filename': DEBUG_LOG_FILENAME,
-            'formatter': 'verbose'
+            'formatter': 'verbose',
         },
         'error_logfile': {
             'level': 'ERROR',
