@@ -84,9 +84,7 @@ def main():
                 #earl = jason_data['lynx']
                 #print(earl)
                 # send an SMS or an email
-                body = settings.REDPANDA_TEXT_MESSAGE(
-                    first_name=student[2], earl=earl,
-                )
+                body = settings.REDPANDA_TEXT_MESSAGE(earl=earl)
                 print(body)
                 if student[6]:
                     response = send_message(client, sender, student[6], body, student[0])
