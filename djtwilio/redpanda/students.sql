@@ -30,8 +30,8 @@ AND
 AND
     TODAY BETWEEN EML.beg_date AND NVL(EML.end_date, TODAY)
 WHERE
-    CUR.prog = 'UNDG'
+    CUR.prog in ('UNDG', 'GRAD')
 AND
-    CUR.subprog = 'TRAD'
+    CUR.subprog in ('ACT', 'BDI', 'MED', 'MM', 'TRAD')
 ORDER by
     lastname
