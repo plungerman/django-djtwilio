@@ -95,7 +95,7 @@ def main():
                 else:
                     auth_user = settings.REDPANDA_SMTP_ACCOUNTS[smtp_index]['username']
                     auth_pass = settings.REDPANDA_SMTP_ACCOUNTS[smtp_index]['password']
-                    if smtp_count >= 50:
+                    if smtp_count >= settings.REDPANDA_SMTP_ROTATE_COUNT:
                         smtp_index += 1
                         smtp_count = 0
                         print('smtp_index = {0}'.format(smtp_index))
