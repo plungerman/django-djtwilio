@@ -43,11 +43,11 @@ def main():
     with connections['redpanda'].cursor() as cursor:
         reggies = cursor.execute('SELECT * FROM research_registration WHERE mobile=True')
         for reggie in cursor.fetchall():
-            cids.append(reggie[11])
+            cids.append(int(reggie[11]))
     # fetch our staff mobiles
     phile = os.path.join(settings.BASE_DIR, 'redpanda/staff.sql')
     with open(phile) as incantation:
-        sql = '{0} {1}'.format(incantation.read(), cids)
+        sql = '{0} {1}'.format(incantation.read(), tuple(cids))
         print(sql)
     with get_connection() as connection:
         peeps = xsql(sql, connection).fetchall()
