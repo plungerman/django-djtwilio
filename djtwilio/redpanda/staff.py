@@ -13,6 +13,7 @@ import django
 django.setup()
 
 from django.conf import settings
+from django.db import connections
 from djimix.core.database import get_connection
 from djimix.core.database import xsql
 from djtools.utils.mail import send_mail
@@ -37,10 +38,16 @@ def main():
     request = None
     frum = settings.DEFAULT_FROM_EMAIL
     subject = "Daily Health Check Reminder"
-    # fetch our staff
+    # cids from redpanda database
+    cids = []
+    with connections['redpanda'].cursor() as cursor:
+        reggies = cursor.execute('select * from research_registration where mobile=True')
+        for reggie in cursor.fetchall():
+            cids.append(reggie[11])
+    # fetch our staff mobiles
     phile = os.path.join(settings.BASE_DIR, 'redpanda/staff.sql')
     with open(phile) as incantation:
-        sql = '{0} {1}'.format(incantation.read(), settings.REDPANDA_TEST_CIDS)
+        sql = '{0} {1}'.format(incantation.read(), cids)
         print(sql)
     with get_connection() as connection:
         peeps = xsql(sql, connection).fetchall()
