@@ -41,7 +41,7 @@ def main():
     # cids from redpanda database
     cids = []
     with connections['redpanda'].cursor() as cursor:
-        reggies = cursor.execute('select * from research_registration where mobile=True')
+        reggies = cursor.execute('SELECT * FROM research_registration WHERE mobile=True')
         for reggie in cursor.fetchall():
             cids.append(reggie[11])
     # fetch our staff mobiles
