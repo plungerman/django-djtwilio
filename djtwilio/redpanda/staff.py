@@ -67,20 +67,27 @@ def main():
             sql = "SELECT * FROM fwk_user WHERE HostID like '%{}'".format(peep[0])
             row = xsql(sql, mssql_cnxn).fetchone()
             if row:
+                '''
                 earl = 'https://{0}{1}{2}?uid={3}'.format(
                     settings.REDPANDA_SERVER_URL,
                     settings.REDPANDA_ROOT_URL,
                     settings.REDPANDA_SHORT_URL_API,
                     row[0],
                 )
+                '''
+                earl = 'https://{0}{1}'.format(
+                    settings.REDPANDA_SERVER_URL,
+                    settings.REDPANDA_ROOT_URL,
+                )
                 print(earl)
-                response = requests.get(earl)
-                jason_data = json.loads(response.text)
-                earl = jason_data['lynx']
-                print(earl)
+                #response = requests.get(earl)
+                #jason_data = json.loads(response.text)
+                #earl = jason_data['lynx']
+                #print(earl)
                 # send an SMS or an email
                 if peep[6]:
-                    body = base(first_name=peep[2], earl=earl)
+                    body = settings.REDPANDA_TEXT_MESSAGE(earl=earl)
+                    #body = base(first_name=peep[2], earl=earl)
                     print(body)
                     response = send_message(client, sender, peep[6], body, peep[0])
                     mobi += 1
@@ -88,15 +95,15 @@ def main():
                     email = '{0}@carthage.edu'.format(peep[8])
                     mail += 1
                     print(email)
-                    context_data = {'earl': earl, 'peep': peep}
-                    send_mail(
-                        request,
-                        [email],
-                        subject,
-                        frum,
-                        'redpanda/email_reminder.html',
-                        context_data,
-                    )
+                    #context_data = {'earl': earl, 'peep': peep}
+                    #send_mail(
+                        #request,
+                        #[email],
+                        #subject,
+                        #frum,
+                        #'redpanda/email_reminder.html',
+                        #context_data,
+                    #)
             else:
                 print('peep not found in the portal: {0}'.format(peep[0]))
 
