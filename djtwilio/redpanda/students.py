@@ -78,19 +78,19 @@ def main():
                     settings.REDPANDA_SERVER_URL,
                     settings.REDPANDA_ROOT_URL,
                 )
-                print(earl)
                 #response = requests.get(earl)
                 #jason_data = json.loads(response.text)
                 #earl = jason_data['lynx']
-                #print(earl)
                 # send an SMS or an email
                 body = settings.REDPANDA_TEXT_MESSAGE(earl=earl)
-                print(body)
+                if settings.DEBUG:
+                    print(body)
                 if student[6]:
                     response = send_message(client, sender, student[6], body, student[0])
-                    print(response)
-                    print(student[6])
-                    print(row[0])
+                    if settings.DEBUG:
+                        print(response)
+                        print(student[6])
+                        print(row[0])
                     mobi += 1
                 else:
                     auth_user = settings.REDPANDA_SMTP_ACCOUNTS[smtp_index]['username']
@@ -103,11 +103,13 @@ def main():
                         smtp_count += 1
                     mail += 1
                     email = student[8]
-                    print(email)
+                    if settings.DEBUG:
+                        print(email)
                     logger.debug(student[0])
                     context_data = {'earl': earl, 'student': student}
                     headers = {'Reply-To': frum,'From': frum,}
-                    print(headers)
+                    if settings.DEBUG:
+                        print(headers)
                     template = loader.get_template('redpanda/email_reminder.html')
                     rendered = template.render({'data':context_data,}, request)
                     try:
@@ -125,7 +127,7 @@ def main():
                         print(e)
                         logger.debug(e)
                         logger.debug(student[0])
-                        if smtp_count >= 50:
+                        if smtp_count >= 80:
                             smtp_index += 1
                             smtp_count = 0
 
