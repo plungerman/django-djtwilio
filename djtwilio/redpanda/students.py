@@ -93,6 +93,7 @@ def main():
                         print(row[0])
                     mobi += 1
                 else:
+                    mail += 1
                     auth_user = settings.REDPANDA_SMTP_ACCOUNTS[smtp_index]['username']
                     auth_pass = settings.REDPANDA_SMTP_ACCOUNTS[smtp_index]['password']
                     if smtp_count >= settings.REDPANDA_SMTP_ROTATE_COUNT:
@@ -101,7 +102,6 @@ def main():
                         print('smtp_index = {0}'.format(smtp_index))
                     else:
                         smtp_count += 1
-                    mail += 1
                     email = student[8]
                     if settings.DEBUG:
                         print(email)
@@ -127,7 +127,7 @@ def main():
                         print(e)
                         logger.debug(e)
                         logger.debug(student[0])
-                        if smtp_count >= 80:
+                        if smtp_count >= settings.REDPANDA_SMTP_ROTATE_COUNT:
                             smtp_index += 1
                             smtp_count = 0
 
