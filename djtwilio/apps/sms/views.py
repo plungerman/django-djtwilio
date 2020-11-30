@@ -220,84 +220,85 @@ def status_callback(request, mid=None):
                     frum = str(status.From).translate(None, '.+()- ')[1:]
                     recipient = str(status.To).translate(None, '.+()- ')
                     # obtain message from our sender
-                    m = Message.objects.filter(recipient=frum).order_by(
+                    mess_orig = Message.objects.filter(recipient=frum).order_by(
                         '-date_created',
                     ).first()
-                    sender = m.messenger
-                    message = Message(
-                        messenger=sender,
-                        recipient=recipient,
-                        student_number=m.student_number,
-                        body=status.Body,
-                        status=status,
-                    )
-                    message.save()
-                    to = None
-                    email_to = [sender.user.email]
-                    if settings.DEBUG:
-                        to = sender.user.email
-                        email_to = [settings.MANAGERS[0][1]]
-                    subject = "[DJ Twilio] reply from one your contacts"
-                    data = {
-                        'status': status,
-                        'original': m,
-                        'response': message,
-                        'to':to,
-                    }
-                    send_mail(
-                        request,
-                        email_to,
-                        subject,
-                        settings.DEFAULT_FROM_EMAIL,
-                        'apps/sms/reply_email.html',
-                        data,
-                        [settings.MANAGERS[0][1]],
-                    )
-                    status.MessageStatus = 'received'
-                    message.status = status
-                    status.save()
-                # update informix
-                if status.MessageStatus in ['delivered','received']:
-                    # create the ctc_blob object with the value of
-                    # the message body for txt
-                    session = get_session(EARL)
-                    # informix does not like unicode for their blob and
-                    # it has to be a string, so here we deal with
-                    # non-standar characters that do not work with
-                    # python strings
-                    body = unicodedata.normalize(
-                        'NFKD', message.body
-                    ).encode('ascii','ignore')
-                    blob = CtcBlob(txt=body)
-                    session.add(blob)
-                    session.flush()
-                    # insert into database
-                    text_type = 'TEXTOUT'
-                    if message.bulk:
-                        text_type = 'TEXTMASS'
-                    stat = 'C'
-                    if status.MessageStatus == 'received':
-                        text_type = 'TEXTIN'
-                        stat = 'E'
-                    sql = '''
-                        INSERT INTO ctc_rec (
-                            id, tick, add_date, due_date, cmpl_date,
-                            resrc, bctc_no, stat
+                    if mess_orig:
+                        sender = mess_orig.messenger
+                        message = Message(
+                            messenger=sender,
+                            recipient=recipient,
+                            student_number=mess.student_number,
+                            body=status.Body,
+                            status=status,
                         )
-                        VALUES (
-                            {},"ADM",TODAY,TODAY,TODAY,"{}",{},"{}"
-                        )
-                    '''.format(
-                        message.student_number, text_type, blob.bctc_no, stat
-                    )
-                    session.execute(sql)
-                    session.commit()
-                    session.close()
-                    if not msg:
+                        message.save()
+                        to = None
+                        email_to = [sender.user.email]
                         if settings.DEBUG:
-                            msg = status.MessageStatus
-                        else:
-                            logger.debug("msg = Success")
+                            to = sender.user.email
+                            email_to = [settings.MANAGERS[0][1]]
+                        subject = "[DJ Twilio] reply from one your contacts"
+                        data = {
+                            'status': status,
+                            'original': mess_orig,
+                            'response': message,
+                            'to':to,
+                        }
+                        send_mail(
+                            request,
+                            email_to,
+                            subject,
+                            settings.DEFAULT_FROM_EMAIL,
+                            'apps/sms/reply_email.html',
+                            data,
+                            [settings.MANAGERS[0][1]],
+                        )
+                        status.MessageStatus = 'received'
+                        message.status = status
+                        status.save()
+                    # update informix
+                    if status.MessageStatus in ['delivered','received']:
+                        # create the ctc_blob object with the value of
+                        # the message body for txt
+                        session = get_session(EARL)
+                        # informix does not like unicode for their blob and
+                        # it has to be a string, so here we deal with
+                        # non-standar characters that do not work with
+                        # python strings
+                        body = unicodedata.normalize(
+                            'NFKD', message.body
+                        ).encode('ascii','ignore')
+                        blob = CtcBlob(txt=body)
+                        session.add(blob)
+                        session.flush()
+                        # insert into database
+                        text_type = 'TEXTOUT'
+                        if message.bulk:
+                            text_type = 'TEXTMASS'
+                        stat = 'C'
+                        if status.MessageStatus == 'received':
+                            text_type = 'TEXTIN'
+                            stat = 'E'
+                        sql = '''
+                            INSERT INTO ctc_rec (
+                                id, tick, add_date, due_date, cmpl_date,
+                                resrc, bctc_no, stat
+                            )
+                            VALUES (
+                                {},"ADM",TODAY,TODAY,TODAY,"{}",{},"{}"
+                            )
+                        '''.format(
+                            message.student_number, text_type, blob.bctc_no, stat
+                        )
+                        session.execute(sql)
+                        session.commit()
+                        session.close()
+                        if not msg:
+                            if settings.DEBUG:
+                                msg = status.MessageStatus
+                            else:
+                                logger.debug("msg = Success")
         else:
             msg = "Invalid POST data"
     else:
