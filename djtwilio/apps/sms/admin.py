@@ -14,7 +14,7 @@ class MessageAdmin(admin.ModelAdmin):
     readonly_fields = ('messenger','bulk')
     search_fields = ('body','recipient','student_number')
     list_per_page = 500
-    raw_id_fields = ('messenger',)
+    raw_id_fields = ('messenger', 'status', 'bulk', 'phile')
 
     def first_name(self, obj):
         return obj.messenger.user.first_name
