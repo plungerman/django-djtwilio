@@ -228,7 +228,7 @@ def status_callback(request, mid=None):
                         message = Message(
                             messenger=sender,
                             recipient=recipient,
-                            student_number=mess.student_number,
+                            student_number=mess_orig.student_number,
                             body=status.Body,
                             status=status,
                         )
