@@ -301,10 +301,6 @@ class Message(models.Model):
     def get_slug(self):
         return 'files/mms/'
 
-    # commented out for now because performance is crap and we are not
-    # using them just yet. CPU spikes to 100% everytime you view an object
-    # in django admin.
-    """
     def get_status(self):
 
         count = 0
@@ -327,9 +323,7 @@ class Message(models.Model):
                 break
 
         return ms
-    """
 
-    """
     def is_valid_number(self):
         account = self.messenger.profile
         c = Client(account.sid, account.token)
@@ -343,4 +337,3 @@ class Message(models.Model):
                 return False
             else:
                 return e
-    """
