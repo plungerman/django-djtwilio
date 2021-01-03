@@ -59,9 +59,6 @@ def main():
     # fetch our UUID
     mobi = 0
     mail = 0
-    base = """
-        Greetings {first_name},\n\nPlease log your daily health check today:\n\n{earl}\n\nThank you.
-    """.format
     with get_connection(settings.MSSQL_EARL, encoding=False) as mssql_cnxn:
         for peep in peeps:
             sql = "SELECT * FROM fwk_user WHERE HostID like '%{}'".format(peep[0])
@@ -87,7 +84,6 @@ def main():
                 # send an SMS or an email
                 if peep[6]:
                     body = settings.REDPANDA_TEXT_MESSAGE(earl=earl)
-                    #body = base(first_name=peep[2], earl=earl)
                     print(body)
                     response = send_message(client, sender, peep[6], body, peep[0])
                     mobi += 1
