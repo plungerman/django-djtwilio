@@ -34,9 +34,9 @@ logger = logging.getLogger('debug_logfile')
 
 def main():
     frum = settings.REDPANDA_SMTP_ACCOUNTS[7]['username']
-    subject = "Daily Health Check Reminder: {sn}, {fn}".format
+    subject = "Daily Health Check Reminder"
     earl = 'https://{0}'.format(settings.REDPANDA_SERVER_URL)
-    body = settings.REDPANDA_TEXT_MESSAGE(first_name='Larry', earl=earl)
+    body = settings.REDPANDA_TEXT_MESSAGE(earl=earl)
     print(body)
     for email in [settings.ADMINS[0][1], frum]:
         print(email)
@@ -47,7 +47,7 @@ def main():
         rendered = template.render({'data': context_data}, None)
         try:
             send_mail(
-                subject(sn='Kurkowski', fn='Larry'),
+                subject,
                 body,
                 frum,
                 [email],
