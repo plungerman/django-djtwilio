@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render
@@ -11,7 +13,7 @@ from djtwilio.core.models import Sender
 from djtwilio.core.sql import SEARCH_ID, STUDENTS
 
 from djzbar.utils.informix import do_sql
-from djzbar.decorators.auth import portal_auth_required
+from djauth.decorators import portal_auth_required
 
 
 @portal_auth_required(

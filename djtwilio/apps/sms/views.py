@@ -32,7 +32,7 @@ from djtwilio.core.models import Account
 from djtwilio.core.models import Sender
 from djtwilio.core.utils import send_message
 from djzbar.utils.informix import get_session
-from djzbar.decorators.auth import portal_auth_required
+from djauth.decorators import portal_auth_required
 
 from twilio.rest import Client
 from twilio.twiml.voice_response import Dial, VoiceResponse, Say
@@ -103,7 +103,7 @@ def detail(request, sid, medium='screen'):
         message = Message.objects.get(status__MessageSid=sid)
     except:
         raise Http404
-    template = 'apps/sms/detail_{}.html'.format(medium)
+    template = 'apps/sms/detail_{0}.html'.format(medium)
     if message.messenger.user != user and not user.is_superuser:
         response = HttpResponseRedirect(
             reverse('sms_send_form')
@@ -155,10 +155,8 @@ def get_sender(request):
             ).order_by('-date_created')
             if messages:
                 message = messages[0]
-                results['sender'] = '{}'.format(message.messenger.id)
-                results['student_number'] = '{}'.format(
-                    message.student_number
-                )
+                results['sender'] = '{0}'.format(message.messenger.id)
+                results['student_number'] = '{0}'.format(message.student_number)
                 msg = "Success"
             else:
                 msg = "No phone number provided."
@@ -286,10 +284,10 @@ def status_callback(request, mid=None):
                                 resrc, bctc_no, stat
                             )
                             VALUES (
-                                {},"ADM",TODAY,TODAY,TODAY,"{}",{},"{}"
+                                {0},"ADM",TODAY,TODAY,TODAY,"{1}",{2},"{3}"
                             )
                         '''.format(
-                            message.student_number, text_type, blob.bctc_no, stat
+                            message.student_number, text_type, blob.bctc_no, stat,
                         )
                         session.execute(sql)
                         session.commit()
@@ -304,7 +302,7 @@ def status_callback(request, mid=None):
     else:
         msg = "Requires POST"
         if settings.DEBUG:
-            logger.debug("msg = {}".format(msg))
+            logger.debug("msg = {0}".format(msg))
 
     return HttpResponse(msg, content_type=content_type)
 
@@ -393,7 +391,7 @@ def send_form(request):
                 messages.add_message(
                     request, messages.SUCCESS, """
                         Your messages have been sent. View the
-                        <a href="{}" class="message-status text-primary">
+                        <a href="{0}" class="message-status text-primary">
                         delivery report</a>.
                     """.format(reverse('sms_bulk_detail', args=[bulk.id])),
                     extra_tags='alert alert-success'

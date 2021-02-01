@@ -1,6 +1,7 @@
-"""
-Django settings for project.
-"""
+# -*- coding: utf-8 -*-
+
+"""Django settings for project."""
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
@@ -41,18 +42,18 @@ USE_TZ = True
 DEFAULT_CHARSET = 'utf8'
 FILE_CHARSET = 'utf8'
 SERVER_URL = ''
-API_URL = '{}/{}'.format(SERVER_URL, 'api')
-LIVEWHALE_API_URL = 'https://{}'.format(SERVER_URL)
+API_URL = '{0}/{1}'.format(SERVER_URL, 'api')
+LIVEWHALE_API_URL = 'https://{0}'.format(SERVER_URL)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT_DIR = os.path.dirname(__file__)
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 STATIC_URL = '/static/djtwilio/'
-ROOT_URL = '/apps/twilio'
-MEDIA_ROOT = '{}/assets/'.format(BASE_DIR)
-STATIC_ROOT = '{}/static/'.format(BASE_DIR)
-MEDIA_URL = '{}assets/'.format(STATIC_URL)
-UPLOADS_DIR = '{}files/'.format(MEDIA_ROOT)
-UPLOADS_URL = '{}files/'.format(MEDIA_URL)
+ROOT_URL = '/djtwilio'
+MEDIA_ROOT = '{0}/assets/'.format(BASE_DIR)
+STATIC_ROOT = '{0}/static/'.format(BASE_DIR)
+MEDIA_URL = '{0}assets/'.format(STATIC_URL)
+UPLOADS_DIR = '{0}files/'.format(MEDIA_ROOT)
+UPLOADS_URL = '{0}files/'.format(MEDIA_URL)
 ROOT_URLCONF = 'djtwilio.core.urls'
 WSGI_APPLICATION = 'djtwilio.wsgi.application'
 STATICFILES_DIRS = ()
@@ -169,7 +170,7 @@ LDAP_CHALLENGE_ATTR = ''
 LDAP_AUTH_USER_PK = False
 # auth backends
 AUTHENTICATION_BACKENDS = (
-    'djauth.ldapBackend.LDAPBackend',
+    'djauth.backends.LDAPBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 AUTH_PASSWORD_VALIDATORS = [
@@ -186,8 +187,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-LOGIN_URL = '{}/accounts/login/'.format(ROOT_URL)
-LOGOUT_URL = '{}/accounts/logout/'.format(ROOT_URL)
+LOGIN_URL = '{0}/accounts/login/'.format(ROOT_URL)
+LOGOUT_URL = '{0}/accounts/logout/'.format(ROOT_URL)
 LOGIN_REDIRECT_URL = ROOT_URL
 USE_X_FORWARDED_HOST = True
 #SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
