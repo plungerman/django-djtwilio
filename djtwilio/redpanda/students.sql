@@ -32,6 +32,6 @@ AND
 WHERE
     CUR.prog in ('UNDG', 'GRAD')
 AND
-    CUR.subprog in ('ACT', 'BDI', 'MED', 'MM', 'TRAD')
+    CUR.subprog in ('ACT', 'BDI', 'MED', 'MM', 'TRAD', 'TRAP')
 ORDER by
     lastname
