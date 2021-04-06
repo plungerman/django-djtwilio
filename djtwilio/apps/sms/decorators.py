@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals, absolute_import
-
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from functools import wraps
 
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-from django.http import (
-    HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseNotAllowed
-)
+from django.http import HttpRequest
+from django.http import HttpResponse
+from django.http import HttpResponseForbidden
+from django.http import HttpResponseNotAllowed
 from django.utils.six import text_type
-
 from twilio.twiml import TwiML as Verb
 from twilio.request_validator import RequestValidator
 
@@ -96,4 +96,3 @@ def twilio_view(f):
         else:
             return response
     return decorator
-

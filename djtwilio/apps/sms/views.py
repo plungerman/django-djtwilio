@@ -10,15 +10,16 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
-from django.shortcuts import get_object_or_404
-from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.http import Http404
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from djtools.utils.mail import send_mail
 from djtools.utils.cypher import AESCipher
 from djtwilio.apps.sms.data import CtcBlob
+from djtwilio.apps.sms.errors import MESSAGE_DELIVERY_CODES
 from djtwilio.apps.sms.forms import BulkForm
 from djtwilio.apps.sms.forms import DocumentForm
 from djtwilio.apps.sms.forms import IndiForm
@@ -27,15 +28,13 @@ from djtwilio.apps.sms.models import Bulk
 from djtwilio.apps.sms.models import Error
 from djtwilio.apps.sms.models import Message
 from djtwilio.apps.sms.models import Status
-from djtwilio.apps.sms.errors import MESSAGE_DELIVERY_CODES
 from djtwilio.core.models import Account
 from djtwilio.core.models import Sender
 from djtwilio.core.utils import send_message
 from djzbar.utils.informix import get_session
 from djauth.decorators import portal_auth_required
-
 from twilio.rest import Client
-from twilio.twiml.voice_response import Dial, VoiceResponse, Say
+from twilio.twiml.voice_response import VoiceResponse
 
 
 logger = logging.getLogger(__name__)
@@ -86,8 +85,8 @@ def individual_list(request):
     else:
         messages = []
         for sender in user.sender.all():
-            for m in sender.messenger.all().order_by('-date_created'):
-                messages.append(m)
+            for message in sender.messenger.all().order_by('-date_created'):
+                messages.append(message)
     return render(
         request, 'apps/sms/individual_list.html', {'messages': messages},
     )
@@ -105,9 +104,7 @@ def detail(request, sid, medium='screen'):
         raise Http404
     template = 'apps/sms/detail_{0}.html'.format(medium)
     if message.messenger.user != user and not user.is_superuser:
-        response = HttpResponseRedirect(
-            reverse('sms_send_form')
-        )
+        response = HttpResponseRedirect(reverse('sms_send_form'))
     else:
         response = render(request, template, {'message': message})
     return response
@@ -130,10 +127,10 @@ def home(request):
         messages = []
         limit = limit / user.sender.count()
         for sender in user.sender.all():
-            for m in sender.messenger.all().order_by('-date_created')[:limit]:
-                messages.append(m)
+            for mess in sender.messenger.all().order_by('-date_created')[:limit]:
+                messages.append(mess)
     return render(
-        request, 'apps/sms/home.html', {'messages': messages,'bulk':bulk},
+        request, 'apps/sms/home.html', {'messages': messages, 'bulk': bulk},
     )
 
 
@@ -151,7 +148,7 @@ def get_sender(request):
             for s in request.user.sender.all():
                 sids.append(s.id)
             messages = Message.objects.filter(recipient=phone).filter(
-                messenger__id__in=sids
+                messenger__id__in=sids,
             ).order_by('-date_created')
             if messages:
                 message = messages[0]
@@ -179,8 +176,8 @@ def status_callback(request, mid=None):
     if request.method=='POST':
         post = request.POST
         if settings.DEBUG:
-            for k,v in post.items():
-                logger.debug(u'{0}: {1}'.format(k,v))
+            for key, item in post.items():
+                logger.debug(u'{0}: {1}'.format(key, item))
         # if we do not have an Account ID, it is not a legitimate request sent
         # from twilio and there is no need to go further
         account = get_object_or_404(Account, sid=post['AccountSid'])
@@ -206,8 +203,11 @@ def status_callback(request, mid=None):
                 content_type='text/xml; charset=utf-8'
                 try:
                     sender = Sender.objects.get(phone=status.To[2:])
+                except Exception:
+                    sender = None
+                if sender:
                     phone = sender.forward_phone
-                except:
+                else:
                     phone = settings.TWILIO_DEFAULT_FORWARD_PHONE
                 msg.dial(phone)
                 logger.debug('forwarding = {0}'.format(msg))
@@ -241,7 +241,7 @@ def status_callback(request, mid=None):
                             'status': status,
                             'original': mess_orig,
                             'response': message,
-                            'to':to,
+                            'to': to,
                         }
                         send_mail(
                             request,
@@ -265,7 +265,7 @@ def status_callback(request, mid=None):
                         # non-standar characters that do not work with
                         # python strings
                         body = unicodedata.normalize(
-                            'NFKD', message.body
+                            'NFKD', message.body,
                         ).encode('ascii','ignore')
                         blob = CtcBlob(txt=body)
                         session.add(blob)
@@ -382,9 +382,9 @@ def send_form(request):
                                     bulk.sender.account.token,
                                 ),
                                 bulk.sender,
-                                row[2],             # recipient
-                                body,               # body
-                                row[3],             # cid
+                                row[2],         #  recipient
+                                body,           #  body
+                                row[3],         #  cid
                                 bulk=bulk,
                                 doc=phile,
                             )
@@ -394,10 +394,10 @@ def send_form(request):
                         <a href="{0}" class="message-status text-primary">
                         delivery report</a>.
                     """.format(reverse('sms_bulk_detail', args=[bulk.id])),
-                    extra_tags='alert alert-success'
+                    extra_tags='alert alert-success',
                 )
                 response = HttpResponseRedirect( reverse('sms_send_form') )
-        else:  # single recipient message, not bulk
+        else: #  single recipient message, not bulk
             if form_indi.is_valid() and form_doc.is_valid():
                 data = form_indi.cleaned_data
                 doc = form_doc.cleaned_data
@@ -432,8 +432,8 @@ def send_form(request):
                                     args=[
                                         sent['message'].status.MessageSid,
                                         'modal',
-                                    ]
-                                )
+                                    ],
+                                ),
                             ),
                         extra_tags='alert alert-success',
                     )

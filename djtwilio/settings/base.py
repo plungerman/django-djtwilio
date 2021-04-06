@@ -87,6 +87,9 @@ INSTALLED_APPS = [
     'djtwilio.apps.sms',
     # needed for template tags
     'djtools',
+    # honeypot for admin attacks
+    'admin_honeypot',
+    # sign in as a user
     'loginas',
 ]
 MIDDLEWARE_CLASSES = [

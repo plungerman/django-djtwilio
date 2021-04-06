@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+
 from django import forms
 from django.conf import settings
 
 from djtwilio.core.models import Sender
-from djtwilio.apps.sms.models import Bulk, Document, Status
-from djtwilio.apps.sms.models import Bulk, Status
-
+from djtwilio.apps.sms.models import Bulk
+from djtwilio.apps.sms.models import Document
+from djtwilio.apps.sms.models import Status
 from djtools.fields.localflavor import USPhoneNumberField
 from djzbar.utils.informix import do_sql
 
@@ -14,7 +15,11 @@ DEBUG = settings.INFORMIX_DEBUG
 
 class StatusCallbackForm(forms.ModelForm):
     """
-    POST:
+    Callback form that handles POST requests from the twilio API.
+    """
+
+    """
+    POST name/value pairs from the API:
     {
         'Body': [''],
         'MessageSid': [''],
@@ -45,21 +50,25 @@ class StatusCallbackForm(forms.ModelForm):
         'ParentCallSid': ['']
     }
 
-
     """
 
     class Meta:
+        """Information about the form class."""
         model = Status
         fields = '__all__'
 
 
 class DocumentForm(forms.ModelForm):
+    """Form class for the Document data class model."""
+
     class Meta:
+        """Information about the form class."""
         model = Document
-        fields = ['phile',]
+        fields = ['phile']
 
 
 class BulkForm(forms.ModelForm):
+    """Form class for the Bulk data class model."""
 
     #sender = forms.CharField()
     message = forms.CharField(
@@ -69,11 +78,14 @@ class BulkForm(forms.ModelForm):
     )
 
     class Meta:
+        """Information about the form class."""
+
         model = Bulk
-        fields = ['name','description','distribution','sender',]
+        fields = ['name', 'description', 'distribution', 'sender']
 
 
 class IndiForm(forms.Form):
+    """Form class for sending individual SMS messages."""
 
     phone_to = USPhoneNumberField(
         label = "To",
@@ -93,6 +105,7 @@ class IndiForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
+        """Override the init method to constructure the sender select field."""
         self.request = kwargs.pop('request', None)
         user = self.request.user
         super(IndiForm, self).__init__(*args, **kwargs)
@@ -103,11 +116,11 @@ class IndiForm(forms.Form):
             senders = user.sender.all().order_by('-alias')
 
         choices = [("","---Phone or Messaging Service---")]
-        for s in senders:
-            phone = s.phone
+        for sender in senders:
+            phone = sender.phone
             if not phone:
                 phone = ''
-            choices.append((s.id, "{} {}".format(phone, s.alias)))
+            choices.append((sender.id, '{0} {1}'.format(phone, sender.alias)))
 
         self.fields['phone_from'] = forms.ChoiceField(
             label = "From", choices=choices,

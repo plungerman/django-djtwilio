@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
+
 # see error codes and descriptions:
 # https://www.twilio.com/docs/api/messaging/message#delivery-related-errors
 # and for status definitions:
-# https://support.twilio.com/hc/en-us/articles/223134347-What-do-the-SMS-statuses-mean-
+# https://support.twilio.com/hc/en-us/articles/223134347-What-do-the-SMS-statuses-mean
 
 
 MESSAGE_DELIVERY_CODES = {

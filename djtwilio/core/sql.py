@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 SEARCH_ID = '''
 SELECT UNIQUE
     id_rec.lastname, id_rec.firstname, id_rec.id,
