@@ -1,4 +1,4 @@
-django==2.2.19
+django==2.2.20
 django-informixdb==1.9.1
 django-admin-honeypot==1.1.0
 python-memcached==1.59
