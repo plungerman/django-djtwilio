@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from django.conf.urls import include
-from django.conf.urls import url
-from django.core.urlresolvers import reverse_lazy
-from django.views.generic import RedirectView
-from django.views.generic import TemplateView
+"""URLs for all views."""
+
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from djtwilio.core import views
+from django.urls import include
+from django.urls import path
+from django.urls import reverse_lazy
+from django.views.generic import RedirectView
+from django.views.generic import TemplateView
 from djauth.views import loggedout
-
+from djtwilio.core import views
 
 admin.autodiscover()
 admin.site.site_header = 'Carthage College'
