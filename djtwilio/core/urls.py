@@ -23,31 +23,31 @@ handler500 = 'djtools.views.errors.server_error'
 
 urlpatterns = [
     # django admin and loginas
-    path('rocinante/', include(admin.site.urls)),
     path('rocinante/', include('loginas.urls')),
+    path('rocinante/', admin.site.urls),
     # admin honeypot
     path('admin/', include('admin_honeypot.urls', namespace='admin_honeypot')),
     # auth
     path(
         'accounts/login/',
-        auth_views.login,
-        {'template_name': 'accounts/login.html'},
+        auth_views.LoginView.as_view(),
+        {'template_name': 'registration/login.html'},
         name='auth_login',
     ),
     path(
         'accounts/logout/',
-        auth_views.logout,
+        auth_views.LogoutView.as_view(),
         {'next_page': reverse_lazy('auth_loggedout')},
         name='auth_logout',
     ),
     path(
         'accounts/loggedout/',
         loggedout,
-        {'template_name': 'accounts/logged_out.html'},
+        {'template_name': 'registration/logged_out.html'},
         name='auth_loggedout',
     ),
     path(
-        '^accounts/profile/sender/manager/',
+        'accounts/profile/sender/manager/',
         views.sender_manager,
         name='sender_manager',
     ),
@@ -63,6 +63,7 @@ urlpatterns = [
         TemplateView.as_view(template_name='denied.html'),
         name='access_denied',
     ),
+    # core
     path('core/student/list/', views.student_list, name='student_list'),
     # apps could have its own urls.py file eventually
     path('sms/', include('djtwilio.apps.sms.urls')),

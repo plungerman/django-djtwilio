@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from djtwilio.apps.sms.models import Message
 from djtwilio.apps.sms.models import Status
 from djtools.utils.cypher import AESCipher

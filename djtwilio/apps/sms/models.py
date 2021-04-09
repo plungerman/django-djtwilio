@@ -82,6 +82,7 @@ class Status(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     error = models.ForeignKey(
         Error,
+        on_delete=models.CASCADE,
         related_name='message_error',
         null=True,
         blank=True,

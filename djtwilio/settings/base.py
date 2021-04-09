@@ -18,8 +18,6 @@ from djimix.settings.local import MSSQL_EARL
 from djimix.settings.local import ODBCINI
 from djimix.settings.local import ONCONFIG
 
-from djzbar.settings import INFORMIX_EARL_TEST as INFORMIX_EARL
-
 # Debug
 DEBUG = False
 INFORMIX_DEBUG = 'debug'
@@ -44,23 +42,25 @@ FILE_CHARSET = 'utf8'
 SERVER_URL = ''
 API_URL = '{0}/{1}'.format(SERVER_URL, 'api')
 LIVEWHALE_API_URL = 'https://{0}'.format(SERVER_URL)
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ROOT_DIR = os.path.dirname(__file__)
+ROOT_DIR = BASE_DIR
+PROJECT_APP = os.path.basename(BASE_DIR)
+ROOT_URL = '/{0}/'.format(PROJECT_APP)
 ADMIN_MEDIA_PREFIX = '/static/admin/'
-STATIC_URL = '/static/djtwilio/'
-ROOT_URL = '/djtwilio'
-MEDIA_ROOT = '{0}/assets/'.format(BASE_DIR)
-STATIC_ROOT = '{0}/static/'.format(BASE_DIR)
-MEDIA_URL = '{0}assets/'.format(STATIC_URL)
+MEDIA_ROOT = '{0}/assets/'.format(ROOT_DIR)
+STATIC_ROOT = '{0}/static/'.format(ROOT_DIR)
+STATIC_URL = '/static/{0}/'.format(PROJECT_APP)
+MEDIA_URL = '/media/{0}/'.format(PROJECT_APP)
 UPLOADS_DIR = '{0}files/'.format(MEDIA_ROOT)
 UPLOADS_URL = '{0}files/'.format(MEDIA_URL)
+
 ROOT_URLCONF = 'djtwilio.core.urls'
 WSGI_APPLICATION = 'djtwilio.wsgi.application'
 STATICFILES_DIRS = ()
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 DATABASES = {
     'default': {
@@ -92,7 +92,7 @@ INSTALLED_APPS = [
     # sign in as a user
     'loginas',
 ]
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     #'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -111,10 +111,8 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             os.path.join(BASE_DIR, 'templates'),
-            '/data2/django_templates/djbootmin/',
-            '/data2/django_templates/django-djskins/',
             '/data2/django_templates/djcher/',
-            '/data2/livewhale/includes/',
+            '/data2/django_templates/',
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -128,14 +126,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.messages.context_processors.messages',
             ],
-            #'loaders': [
-            #    # insert your TEMPLATE_LOADERS here
-            #]
         },
     },
 ]
 # caching
-'''
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
@@ -150,8 +144,6 @@ CACHES = {
         #}
     }
 }
-'''
-CACHE_MIDDLEWARE_ANONYMOUS_ONLY = True
 # LDAP Constants
 LDAP_SERVER = ''
 LDAP_SERVER_PWM = ''
@@ -214,7 +206,7 @@ CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_SSL_REDIRECT = True
+#SECURE_SSL_REDIRECT = True
 # bootstrap admin
 BOOTSTRAP_ADMIN_SIDEBAR_MENU = True
 # bootstrap forms

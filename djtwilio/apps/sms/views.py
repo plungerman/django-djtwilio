@@ -7,22 +7,21 @@ import unicodedata
 
 from django.conf import settings
 from django.contrib import messages
-from django.core.urlresolvers import reverse
-from django.core.urlresolvers import reverse_lazy
-from django.http import Http404
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
+from django.urls import reverse
+from django.urls import reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from djauth.decorators import portal_auth_required
+from djimix.core.database import get_connection
+from djimix.core.database import xsql
 from djtools.utils.cypher import AESCipher
 from djtools.utils.mail import send_mail
-from djzbar.utils.informix import get_session
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse
 
-from djtwilio.apps.sms.data import CtcBlob
 from djtwilio.apps.sms.forms import BulkForm
 from djtwilio.apps.sms.forms import DocumentForm
 from djtwilio.apps.sms.forms import IndiForm
@@ -36,7 +35,6 @@ from djtwilio.core.utils import send_message
 
 
 logger = logging.getLogger(__name__)
-EARL = settings.INFORMIX_EARL
 
 
 @portal_auth_required(
@@ -253,43 +251,43 @@ def status_callback(request, mid=None):
                     # update informix
                     if status.MessageStatus in ['delivered', 'received']:
                         # create the ctc_blob object with the value of
-                        # the message body for txt
-                        session = get_session(EARL)
+                        # the message body for txt.
                         # informix does not like unicode for their blob and
                         # it has to be a string, so here we deal with
-                        # non-standar characters that do not work with
+                        # non-standard characters that do not work with
                         # python strings
                         body = unicodedata.normalize(
                             'NFKD', message.body,
                         ).encode('ascii', 'ignore')
-                        blob = CtcBlob(txt=body)
-                        session.add(blob)
-                        session.flush()
-                        # insert into database
-                        text_type = 'TEXTOUT'
-                        if message.bulk:
-                            text_type = 'TEXTMASS'
-                        stat = 'C'
-                        if status.MessageStatus == 'received':
-                            text_type = 'TEXTIN'
-                            stat = 'E'
-                        sql = """
-                            INSERT INTO ctc_rec (
-                                id, tick, add_date, due_date, cmpl_date,
-                                resrc, bctc_no, stat
+                        with get_connection() as connection:
+                            sql = """
+                                INSERT into ctc_blob (txt) VALUES ({0})
+                            """.format(body)
+                            blob = xsql(sql, connection)
+                            # insert into database
+                            text_type = 'TEXTOUT'
+                            if message.bulk:
+                                text_type = 'TEXTMASS'
+                            stat = 'C'
+                            if status.MessageStatus == 'received':
+                                text_type = 'TEXTIN'
+                                stat = 'E'
+                            sql = """
+                                INSERT INTO ctc_rec (
+                                    id, tick, add_date, due_date, cmpl_date,
+                                    resrc, bctc_no, stat
+                                )
+                                VALUES (
+                                    {0},"ADM",TODAY,TODAY,TODAY,"{1}",{2},"{3}"
+                                )
+                            """.format(
+                                message.student_number,
+                                text_type,
+                                blob.bctc_no,
+                                stat,
                             )
-                            VALUES (
-                                {0},"ADM",TODAY,TODAY,TODAY,"{1}",{2},"{3}"
-                            )
-                        """.format(
-                            message.student_number,
-                            text_type,
-                            blob.bctc_no,
-                            stat,
-                        )
-                        session.execute(sql)
-                        session.commit()
-                        session.close()
+                            xsql(sql, connection)
+
                         if not msg:
                             if settings.DEBUG:
                                 msg = status.MessageStatus
