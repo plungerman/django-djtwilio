@@ -3,23 +3,26 @@
 import csv
 import json
 import logging
-import re
 import unicodedata
 
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.core.urlresolvers import reverse_lazy
+from django.http import Http404
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
-from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from djtools.utils.mail import send_mail
+from djauth.decorators import portal_auth_required
 from djtools.utils.cypher import AESCipher
+from djtools.utils.mail import send_mail
+from djzbar.utils.informix import get_session
+from twilio.rest import Client
+from twilio.twiml.voice_response import VoiceResponse
+
 from djtwilio.apps.sms.data import CtcBlob
-from djtwilio.apps.sms.errors import MESSAGE_DELIVERY_CODES
 from djtwilio.apps.sms.forms import BulkForm
 from djtwilio.apps.sms.forms import DocumentForm
 from djtwilio.apps.sms.forms import IndiForm
@@ -27,14 +30,9 @@ from djtwilio.apps.sms.forms import StatusCallbackForm
 from djtwilio.apps.sms.models import Bulk
 from djtwilio.apps.sms.models import Error
 from djtwilio.apps.sms.models import Message
-from djtwilio.apps.sms.models import Status
 from djtwilio.core.models import Account
 from djtwilio.core.models import Sender
 from djtwilio.core.utils import send_message
-from djzbar.utils.informix import get_session
-from djauth.decorators import portal_auth_required
-from twilio.rest import Client
-from twilio.twiml.voice_response import VoiceResponse
 
 
 logger = logging.getLogger(__name__)
@@ -55,7 +53,7 @@ def bulk_detail(request, bid):
         response = render(
             request,
             'apps/sms/bulk_detail.html',
-            {'bulk':bulk, 'objects': objects},
+            {'bulk': bulk, 'objects': objects},
         )
 
     return response
@@ -98,10 +96,7 @@ def individual_list(request):
 def detail(request, sid, medium='screen'):
     """Display the details of a message."""
     user = request.user
-    try:
-        message = Message.objects.get(status__MessageSid=sid)
-    except:
-        raise Http404
+    message = get_object_or_404(Message, status__MessageSid=sid)
     template = 'apps/sms/detail_{0}.html'.format(medium)
     if message.messenger.user != user and not user.is_superuser:
         response = HttpResponseRedirect(reverse('sms_send_form'))
@@ -127,8 +122,8 @@ def home(request):
         messages = []
         limit = limit / user.sender.count()
         for sender in user.sender.all():
-            for mess in sender.messenger.all().order_by('-date_created')[:limit]:
-                messages.append(mess)
+            for mes in sender.messenger.all().order_by('-date_created')[:limit]:
+                messages.append(mes)
     return render(
         request, 'apps/sms/home.html', {'messages': messages, 'bulk': bulk},
     )
@@ -141,7 +136,7 @@ def home(request):
 def get_sender(request):
     """Return a message in json format from a POST request."""
     results = {'sender': '', 'student_number': '', 'message': ""}
-    if request.method=='POST':
+    if request.method == 'POST':
         phone = request.POST.get('phone_to')
         if phone:
             sids = []
@@ -172,12 +167,12 @@ def get_sender(request):
 def status_callback(request, mid=None):
     """Handle the callback requests from the twilio API."""
     # see: https://www.twilio.com/docs/sms/twiml#request-parameters
-    content_type='text/plain; charset=utf-8'
-    if request.method=='POST':
+    content_type = 'text/plain; charset=utf-8'
+    if request.method == 'POST':
         post = request.POST
         if settings.DEBUG:
             for key, item in post.items():
-                logger.debug(u'{0}: {1}'.format(key, item))
+                logger.debug('{0}: {1}'.format(key, item))
         # if we do not have an Account ID, it is not a legitimate request sent
         # from twilio and there is no need to go further
         account = get_object_or_404(Account, sid=post['AccountSid'])
@@ -200,7 +195,7 @@ def status_callback(request, mid=None):
             # to a phone number
             if status.CallSid:
                 msg = VoiceResponse()
-                content_type='text/xml; charset=utf-8'
+                content_type = 'text/xml; charset=utf-8'
                 try:
                     sender = Sender.objects.get(phone=status.To[2:])
                 except Exception:
@@ -256,7 +251,7 @@ def status_callback(request, mid=None):
                         message.status = status
                         status.save()
                     # update informix
-                    if status.MessageStatus in ['delivered','received']:
+                    if status.MessageStatus in ['delivered', 'received']:
                         # create the ctc_blob object with the value of
                         # the message body for txt
                         session = get_session(EARL)
@@ -266,7 +261,7 @@ def status_callback(request, mid=None):
                         # python strings
                         body = unicodedata.normalize(
                             'NFKD', message.body,
-                        ).encode('ascii','ignore')
+                        ).encode('ascii', 'ignore')
                         blob = CtcBlob(txt=body)
                         session.add(blob)
                         session.flush()
@@ -278,7 +273,7 @@ def status_callback(request, mid=None):
                         if status.MessageStatus == 'received':
                             text_type = 'TEXTIN'
                             stat = 'E'
-                        sql = '''
+                        sql = """
                             INSERT INTO ctc_rec (
                                 id, tick, add_date, due_date, cmpl_date,
                                 resrc, bctc_no, stat
@@ -286,8 +281,11 @@ def status_callback(request, mid=None):
                             VALUES (
                                 {0},"ADM",TODAY,TODAY,TODAY,"{1}",{2},"{3}"
                             )
-                        '''.format(
-                            message.student_number, text_type, blob.bctc_no, stat,
+                        """.format(
+                            message.student_number,
+                            text_type,
+                            blob.bctc_no,
+                            stat,
                         )
                         session.execute(sql)
                         session.commit()
@@ -318,7 +316,7 @@ def send_form(request):
     template = 'apps/sms/form.html'
     user = request.user
 
-    if request.method=='POST':
+    if request.method == 'POST':
         form_doc = DocumentForm(
             request.POST,
             request.FILES,
@@ -362,7 +360,7 @@ def send_form(request):
                 with open(bulk.distribution.path, 'rb') as csvfile:
                     # read 1MB chunks to ensure the sniffer works for files
                     # of any size without running out of memory:
-                    dialect = csv.Sniffer().sniff(csvfile.read(1024*1024))
+                    dialect = csv.Sniffer().sniff(csvfile.read(1024 * 1024))
                     csvfile.seek(0)
                     delimiter = dialect.delimiter
                     reader = csv.reader(
@@ -382,9 +380,9 @@ def send_form(request):
                                     bulk.sender.account.token,
                                 ),
                                 bulk.sender,
-                                row[2],         #  recipient
-                                body,           #  body
-                                row[3],         #  cid
+                                row[2],         # recipient
+                                body,           # body
+                                row[3],         # cid
                                 bulk=bulk,
                                 doc=phile,
                             )
@@ -396,8 +394,8 @@ def send_form(request):
                     """.format(reverse('sms_bulk_detail', args=[bulk.id])),
                     extra_tags='alert alert-success',
                 )
-                response = HttpResponseRedirect( reverse('sms_send_form') )
-        else: #  single recipient message, not bulk
+                response = HttpResponseRedirect(reverse('sms_send_form'))
+        else:  # single recipient message, not bulk
             if form_indi.is_valid() and form_doc.is_valid():
                 data = form_indi.cleaned_data
                 doc = form_doc.cleaned_data
@@ -422,19 +420,19 @@ def send_form(request):
                         request,
                         messages.SUCCESS,
                         """
-                          Your message has been sent. View the
-                          <a data-target="#messageStatus" data-toggle="modal"
-                          data-load-url="{0}" class="message-status text-primary">
-                          message status</a>.
+                        Your message has been sent. View the
+                        <a data-target="#messageStatus" data-toggle="modal"
+                        data-load-url="{0}" class="message-status text-primary">
+                        message status</a>.
                         """.format(
-                                reverse(
-                                    'sms_detail',
-                                    args=[
-                                        sent['message'].status.MessageSid,
-                                        'modal',
-                                    ],
-                                ),
+                            reverse(
+                                'sms_detail',
+                                args=[
+                                    sent['message'].status.MessageSid,
+                                    'modal',
+                                ],
                             ),
+                        ),
                         extra_tags='alert alert-success',
                     )
                 else:  # message fail
@@ -463,8 +461,8 @@ def send_form(request):
                 'form_indi': form_indi,
                 'form_bulk': form_bulk,
                 'bulk': bulk,
-                'form_doc':form_doc,
-            }
+                'form_doc': form_doc,
+            },
         )
 
     return response

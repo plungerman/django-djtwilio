@@ -3,57 +3,52 @@
 from django import forms
 from django.conf import settings
 
-from djtwilio.core.models import Sender
+from djtools.fields.localflavor import USPhoneNumberField
 from djtwilio.apps.sms.models import Bulk
 from djtwilio.apps.sms.models import Document
 from djtwilio.apps.sms.models import Status
-from djtools.fields.localflavor import USPhoneNumberField
-from djzbar.utils.informix import do_sql
+from djtwilio.core.models import Sender
 
 DEBUG = settings.INFORMIX_DEBUG
 
 
 class StatusCallbackForm(forms.ModelForm):
-    """
-    Callback form that handles POST requests from the twilio API.
-    """
+    """Callback form that handles POST requests from the twilio API.
 
-    """
     POST name/value pairs from the API:
-    {
-        'Body': [''],
-        'MessageSid': [''],
-        'FromZip': [''],
-        'SmsStatus': [''],
-        'SmsMessageSid': [''],
-        'AccountSid': [''],
-        'MessagingServiceSid': [''],
-        'FromCity': [''],
-        'ApiVersion': ['2010-04-01'],
-        'To': [''],
-        'From': [''],
-        'NumMedia': [''],
-        'ToZip': [''],
-        'ToCountry': [''],
-        'NumSegments': ['1'],
-        'ToState': [''],
-        'SmsSid': [''],
-        'ToCity': [''],
-        'FromState': [''],
-        'FromCountry': [''],
-        # these are for voice calls
-        'CallSid': [''],
-        'CallStatus': [''],
-        'Direction': [''],
-        'ForwardedFrom': [''],
-        'CallerName': [''],
-        'ParentCallSid': ['']
-    }
 
+    'Body': [''],
+    'MessageSid': [''],
+    'FromZip': [''],
+    'SmsStatus': [''],
+    'SmsMessageSid': [''],
+    'AccountSid': [''],
+    'MessagingServiceSid': [''],
+    'FromCity': [''],
+    'ApiVersion': ['2010-04-01'],
+    'To': [''],
+    'From': [''],
+    'NumMedia': [''],
+    'ToZip': [''],
+    'ToCountry': [''],
+    'NumSegments': ['1'],
+    'ToState': [''],
+    'SmsSid': [''],
+    'ToCity': [''],
+    'FromState': [''],
+    'FromCountry': [''],
+    # these are for voice calls
+    'CallSid': [''],
+    'CallStatus': [''],
+    'Direction': [''],
+    'ForwardedFrom': [''],
+    'CallerName': [''],
+    'ParentCallSid': ['']
     """
 
     class Meta:
         """Information about the form class."""
+
         model = Status
         fields = '__all__'
 
@@ -63,6 +58,7 @@ class DocumentForm(forms.ModelForm):
 
     class Meta:
         """Information about the form class."""
+
         model = Document
         fields = ['phile']
 
@@ -70,11 +66,10 @@ class DocumentForm(forms.ModelForm):
 class BulkForm(forms.ModelForm):
     """Form class for the Bulk data class model."""
 
-    #sender = forms.CharField()
     message = forms.CharField(
-        label = "Message to Recipients",
+        label="Message to Recipients",
         widget=forms.Textarea(attrs={'class': 'required form-control'}),
-        help_text = '<span id="bulk-chars">160</span> characters remaining'
+        help_text='<span id="bulk-chars">160</span> characters remaining',
     )
 
     class Meta:
@@ -88,20 +83,20 @@ class IndiForm(forms.Form):
     """Form class for sending individual SMS messages."""
 
     phone_to = USPhoneNumberField(
-        label = "To",
+        label="To",
         max_length=12,
         widget=forms.TextInput(attrs={'class': 'required form-control'}),
     )
     student_number = forms.CharField(
-        label = "Student ID",
+        label="Student ID",
         max_length=16,
         widget=forms.TextInput(attrs={'class': 'required form-control'}),
     )
     phone_from = forms.CharField()
     message = forms.CharField(
-        label = "Message to Recipient",
+        label="Message to Recipient",
         widget=forms.Textarea(attrs={'class': 'required form-control'}),
-        help_text = '<span id="indi-chars">160</span> characters remaining'
+        help_text='<span id="indi-chars">160</span> characters remaining',
     )
 
     def __init__(self, *args, **kwargs):
@@ -115,7 +110,7 @@ class IndiForm(forms.Form):
         else:
             senders = user.sender.all().order_by('-alias')
 
-        choices = [("","---Phone or Messaging Service---")]
+        choices = [("", "---Phone or Messaging Service---")]
         for sender in senders:
             phone = sender.phone
             if not phone:
@@ -123,6 +118,7 @@ class IndiForm(forms.Form):
             choices.append((sender.id, '{0} {1}'.format(phone, sender.alias)))
 
         self.fields['phone_from'] = forms.ChoiceField(
-            label = "From", choices=choices,
-            widget=forms.Select(attrs={'class': 'required form-control'})
+            label="From",
+            choices=choices,
+            widget=forms.Select(attrs={'class': 'required form-control'}),
         )

@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from django.db import models
-from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.db.models.signals import post_save
+from django.db import models
 from django.dispatch import receiver
 
 
@@ -58,17 +56,18 @@ class Sender(models.Model):
     )
 
     def __unicode__(self):
+        """Default display value for the object instance."""
         if self.phone:
-            handle = self.phone
+            contact = self.phone
         else:
-            handle = self.messaging_service_sid
-        return "{0} ({1})".format(self.alias, handle)
+            contact = self.messaging_service_sid
+        return "{0} ({1})".format(self.alias, contact)
 
     def clean(self):
         """Data validation method to determine if a phone or SID is provided."""
         if not self.phone and not self.messaging_service_sid:
             raise ValidationError(
-              "You must provide either a phone number of messaging service ID"
+                "Provide either a phone number or messaging service ID (SID)",
             )
 
 
@@ -83,23 +82,25 @@ class Profile(models.Model):
         return "{0}, {1}".format(self.user.last_name, self.user.first_name)
 
 
-@receiver(post_save, sender=User)
+@receiver(models.signals.post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     """Post-save signal function to create a user profile instance."""
     if created and not kwargs.get('raw', False):
         Profile.objects.create(user=instance)
 
-@receiver(post_save, sender=User)
+
+@receiver(models.signals.post_save, sender=User)
 def create_user_sender(sender, instance, created, **kwargs):
     """Post-save signal function to create a user sender instance."""
     if created and not kwargs.get('raw', False):
         Sender.objects.create(
-            user=instance, alias="{} {}'s SMS sender".format(
-                instance.first_name, instance.last_name
-            )
+            user=instance, alias="{0} {1}'s SMS sender".format(
+                instance.first_name, instance.last_name,
+            ),
         )
 
-@receiver(post_save, sender=User)
+
+@receiver(models.signals.post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     """Post-save signal function to save a user's profile instance."""
     if not kwargs.get('raw', False):

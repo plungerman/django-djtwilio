@@ -19,13 +19,13 @@ class MessageAdmin(admin.ModelAdmin):
     list_per_page = 500
     raw_id_fields = ('messenger', 'status', 'bulk', 'phile')
 
-    def first_name(self, obj):
+    def first_name(self, instance):
         """Return the messenger user's first name."""
-        return obj.messenger.user.first_name
+        return instance.messenger.user.first_name
 
-    def last_name(self, obj):
+    def last_name(self, instance):
         """Return the messenger user's last name."""
-        return obj.messenger.user.last_name
+        return instance.messenger.user.last_name
 
 
 class ErrorAdmin(admin.ModelAdmin):
@@ -37,7 +37,7 @@ class ErrorAdmin(admin.ModelAdmin):
 class BulkAdmin(admin.ModelAdmin):
     """Admin class for the bulk message data model class."""
 
-    list_display = ('sender','name','description','date_created')
+    list_display = ('sender', 'name', 'description', 'date_created')
 
 
 class StatusAdmin(admin.ModelAdmin):

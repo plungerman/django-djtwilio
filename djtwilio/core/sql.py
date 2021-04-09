@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-SEARCH_ID = '''
+SEARCH_ID = """
 SELECT UNIQUE
     id_rec.lastname, id_rec.firstname, id_rec.id,
     id_rec.zip, id_rec.ctry, id_rec.phone,
@@ -17,9 +17,9 @@ WHERE
     aa_rec.phone <> ""
 AND
     id_rec.id = {student_number}
-'''.format
+""".format
 
-STUDENTS = '''
+STUDENTS = """
 SELECT
     UNIQUE
     CASE
@@ -72,7 +72,9 @@ ON
 AND
     mobile_rec.aa = "ENS"
 WHERE
-    prog_enr_rec.subprog NOT IN  ("UWPK","RSBD","SLS","PARA","MSW","KUSD","ENRM","CONF","CHWK")
+    prog_enr_rec.subprog NOT IN  (
+        "UWPK","RSBD","SLS","PARA","MSW","KUSD","ENRM","CONF","CHWK"
+    )
 AND
     prog_enr_rec.lv_date IS NULL
 AND
@@ -81,4 +83,4 @@ AND
     stu_serv_rec.sess = "{term}"
 ORDER BY
     id_rec.lastname
-'''.format
+""".format

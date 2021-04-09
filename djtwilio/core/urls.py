@@ -47,27 +47,25 @@ urlpatterns = [
         name='auth_loggedout',
     ),
     path(
-        r'^accounts/profile/sender/manager/$',
+        '^accounts/profile/sender/manager/',
         views.sender_manager,
         name='sender_manager',
     ),
     path(
-        r'^accounts/profile/sender/manager/(?P<sid>\w+)/(?P<action>[-\w]+)/$',
+        'accounts/profile/sender/manager/<str:sid>/<str:action>/',
         views.sender_manager,
         name='sender_update',
     ),
-    path(r'^accounts/profile/$', views.user_profile, name='user_profile'),
-    path(r'^accounts/$', RedirectView.as_view(url=reverse_lazy('auth_login'))),
+    path('accounts/profile/', views.user_profile, name='user_profile'),
+    path('accounts/', RedirectView.as_view(url=reverse_lazy('auth_login'))),
     path(
-        r'^denied/$',
-        TemplateView.as_view(
-            template_name='denied.html'
-        ),
+        'denied/',
+        TemplateView.as_view(template_name='denied.html'),
         name='access_denied',
     ),
-    path(r'^core/student/list/$', views.student_list, name='student_list'),
+    path('core/student/list/', views.student_list, name='student_list'),
     # apps could have its own urls.py file eventually
-    path(r'^sms/', include('djtwilio.apps.sms.urls')),
+    path('sms/', include('djtwilio.apps.sms.urls')),
     # redirect home request to sms for now
-    path(r'^$', RedirectView.as_view(url=reverse_lazy('sms_send_form'))),
+    path('', RedirectView.as_view(url=reverse_lazy('sms_send_form'))),
 ]

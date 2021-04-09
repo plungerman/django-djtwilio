@@ -3,11 +3,12 @@
 from django.contrib.auth.models import User
 from django.core.validators import FileExtensionValidator
 from django.db import models
-from django.dispatch import receiver
+
 from djtools.fields.helpers import upload_to_path
-from djtwilio.core.models import Sender
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
+
+from djtwilio.core.models import Sender
 
 
 ALLOWED_EXTENSIONS = [
@@ -36,7 +37,7 @@ class Error(models.Model):
 
     def __unicode__(self):
         """Default display value."""
-        return u"[{0}] {1}".format(self.code, self.message)
+        return "[{0}] {1}".format(self.code, self.message)
 
 
 class Bulk(models.Model):
@@ -59,7 +60,7 @@ class Bulk(models.Model):
         "Distribution CSV File",
         upload_to=upload_to_path,
         max_length=768,
-        validators=[FileExtensionValidator(allowed_extensions=['csv','CSV'])],
+        validators=[FileExtensionValidator(allowed_extensions=['csv', 'CSV'])],
         help_text="""
             CSV File: Last Name, First Name, Phone, College ID,
             separated by a tab
@@ -85,45 +86,45 @@ class Status(models.Model):
         null=True,
         blank=True,
     )
-    To = models.CharField(max_length = 16, null=True, blank=True)
+    To = models.CharField(max_length=16, null=True, blank=True)
     From = models.CharField(max_length=16, null=True, blank=True)
     Body = models.TextField(null=True, blank=True)
     MessagingServiceSid = models.CharField(max_length=34, null=True, blank=True)
-    AccountSid = models.CharField(max_length = 34, null=True, blank=True)
-    MessageStatus = models.CharField(max_length = 16, null=True, blank=True)
-    SmsStatus = models.CharField(max_length = 16, null=True, blank=True)
-    SmsMessageSid = models.CharField(max_length = 34, null=True, blank=True)
-    MessageSid = models.CharField(max_length = 34, null=True, blank=True)
+    AccountSid = models.CharField(max_length=34, null=True, blank=True)
+    MessageStatus = models.CharField(max_length=16, null=True, blank=True)
+    SmsStatus = models.CharField(max_length=16, null=True, blank=True)
+    SmsMessageSid = models.CharField(max_length=34, null=True, blank=True)
+    MessageSid = models.CharField(max_length=34, null=True, blank=True)
     # deprecated
-    SmsSid = models.CharField(max_length = 34, null=True, blank=True)
+    SmsSid = models.CharField(max_length=34, null=True, blank=True)
     # always 2010-04-01 at the moment
-    ApiVersion = models.CharField(max_length = 16, null=True, blank=True)
-    ErrorCode = models.CharField(max_length = 16, null=True, blank=True)
+    ApiVersion = models.CharField(max_length=16, null=True, blank=True)
+    ErrorCode = models.CharField(max_length=16, null=True, blank=True)
     # voice call to a twilio number
     # see: https://www.twilio.com/docs/voice/twiml
-    CallSid = models.CharField(max_length = 34, null=True, blank=True)
-    CallStatus = models.CharField(max_length = 16, null=True, blank=True)
-    Direction = models.CharField(max_length = 16, null=True, blank=True)
+    CallSid = models.CharField(max_length=34, null=True, blank=True)
+    CallStatus = models.CharField(max_length=16, null=True, blank=True)
+    Direction = models.CharField(max_length=16, null=True, blank=True)
     ForwardedFrom = models.CharField(max_length=16, null=True, blank=True)
-    CallerName = models.CharField(max_length = 34, null=True, blank=True)
-    ParentCallSid = models.CharField(max_length = 34, null=True, blank=True)
+    CallerName = models.CharField(max_length=34, null=True, blank=True)
+    ParentCallSid = models.CharField(max_length=34, null=True, blank=True)
     NumMedia = models.IntegerField(null=True, blank=True)
     NumSegments = models.IntegerField(null=True, blank=True)
-    subresource_uris = models.CharField(max_length = 756, null=True, blank=True)
+    subresource_uris = models.CharField(max_length=756, null=True, blank=True)
     # values returned from API when recipient replies to a message or
     # calls a twilio number
-    ToCity= models.CharField(max_length = 34, null=True, blank=True)
-    ToState = models.CharField(max_length = 4, null=True, blank=True)
-    ToZip = models.CharField(max_length = 12, null=True, blank=True)
-    ToCountry = models.CharField(max_length = 4, null=True, blank=True)
-    FromCity= models.CharField(max_length = 34, null=True, blank=True)
-    FromState = models.CharField(max_length = 4, null=True, blank=True)
-    FromZip = models.CharField(max_length = 12, null=True, blank=True)
-    FromCountry = models.CharField(max_length = 4, null=True, blank=True)
+    ToCity = models.CharField(max_length=34, null=True, blank=True)
+    ToState = models.CharField(max_length=4, null=True, blank=True)
+    ToZip = models.CharField(max_length=12, null=True, blank=True)
+    ToCountry = models.CharField(max_length=4, null=True, blank=True)
+    FromCity = models.CharField(max_length=34, null=True, blank=True)
+    FromState = models.CharField(max_length=4, null=True, blank=True)
+    FromZip = models.CharField(max_length=12, null=True, blank=True)
+    FromCountry = models.CharField(max_length=4, null=True, blank=True)
 
     def __unicode__(self):
         """Default display value."""
-        return u"{0}".format(self.MessageStatus)
+        return "{0}".format(self.MessageStatus)
 
 
 class Document(models.Model):
@@ -149,7 +150,9 @@ class Document(models.Model):
         "MMS files",
         max_length=767,
         upload_to=upload_to_path,
-        validators=[FileExtensionValidator(allowed_extensions=ALLOWED_EXTENSIONS)],
+        validators=[
+            FileExtensionValidator(allowed_extensions=ALLOWED_EXTENSIONS),
+        ],
         null=True,
         blank=True,
         help_text="Files allowed: {0}".format(ALLOWED_EXTENSIONS),
@@ -170,7 +173,7 @@ class Document(models.Model):
         ext = self.phile.path.rpartition(".")[-1]
         try:
             icon = ICONS[ext]
-        except:
+        except Exception:
             icon = ICONS['file']
         return icon
 
@@ -204,17 +207,17 @@ class Message(models.Model):
     phile = models.ForeignKey(
         Document,
         on_delete=models.CASCADE,
-        verbose_name = "Send a file",
+        verbose_name="Send a file",
         null=True,
         blank=True,
-        help_text="Files allowed: {}".format(ALLOWED_EXTENSIONS),
+        help_text="Files allowed: {0}".format(ALLOWED_EXTENSIONS),
     )
 
     def get_slug(self):
         """Slug for file path."""
         return 'files/mms/'
 
-    def get_status(self):
+    def message_status(self):
         """Return the status of the message."""
         count = 0
         sid = self.status.MessageSid
@@ -241,13 +244,12 @@ class Message(models.Model):
         """Check for a valid mobile number."""
         account = self.messenger.profile
         cli = Client(account.sid, account.token)
+        valid = True
         try:
-            response = cli.lookups.phone_numbers(self.recipient).fetch(
-                type='carrier',
-            )
-            return True
+            cli.lookups.phone_numbers(self.recipient).fetch(type='carrier')
         except TwilioRestException as error:
             if error.code == 20404:
-                return False
+                valid = False
             else:
-                return error
+                valid = error
+        return valid

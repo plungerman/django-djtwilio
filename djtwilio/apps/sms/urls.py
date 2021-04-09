@@ -1,42 +1,40 @@
 # -*- coding: utf-8 -*-
 
-from django.conf.urls import url
-from django.core.urlresolvers import reverse_lazy
-from django.views.generic import RedirectView
+from django.urls import path
+from django.urls import re_path
 from django.views.generic import TemplateView
+
 from djtwilio.apps.sms import views
 
 
 urlpatterns = [
-    url(r'^send/$', views.send_form, name='sms_send_form'),
-    url(
-        r'^send/success/$',
-        TemplateView.as_view(
-            template_name='core/admissions/sms/success.html'
-        ),
+    path('send/', views.send_form, name='sms_send_form'),
+    path(
+        'send/success/',
+        TemplateView.as_view(template_name='core/admissions/sms/success.html'),
         name='sms_send_form_success',
     ),
     # response from API when recipient replies to an SMS
-    url(r'^callback/reply/$', views.status_callback, name='sms_reply_callback'),
+    path('callback/reply/', views.status_callback, name='sms_reply_callback'),
     # response from API with our Message() object ID encrypted in URL
-    url(
+    re_path(
         r'^callback/(?P<mid>(.*))/status/$',
         views.status_callback,
         name='sms_status_callback',
     ),
-    url(
+    re_path(
         r'^detail/(?P<sid>(.*))/(?P<medium>[-\w]+)/$',
         views.detail,
         name='sms_detail',
     ),
-    url(
+    re_path(
         r'^detail/(?P<sid>(.*))/$',
         views.detail,
         name='sms_detail_default',
     ),
-    url(r'^bulk/list/$', views.bulk_list, name='sms_bulk_list'),
-    url(r'^bulk/(?P<bid>\w+)/detail/$', views.bulk_detail, name='sms_bulk_detail'),
-    url(r'^get-sender/$', views.get_sender, name='sms_get_sender'),
-    url(r'^list/$', views.individual_list, name='sms_individual_list'),
-    url(r'^$', views.home, name='sms_home'),
+    path('bulk/list/', views.bulk_list, name='sms_bulk_list'),
+    path('bulk/<int:bid>)/detail/', views.bulk_detail, name='sms_bulk_detail'),
+    path('get-sender/', views.get_sender, name='sms_get_sender'),
+    path('list/', views.individual_list, name='sms_individual_list'),
+    path('', views.home, name='sms_home'),
 ]

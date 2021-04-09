@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.contrib import admin
+
 from djtwilio.core.models import Account
 from djtwilio.core.models import Profile
 from djtwilio.core.models import Sender
@@ -31,17 +32,17 @@ class SenderAdmin(admin.ModelAdmin):
     list_per_page = 500
     raw_id_fields = ('user',)
 
-    def first_name(self, obj):
+    def first_name(self, instance):
         """Return the sender user's first name."""
-        return obj.user.first_name
+        return instance.user.first_name
 
-    def last_name(self, obj):
+    def last_name(self, instance):
         """Return the sender user's last name."""
-        return obj.user.last_name
+        return instance.user.last_name
 
-    def account(self, obj):
+    def account(self, instance):
         """Return the account with which this sender is associated."""
-        return obj.account
+        return instance.account
 
 
 class ProfileAdmin(admin.ModelAdmin):
@@ -55,13 +56,13 @@ class ProfileAdmin(admin.ModelAdmin):
     list_per_page = 500
     raw_id_fields = ('user',)
 
-    def first_name(self, obj):
+    def first_name(self, instance):
         """Return the user's first name."""
-        return obj.user.first_name
+        return instance.user.first_name
 
-    def last_name(self, obj):
+    def last_name(self, instance):
         """Return the user's last name."""
-        return obj.user.last_name
+        return instance.user.last_name
 
 
 admin.site.register(Account, AccountAdmin)
