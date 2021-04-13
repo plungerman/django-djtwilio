@@ -17,11 +17,11 @@ from djtwilio.core.models import Sender
 from djtwilio.core.sql import SEARCH_ID
 
 
-#@portal_auth_required(
-    #group=settings.TWILIO_GROUP,
-    #session_var='DJTWILIO_AUTH',
-    #redirect_url=reverse_lazy('access_denied'),
-#)
+@portal_auth_required(
+    group=settings.TWILIO_GROUP,
+    session_var='DJTWILIO_AUTH',
+    redirect_url=reverse_lazy('access_denied'),
+)
 def student_list(request):
     """List all of the students."""
     key = 'provisioning_vw_students_api'
