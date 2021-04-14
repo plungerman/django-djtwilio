@@ -17,8 +17,8 @@ urlpatterns = [
     # response from API when recipient replies to an SMS
     path('callback/reply/', views.status_callback, name='sms_reply_callback'),
     # response from API with our Message() object ID encrypted in URL
-    re_path(
-        r'^callback/(?P<mid>(.*))/status/$',
+    path(
+        'callback/<str:mid>/status/',
         views.status_callback,
         name='sms_status_callback',
     ),

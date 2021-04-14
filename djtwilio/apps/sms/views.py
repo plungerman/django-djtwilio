@@ -6,7 +6,8 @@ import logging
 import unicodedata
 
 from django.conf import settings
-from django.contrib import messages
+from django.contrib import messages as djmessages
+from django.db import connections
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
@@ -14,10 +15,9 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.urls import reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
+
 from djauth.decorators import portal_auth_required
-from djimix.core.database import get_connection
-from djimix.core.database import xsql
-from djtools.utils.cypher import AESCipher
+from djimix.core.encryption import decrypt
 from djtools.utils.mail import send_mail
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse
@@ -29,6 +29,7 @@ from djtwilio.apps.sms.forms import StatusCallbackForm
 from djtwilio.apps.sms.models import Bulk
 from djtwilio.apps.sms.models import Error
 from djtwilio.apps.sms.models import Message
+from djtwilio.core.data import CtcBlob
 from djtwilio.core.models import Account
 from djtwilio.core.models import Sender
 from djtwilio.core.utils import send_message
@@ -47,11 +48,11 @@ def bulk_detail(request, bid):
     if bulk.sender.user != user and not user.is_superuser:
         response = HttpResponseRedirect(reverse('sms_send_form'))
     else:
-        objects = Message.objects.filter(bulk=bulk)
+        messages = Message.objects.filter(bulk=bulk)
         response = render(
             request,
             'apps/sms/bulk_detail.html',
-            {'bulk': bulk, 'objects': objects},
+            {'bulk': bulk, 'objects': messages},
         )
 
     return response
@@ -133,20 +134,20 @@ def home(request):
 )
 def get_sender(request):
     """Return a message in json format from a POST request."""
-    results = {'sender': '', 'student_number': '', 'message': ""}
+    sender_dict = {'sender': '', 'student_number': '', 'message': ""}
     if request.method == 'POST':
         phone = request.POST.get('phone_to')
         if phone:
             sids = []
-            for s in request.user.sender.all():
-                sids.append(s.id)
+            for sender in request.user.sender.all():
+                sids.append(sender.id)
             messages = Message.objects.filter(recipient=phone).filter(
                 messenger__id__in=sids,
             ).order_by('-date_created')
             if messages:
                 message = messages[0]
-                results['sender'] = '{0}'.format(message.messenger.id)
-                results['student_number'] = '{0}'.format(message.student_number)
+                sender_dict['sender'] = str(message.messenger.id)
+                sender_dict['student_number'] = str(message.student_number)
                 msg = "Success"
             else:
                 msg = "No phone number provided."
@@ -155,9 +156,9 @@ def get_sender(request):
     else:
         # requires POST
         msg = "Method must be POST."
-    results['message'] = msg
+    sender_dict['message'] = msg
     return HttpResponse(
-        json.dumps(results), content_type='application/json; charset=utf-8',
+        json.dumps(sender_dict), content_type='application/json; charset=utf-8',
     )
 
 
@@ -169,17 +170,16 @@ def status_callback(request, mid=None):
     if request.method == 'POST':
         post = request.POST
         if settings.DEBUG:
-            for key, item in post.items():
-                logger.debug('{0}: {1}'.format(key, item))
+            for key, datum in post.items():
+                logger.debug('{0}: {1}'.format(key, datum))
         # if we do not have an Account ID, it is not a legitimate request sent
         # from twilio and there is no need to go further
-        account = get_object_or_404(Account, sid=post['AccountSid'])
+        get_object_or_404(Account, sid=post['AccountSid'])
         msg = ""
         # message status for form instance
         status = None
         if mid:
-            cipher = AESCipher(bs=16)
-            mid = cipher.decrypt(mid)
+            mid = decrypt(mid)
             message = Message.objects.get(pk=mid)
             status = message.status
         form = StatusCallbackForm(post, instance=status)
@@ -259,34 +259,31 @@ def status_callback(request, mid=None):
                         body = unicodedata.normalize(
                             'NFKD', message.body,
                         ).encode('ascii', 'ignore')
-                        with get_connection() as connection:
-                            sql = """
-                                INSERT into ctc_blob (txt) VALUES ({0})
-                            """.format(body)
-                            blob = xsql(sql, connection)
-                            # insert into database
-                            text_type = 'TEXTOUT'
-                            if message.bulk:
-                                text_type = 'TEXTMASS'
-                            stat = 'C'
-                            if status.MessageStatus == 'received':
-                                text_type = 'TEXTIN'
-                                stat = 'E'
-                            sql = """
-                                INSERT INTO ctc_rec (
-                                    id, tick, add_date, due_date, cmpl_date,
-                                    resrc, bctc_no, stat
-                                )
-                                VALUES (
-                                    {0},"ADM",TODAY,TODAY,TODAY,"{1}",{2},"{3}"
-                                )
-                            """.format(
-                                message.student_number,
-                                text_type,
-                                blob.bctc_no,
-                                stat,
+                        blob = CtcBlob.objects.using('informix').create(txt=body)
+                        # insert into database
+                        text_type = 'TEXTOUT'
+                        if message.bulk:
+                            text_type = 'TEXTMASS'
+                        stat = 'C'
+                        if status.MessageStatus == 'received':
+                            text_type = 'TEXTIN'
+                            stat = 'E'
+                        sql = """
+                            INSERT INTO ctc_rec (
+                                id, tick, add_date, due_date, cmpl_date,
+                                resrc, bctc_no, stat
                             )
-                            xsql(sql, connection)
+                            VALUES (
+                                {0},"ADM",TODAY,TODAY,TODAY,"{1}",{2},"{3}"
+                            )
+                        """.format(
+                            message.student_number,
+                            text_type,
+                            blob.bctc_no,
+                            stat,
+                        )
+                        with connections['informix'].cursor() as cursor:
+                            cursor.execute(sql)
 
                         if not msg:
                             if settings.DEBUG:
@@ -384,39 +381,41 @@ def send_form(request):
                                 bulk=bulk,
                                 doc=phile,
                             )
-                messages.add_message(
-                    request, messages.SUCCESS, """
-                        Your messages have been sent. View the
-                        <a href="{0}" class="message-status text-primary">
-                        delivery report</a>.
+                djmessages.add_message(
+                    request,
+                    djmessages.SUCCESS,
+                    """
+                    Your messages have been sent. View the
+                    <a href="{0}" class="message-status text-primary">
+                      delivery report</a>.
                     """.format(reverse('sms_bulk_detail', args=[bulk.id])),
                     extra_tags='alert alert-success',
                 )
                 response = HttpResponseRedirect(reverse('sms_send_form'))
         else:  # single recipient message, not bulk
             if form_indi.is_valid() and form_doc.is_valid():
-                data = form_indi.cleaned_data
+                indi = form_indi.cleaned_data
                 doc = form_doc.cleaned_data
                 if doc['phile']:
                     phile = form_doc.save(commit=False)
                     phile.created_by = user
                     phile.updated_by = user
                     phile.save()
-                sender = Sender.objects.get(pk=data['phone_from'])
-                body = data['message']
-                recipient = data['phone_to']
+                sender = Sender.objects.get(pk=indi['phone_from'])
+                body = indi['message']
+                recipient = indi['phone_to']
                 sent = send_message(
                     Client(sender.account.sid, sender.account.token),
                     sender,
                     recipient,
                     body,
-                    data.get('student_number'),
+                    indi.get('student_number'),
                     doc=phile,
                 )
                 if sent['message']:
-                    messages.add_message(
+                    djmessages.add_message(
                         request,
-                        messages.SUCCESS,
+                        djmessages.SUCCESS,
                         """
                         Your message has been sent. View the
                         <a data-target="#messageStatus" data-toggle="modal"
@@ -434,9 +433,9 @@ def send_form(request):
                         extra_tags='alert alert-success',
                     )
                 else:  # message fail
-                    messages.add_message(
+                    djmessages.add_message(
                         request,
-                        messages.ERROR,
+                        djmessages.ERROR,
                         sent['response'],
                         extra_tags='alert alert-danger',
                     )

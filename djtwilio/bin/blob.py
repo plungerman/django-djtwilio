@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import os
@@ -22,25 +23,28 @@ def main():
     body = 'the quick brown fox jumpéd over the lazy dog, sir!'
     # To load Binary (BLOB) data into an Informix table use the BYTE datatype.
     body = unicodedata.normalize('NFKD', body).encode('ascii', 'ignore')
-    """
-    body = bytes(body, 'utf-8')
-    body = bytes(body, 'ascii')
-    body = bytes(body, 'cp1252')
-    body = bytes(body, 'ISO-8859-1')
-    body = bytes(body)
-    body = unicodedata.normalize('NFKD', body).encode('ascii', 'ignore').decode('utf-8')
-    """
     print(body)
 
     bob = CtcBlob.objects.using('informix').create(txt=body)
     print(bob.bctc_no)
-    '''
-    sql = "INSERT INTO ctc_blob (txt) VALUES (%b)"
+
+    sql = """
+        INSERT INTO ctc_rec (
+            id, tick, add_date, due_date, cmpl_date,
+            resrc, bctc_no, stat
+        )
+        VALUES (
+            {0},"ADM",TODAY,TODAY,TODAY,"{1}",{2},"{3}"
+        )
+    """.format(
+        '8675309',
+        'TEXTOUT',
+        bob.bctc_no,
+        'E',
+    )
     print(sql)
     with connections['informix'].cursor() as cursor:
-        results = cursor.execute(sql, [body])
-    print(results)
-    '''
+        cursor.execute(sql)
 
 
 if __name__ == "__main__":
