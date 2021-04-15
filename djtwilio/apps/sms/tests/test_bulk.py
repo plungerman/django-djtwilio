@@ -53,7 +53,7 @@ class AppsSmsBulkTestCase(TestCase):
         # django throws a SuspiciousFileOperation error because the csv file
         # lives outside of MEDIA_ROOT directory
         self.assertEqual(phile, str(bulk.distribution))
-        with open(phile, 'rb') as f:
+        with open(phile, 'r') as f:
             reader = csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE)
             for r in reader:
                 body = "greetings {} {},\n{}".format(r[1], r[0], self.body)

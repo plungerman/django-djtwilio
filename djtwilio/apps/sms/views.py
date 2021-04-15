@@ -3,6 +3,7 @@
 import csv
 import json
 import logging
+import re
 import unicodedata
 
 from django.conf import settings
@@ -208,8 +209,8 @@ def status_callback(request, mid=None):
                 # callback from the API when recipient has replied to an SMS
                 if not mid:
                     # remove extraneous characters and country code for US
-                    frum = str(status.From).translate(None, '.+()- ')[1:]
-                    recipient = str(status.To).translate(None, '.+()- ')
+                    frum = re.sub('[^A-Za-z0-9]+', '', status.From)[1:]
+                    recipient = re.sub('[^A-Za-z0-9]+', '', status.To)
                     # obtain message from our sender
                     mess_orig = Message.objects.filter(recipient=frum).order_by(
                         '-date_created',
@@ -230,7 +231,7 @@ def status_callback(request, mid=None):
                             to = sender.user.email
                             email_to = [settings.MANAGERS[0][1]]
                         subject = "[DJ Twilio] reply from one your contacts"
-                        data = {
+                        context_dict = {
                             'status': status,
                             'original': mess_orig,
                             'response': message,
@@ -242,14 +243,14 @@ def status_callback(request, mid=None):
                             subject,
                             settings.DEFAULT_FROM_EMAIL,
                             'apps/sms/reply_email.html',
-                            data,
+                            context_dict,
                             [settings.MANAGERS[0][1]],
                         )
                         status.MessageStatus = 'received'
                         message.status = status
                         status.save()
                     # update informix
-                    if status.MessageStatus in ['delivered', 'received']:
+                    if status.SmsStatus in ['delivered', 'received', 'sent']:
                         # create the ctc_blob object with the value of
                         # the message body for txt.
                         # informix does not like unicode for their blob and
@@ -289,7 +290,7 @@ def status_callback(request, mid=None):
                             if settings.DEBUG:
                                 msg = status.MessageStatus
                             else:
-                                logger.debug("msg = Success")
+                                msg = 'Success'
         else:
             msg = "Invalid POST data"
     else:
@@ -352,15 +353,27 @@ def send_form(request):
                 rep = 'rep_first'
                 indx = None
                 # firstname, lastname, phone, cid, rep_first
-                with open(bulk.distribution.path, 'rb') as csvfile:
+                with open(bulk.distribution.path, 'r') as csvfile:
+                    # check for a header
+                    has_header = csv.Sniffer().has_header(
+                        csvfile.read(1024 * 1024),
+                    )
+                    # Rewind.
+                    csvfile.seek(0)
                     # read 1MB chunks to ensure the sniffer works for files
                     # of any size without running out of memory:
                     dialect = csv.Sniffer().sniff(csvfile.read(1024 * 1024))
+                    # Rewind.
                     csvfile.seek(0)
+                    # detect delimiter
                     delimiter = dialect.delimiter
+                    # set up csv reader
                     reader = csv.reader(
                         csvfile, delimiter=delimiter, quoting=csv.QUOTE_NONE,
                     )
+                    # Skip header row.
+                    if has_header:
+                        next(reader)
                     for row in reader:
                         if rep in row:
                             indx = row.index(rep)

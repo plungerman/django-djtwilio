@@ -35,7 +35,7 @@ class Error(models.Model):
     message = models.CharField(max_length=64)
     description = models.CharField(max_length=768)
 
-    def __unicode__(self):
+    def __str__(self):
         """Default display value."""
         return "[{0}] {1}".format(self.code, self.message)
 
@@ -67,7 +67,7 @@ class Bulk(models.Model):
         """,
     )
 
-    def __unicode__(self):
+    def __str__(self):
         """Default display value."""
         return self.name
 
@@ -123,7 +123,7 @@ class Status(models.Model):
     FromZip = models.CharField(max_length=12, null=True, blank=True)
     FromCountry = models.CharField(max_length=4, null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         """Default display value."""
         return "{0}".format(self.MessageStatus)
 

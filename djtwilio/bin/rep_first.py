@@ -12,14 +12,13 @@ from django.conf import settings
 
 def main():
     """Replace 'rep_first' in message from value in that column of CSV."""
-
     message = 'yours, rep_first'
     rep = 'rep_first'
     indx = None
     export = os.path.join(settings.BASE_DIR, 'assets/files/test.csv')
     try:
-        with open(export, 'rb') as phile:
-            dialect = csv.Sniffer().sniff(phile.read(1024*1024))
+        with open(export, 'r') as phile:
+            dialect = csv.Sniffer().sniff(phile.read(1024 * 1024))
             phile.seek(0)
             delimiter = dialect.delimiter
             reader = csv.reader(
@@ -32,8 +31,8 @@ def main():
                     if indx:
                         message = message.replace(rep, row[indx])
                     print(message)
-    except Exception as e:
-        print("Exception: {}".format(str(e)))
+    except Exception as error:
+        print("Exception: {0}".format(str(error)))
         sys.exit(1)
 
 

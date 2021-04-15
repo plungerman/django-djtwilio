@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 from django.conf import settings
 from django.urls import reverse
 
@@ -23,7 +25,7 @@ def send_message(client, sender, recipient, body, cid, callback=False, bulk=None
         # create Status object
         status = Status.objects.create()
         # create Message object before API call
-        recipient = str(recipient).translate(None, '.+()- ')
+        recipient = re.sub('[^A-Za-z0-9]+', '', recipient)
         message = Message.objects.create(
             messenger=sender,
             recipient=recipient,

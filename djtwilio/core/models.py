@@ -13,7 +13,7 @@ class Account(models.Model):
     token = models.CharField(max_length=32, null=True, blank=True)
     department = models.CharField(max_length=24, null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         """Default display value."""
         return "{0} ({1})".format(self.department, self.sid)
 
@@ -55,7 +55,7 @@ class Sender(models.Model):
         blank=True,
     )
 
-    def __unicode__(self):
+    def __str__(self):
         """Default display value for the object instance."""
         if self.phone:
             contact = self.phone
@@ -77,7 +77,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bulk = models.BooleanField("Bulk messenger", default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         """Default display value."""
         return "{0}, {1}".format(self.user.last_name, self.user.first_name)
 
