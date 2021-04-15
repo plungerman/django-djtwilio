@@ -208,7 +208,7 @@ def status_callback(request, mid=None):
             else:
                 # callback from the API when recipient has replied to an SMS
                 if not mid:
-                    # remove extraneous characters and country code for US
+                    # remove extraneous characters and country code for US (1)
                     frum = re.sub('[^A-Za-z0-9]+', '', status.From)[1:]
                     recipient = re.sub('[^A-Za-z0-9]+', '', status.To)
                     # obtain message from our sender
