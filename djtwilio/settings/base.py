@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.staticfiles',
+    'django_q',
     'djtwilio.core',
     'djtwilio.apps.sms',
     # needed for template tags
@@ -363,6 +364,16 @@ LOGGING = {
             'propagate': True,
         },
     }
+}
+# apps
+Q_CLUSTER = {
+    'name': 'DjangORM',
+    'workers': 4,
+    'timeout': 90,
+    'retry': 120,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm': 'default'
 }
 ##################
 # LOCAL SETTINGS #
