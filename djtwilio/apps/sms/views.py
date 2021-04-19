@@ -250,7 +250,8 @@ def status_callback(request, mid=None):
                         message.status = status
                         status.save()
                     # update informix
-                    if status.SmsStatus in ['delivered', 'received', 'sent']:
+                    status_list = ['delivered', 'received', 'sent', 'accepted']
+                    if status.SmsStatus in status_list:
                         # create the ctc_blob object with the value of
                         # the message body for txt.
                         # informix does not like unicode for their blob and
@@ -294,9 +295,8 @@ def status_callback(request, mid=None):
         else:
             msg = "Invalid POST data"
     else:
-        msg = "Requires POST"
-        if settings.DEBUG:
-            logger.debug("msg = {0}".format(msg))
+        msg = "Requires POST: {0}".format(request.GET)
+        logger.debug("msg = {0}".format(msg))
 
     return HttpResponse(msg, content_type=content_type)
 
