@@ -36,8 +36,9 @@ def send_message(client, sender, recipient, body, cid, callback=False, bulk=None
             phile=doc,
         )
         if not callback:
-            callback = 'https://{0}{1}'.format(
+            callback = 'https://{0}{1}{2}'.format(
                 settings.SERVER_URL,
+                settings.ROOT_URL,
                 reverse(
                     'sms_status_callback',
                     args=[encrypt(str(message.id))],
