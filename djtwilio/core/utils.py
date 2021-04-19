@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import re
 
 from django.conf import settings
@@ -10,6 +11,8 @@ from twilio.base.exceptions import TwilioRestException
 
 from djtwilio.apps.sms.models import Message
 from djtwilio.apps.sms.models import Status
+
+logger = logging.getLogger(__name__)
 
 
 def send_message(client, sender, recipient, body, cid, callback=False, bulk=None, doc=None):
@@ -36,14 +39,14 @@ def send_message(client, sender, recipient, body, cid, callback=False, bulk=None
             phile=doc,
         )
         if not callback:
-            callback = 'https://{0}{1}{2}'.format(
+            callback = 'https://{0}{1}'.format(
                 settings.SERVER_URL,
-                settings.ROOT_URL,
                 reverse(
                     'sms_status_callback',
                     args=[encrypt(str(message.id))],
                 ),
             )
+        logger.debug('callback URL = {0}'.format(callback))
         media_url = []
         if doc:
             media_url = [
