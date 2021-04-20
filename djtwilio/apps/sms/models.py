@@ -125,7 +125,7 @@ class Status(models.Model):
 
     def __str__(self):
         """Default display value."""
-        return "{0}".format(self.MessageStatus)
+        return "{0}".format(self.SmsStatus)
 
 
 class Document(models.Model):
