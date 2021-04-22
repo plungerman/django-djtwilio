@@ -69,11 +69,10 @@ DATABASES = {
         'NAME': 'django_djtwilio',
         'ENGINE': 'django.db.backends.mysql',
         'USER': '',
-        'PASSWORD': ''
+        'PASSWORD': '',
     },
 }
 INSTALLED_APPS = [
-    #'bootstrap_admin',
     'bootstrap4',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -95,16 +94,14 @@ INSTALLED_APPS = [
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    #'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
-    #'django.middleware.cache.FetchFromCacheMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # the following should be uncommented unless you are
     # embedding your apps in iframes
-    #'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 # template stuff
 TEMPLATES = [
@@ -117,7 +114,7 @@ TEMPLATES = [
         ],
         'APP_DIRS': True,
         'OPTIONS': {
-            'debug':DEBUG,
+            'debug': DEBUG,
             'context_processors': [
                 'djtools.context_processors.sitevars',
                 'django.contrib.auth.context_processors.auth',
@@ -133,17 +130,11 @@ TEMPLATES = [
 # caching
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-        #'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        #'LOCATION': '127.0.0.1:11211',
-        #'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        #'LOCATION': '/var/tmp/django_djtwilio_cache',
-        #'TIMEOUT': 60*20,
-        #'KEY_PREFIX': 'DJTWILIO_',
-        #'OPTIONS': {
-        #    'MAX_ENTRIES': 80000,
-        #}
-    }
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+        'TIMEOUT': 604800,
+        'KEY_PREFIX': '{0}_'.format(PROJECT_APP),
+    },
 }
 # LDAP Constants
 LDAP_SERVER = ''
@@ -187,11 +178,10 @@ LOGIN_URL = '{0}/accounts/login/'.format(ROOT_URL)
 LOGOUT_URL = '{0}/accounts/logout/'.format(ROOT_URL)
 LOGIN_REDIRECT_URL = ROOT_URL
 USE_X_FORWARDED_HOST = True
-#SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_DOMAIN='.carthage.edu'
-SESSION_COOKIE_NAME ='django_djtwilio_cookie'
-SESSION_COOKIE_AGE = 1209600 # default, two weeks
+SESSION_COOKIE_DOMAIN = '.carthage.edu'
+SESSION_COOKIE_NAME = 'django_djtwilio_cookie'
+SESSION_COOKIE_AGE = 1209600  # default, two weeks
 # SMTP settings
 EMAIL_HOST = ''
 EMAIL_HOST_USER = ''
@@ -201,13 +191,13 @@ EMAIL_PORT = 587
 EMAIL_FAIL_SILENTLY = False
 DEFAULT_FROM_EMAIL = ''
 SERVER_EMAIL = ''
-SERVER_MAIL=''
+SERVER_MAIL = ''
 # security
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-#SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = True
 # bootstrap admin
 BOOTSTRAP_ADMIN_SIDEBAR_MENU = True
 # bootstrap forms
@@ -219,7 +209,7 @@ TWILIO_API_URL = 'https://api.twilio.com/2010-04-01/'
 TWILIO_ACCOUNT_SID = ''
 TWILIO_AUTH_TOKEN = ''
 TWILIO_FORGERY_PROTECTION = True
-TWILIO_DEFAULT_FORWARD_PHONE=''
+TWILIO_DEFAULT_FORWARD_PHONE = ''
 # redpanda constants
 REDPANDA_SENDER_ID = 54
 REDPANDA_TEST_CIDS = ()
@@ -230,17 +220,17 @@ REDPANDA_TEXT_MESSAGE = ''
 REDPANDA_SMTP_ACCOUNTS = ()
 REDPANDA_SMTP_ROTATE_COUNT = 95
 # tests
-TWILIO_TEST_BULK_NAME=''
-TWILIO_TEST_BULK_DESCRIPTION=''
-TWILIO_TEST_BULK_SENDER_ID=0
-TWILIO_TEST_COLLEGE_ID=0
+TWILIO_TEST_BULK_NAME = ''
+TWILIO_TEST_BULK_DESCRIPTION = ''
+TWILIO_TEST_BULK_SENDER_ID = 0
+TWILIO_TEST_COLLEGE_ID = 0
 TWILIO_TEST_PHONE_TO = ''
 TWILIO_TEST_PHONE_OPT_OUT = ''
 TWILIO_TEST_MESSAGE = 'Who does your taxes?'
 TWILIO_TEST_MESSAGE_SID = ''
 TWILIO_TEST_DEPARTMENT = 'Admissions'
 TWILIO_TEST_STATUS_DICT = {}
-TWILIO_TEST_SENDER_ID=0
+TWILIO_TEST_SENDER_ID = 0
 TWILIO_TEST_MESSAGING_SERVICE_SID_INVALID = ''
 TWILIO_GROUP = 'Twilio Manager'
 TWILIO_ADDMISSIONS_GROUP = 'Admissions SMS'
@@ -252,7 +242,7 @@ TEST_EMAIL = ''
 TEST_USER_ID = ''
 # logging
 LOG_FILEPATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs/'
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs/',
 )
 LOG_FILENAME = '{0}{1}'.format(LOG_FILEPATH, 'debug.log')
 DEBUG_LOG_FILENAME = '{0}{1}'.format(LOG_FILEPATH, 'debug.log')
@@ -264,15 +254,15 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format' : '[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s',
-            'datefmt' : '%Y/%b/%d %H:%M:%S'
+            'format': '[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s',
+            'datefmt': '%Y/%b/%d %H:%M:%S',
         },
         'verbose': {
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s',
-            'datefmt' : '%Y/%b/%d %H:%M:%S'
+            'datefmt': '%Y/%b/%d %H:%M:%S',
         },
         'simple': {
-            'format': '%(levelname)s %(message)s'
+            'format': '%(levelname)s %(message)s',
         },
     },
     'filters': {
@@ -285,37 +275,37 @@ LOGGING = {
     },
     'handlers': {
         'logfile': {
-            'level':'DEBUG',
+            'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': LOG_FILENAME,
             'formatter': 'standard',
         },
-        'console':{
-            'level':'INFO',
-            'class':'logging.StreamHandler',
-            'formatter': 'standard'
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
         },
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'include_html': True,
-            'class': 'django.utils.log.AdminEmailHandler'
-        }
+            'class': 'django.utils.log.AdminEmailHandler',
+        },
     },
     'loggers': {
         'custom_logfile': {
-            'level':'ERROR',
-            'filters': ['require_debug_true'], # do not run error logger in production
+            'level': 'ERROR',
+            'filters': ['require_debug_true'],
             'class': 'logging.FileHandler',
             'filename': CUSTOM_LOG_FILENAME,
             'formatter': 'custom',
         },
         'info_logfile': {
-            'level':'INFO',
-            'class':'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
             'backupCount': 10,
             'maxBytes': 50000,
-            'filters': ['require_debug_false'], # run logger in production
+            'filters': ['require_debug_false'],
             'filename': INFO_LOG_FILENAME,
             'formatter': 'simple',
         },
@@ -328,30 +318,30 @@ LOGGING = {
         },
         'error_logfile': {
             'level': 'ERROR',
-            'filters': ['require_debug_true'], # do not run error logger in production
+            'filters': ['require_debug_true'],
             'class': 'logging.FileHandler',
             'filename': ERROR_LOG_FILENAME,
-            'formatter': 'verbose'
+            'formatter': 'verbose',
         },
         'djtwilio': {
-            'handlers':['logfile'],
+            'handlers': ['logfile'],
             'propagate': True,
-            'level':'DEBUG',
+            'level': 'DEBUG',
         },
         'djtwilio.apps.sms': {
-            'handlers':['logfile'],
+            'handlers': ['logfile'],
             'propagate': True,
-            'level':'DEBUG',
+            'level': 'DEBUG',
         },
         'djtwilio.core': {
-            'handlers':['logfile'],
+            'handlers': ['logfile'],
             'propagate': True,
-            'level':'DEBUG',
+            'level': 'DEBUG',
         },
         'django': {
-            'handlers':['console'],
+            'handlers': ['console'],
             'propagate': True,
-            'level':'WARN',
+            'level': 'WARN',
         },
         'django.db.backends': {
             'handlers': ['console'],
@@ -363,17 +353,21 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-    }
+    },
 }
 # apps
 Q_CLUSTER = {
-    'name': 'DjangORM',
-    'workers': 4,
+    'name': 'DJTwiliORM',
+    'workers': 2,
     'timeout': 90,
     'retry': 120,
-    'queue_limit': 50,
+    'recycle': 500,
+    'queue_limit': 500,
+    'save_limit': 250,
     'bulk': 10,
-    'orm': 'default'
+    'orm': 'default',
+    'cpu_affinity': 1,
+    'label': 'Django Q',
 }
 ##################
 # LOCAL SETTINGS #
