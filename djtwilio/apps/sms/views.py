@@ -20,7 +20,6 @@ from django.views.decorators.csrf import csrf_exempt
 from djauth.decorators import portal_auth_required
 from djimix.core.encryption import decrypt
 from djtools.utils.mail import send_mail
-from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse
 
 from djtwilio.apps.sms.forms import BulkForm
@@ -383,11 +382,7 @@ def send_form(request):
                             if indx:
                                 body = body.replace(rep, row[indx])
                             sent = send_message(
-                                Client(
-                                    bulk.sender.account.sid,
-                                    bulk.sender.account.token,
-                                ),
-                                bulk.sender,
+                                bulk.sender.id,
                                 row[2],         # recipient
                                 body,           # body
                                 row[3],         # cid
@@ -418,8 +413,7 @@ def send_form(request):
                 body = indi['message']
                 recipient = indi['phone_to']
                 sent = send_message(
-                    Client(sender.account.sid, sender.account.token),
-                    sender,
+                    sender.id,
                     recipient,
                     body,
                     indi.get('student_number'),
