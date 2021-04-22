@@ -1,7 +1,7 @@
 cryptography==3.4.7
 django==2.2.20
 django-admin-honeypot==1.1.0
-django-bootstrap4==2.3.1
+django-bootstrap4==3.0.0
 django-informixdb==1.10.0
 django-localflavor==3.0.1
 django-loginas==0.3.9
@@ -12,5 +12,5 @@ pycryptodome==3.10.1
 python-ldap==3.3.1
 python-memcached==1.59
 requests==2.25.1
-twilio==6.56.0
+twilio==6.57.0
 wemake-python-styleguide==0.13.3
