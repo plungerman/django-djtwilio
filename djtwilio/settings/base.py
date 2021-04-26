@@ -25,12 +25,9 @@ ADMINS = (
     ('', ''),
 )
 MANAGERS = ADMINS
-
 SECRET_KEY = ''
 ENCRYPTION_KEY = None
-
 ALLOWED_HOSTS = []
-
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'America/Chicago'
 SITE_ID = 1
@@ -42,7 +39,6 @@ FILE_CHARSET = 'utf8'
 SERVER_URL = ''
 API_URL = '{0}/{1}'.format(SERVER_URL, 'api')
 LIVEWHALE_API_URL = 'https://{0}'.format(SERVER_URL)
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT_DIR = BASE_DIR
 PROJECT_APP = os.path.basename(BASE_DIR)
@@ -54,7 +50,6 @@ STATIC_URL = '/static/{0}/'.format(PROJECT_APP)
 MEDIA_URL = '/media/{0}/'.format(PROJECT_APP)
 UPLOADS_DIR = '{0}files/'.format(MEDIA_ROOT)
 UPLOADS_URL = '{0}files/'.format(MEDIA_URL)
-
 ROOT_URLCONF = 'djtwilio.core.urls'
 WSGI_APPLICATION = 'djtwilio.wsgi.application'
 STATICFILES_DIRS = ()
@@ -74,13 +69,13 @@ DATABASES = {
 }
 INSTALLED_APPS = [
     'bootstrap4',
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.humanize',
-    'django.contrib.messages',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.messages',
+    'django.contrib.admin',
+    'django.contrib.humanize',
     'django.contrib.staticfiles',
     'django_q',
     'djtwilio.core',
@@ -93,14 +88,13 @@ INSTALLED_APPS = [
     'loginas',
 ]
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
+    #'django.middleware.security.SecurityMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    # the following should be uncommented unless you are
-    # embedding your apps in iframes
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 # template stuff
@@ -197,7 +191,7 @@ CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_SSL_REDIRECT = True
+#SECURE_SSL_REDIRECT = True
 # bootstrap admin
 BOOTSTRAP_ADMIN_SIDEBAR_MENU = True
 # bootstrap forms
@@ -369,24 +363,3 @@ Q_CLUSTER = {
     'cpu_affinity': 1,
     'label': 'Django Q',
 }
-##################
-# LOCAL SETTINGS #
-##################
-
-# Allow any settings to be defined in local.py which should be
-# ignored in your version control system allowing for settings to be
-# defined per machine.
-
-# Instead of doing "from .local import *", we use exec so that
-# local has full access to everything defined in this module.
-# Also force into sys.modules so it's visible to Django's autoreload.
-
-phile = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'local.py')
-if os.path.exists(phile):
-    import imp
-    import sys
-    module_name = '{0}.settings.local'.format(PROJECT_APP)
-    module = imp.new_module(module_name)
-    module.__file__ = phile
-    sys.modules[module_name] = module
-    exec(open(phile, 'rb').read())
