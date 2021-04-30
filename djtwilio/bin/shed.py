@@ -22,13 +22,19 @@ def main():
     """Testing task queue."""
     body = 'La soledad es la gran talladora del espíritu.'
     sender = settings.TWILIO_TEST_SENDER_ID
-    print(settings.TWILIO_TEST_SENDER_ID)
     to = settings.TWILIO_TEST_PHONE_TO
-    print(to)
     cid = settings.TWILIO_TEST_COLLEGE_ID
-    print(cid)
     now = datetime.now()
     next_run = timezone.now() + timedelta(minutes=1)
+    sched = Schedule.objects.create(
+        func='djtwilio.core.utils.send_message',
+        args=(sender, to, body, cid),
+        schedule_type=Schedule.ONCE,
+        next_run=next_run,
+        repeats=-1,
+        name='lorca: {0}'.format(now),
+    )
+    """
     sched = schedule(
         'djtwilio.core.utils.send_message',
         sender,
@@ -37,9 +43,10 @@ def main():
         cid,
         schedule_type=Schedule.ONCE,
         next_run=next_run,
-        repeats='1',
+        repeats=0,
         name='lorca: {0}'.format(now),
     )
+    """
     print(sched.__dict__)
 
 

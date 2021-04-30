@@ -281,7 +281,6 @@ LOGGING = {
         },
         'mail_admins': {
             'level': 'ERROR',
-            'filters': ['require_debug_false'],
             'include_html': True,
             'class': 'django.utils.log.AdminEmailHandler',
         },
@@ -289,7 +288,6 @@ LOGGING = {
     'loggers': {
         'custom_logfile': {
             'level': 'ERROR',
-            'filters': ['require_debug_true'],
             'class': 'logging.FileHandler',
             'filename': CUSTOM_LOG_FILENAME,
             'formatter': 'custom',
@@ -299,7 +297,6 @@ LOGGING = {
             'class': 'logging.handlers.RotatingFileHandler',
             'backupCount': 10,
             'maxBytes': 50000,
-            'filters': ['require_debug_false'],
             'filename': INFO_LOG_FILENAME,
             'formatter': 'simple',
         },
@@ -312,7 +309,6 @@ LOGGING = {
         },
         'error_logfile': {
             'level': 'ERROR',
-            'filters': ['require_debug_true'],
             'class': 'logging.FileHandler',
             'filename': ERROR_LOG_FILENAME,
             'formatter': 'verbose',
