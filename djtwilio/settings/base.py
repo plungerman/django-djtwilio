@@ -363,3 +363,24 @@ Q_CLUSTER = {
     'cpu_affinity': 1,
     'label': 'Django Q',
 }
+##################
+# LOCAL SETTINGS #
+##################
+
+# Allow any settings to be defined in local.py which should be
+# ignored in your version control system allowing for settings to be
+# defined per machine.
+
+# Instead of doing "from .local import *", we use exec so that
+# local has full access to everything defined in this module.
+# Also force into sys.modules so it's visible to Django's autoreload.
+
+phile = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'local.py')
+if os.path.exists(phile):
+    import imp
+    import sys
+    module_name = '{0}.settings.local'.format(PROJECT_APP)
+    module = imp.new_module(module_name)
+    module.__file__ = phile
+    sys.modules[module_name] = module
+    exec(open(phile, 'rb').read())
