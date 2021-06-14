@@ -43,7 +43,7 @@ def main():
         cid,
         schedule_type=Schedule.ONCE,
         next_run=next_run,
-        repeats=0,
+        repeats=1,
         name='lorca: {0}'.format(now),
     )
     """

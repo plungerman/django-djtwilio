@@ -88,7 +88,6 @@ INSTALLED_APPS = [
     'loginas',
 ]
 MIDDLEWARE = [
-    #'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -347,17 +346,28 @@ LOGGING = {
 }
 # apps
 Q_CLUSTER = {
-    'name': 'DJTwiliORM',
-    'workers': 2,
+    'name': 'DJTwiliRedis',
+    'workers': 8,
     'timeout': 90,
     'retry': 120,
     'recycle': 500,
     'queue_limit': 500,
     'save_limit': 250,
+    'compress': True,
     'bulk': 10,
-    'orm': 'default',
+    #'orm': 'default',
     'cpu_affinity': 1,
     'label': 'Django Q',
+    #'redis': {
+        #'host': '127.0.0.1',
+        #'port': 6379,
+        #'db': 0,
+        #'password': None,
+        #'socket_timeout': None,
+        #'charset': 'utf-8',
+        #'errors': 'strict',
+        #'unix_socket_path': None,
+    #},
 }
 ##################
 # LOCAL SETTINGS #
