@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import csv
 import logging
 import re
 
@@ -78,7 +79,7 @@ def send_message(sid, recipient, body, cid, callback=False, bulk=None, doc=None)
     return {'message': message, 'response': apicall}
 
 
-def send_bulk(bulk, phile=None):
+def send_bulk(bulk, body, phile=None):
     """Send a bulk message through the twilio API."""
     rep = 'rep_first'
     indx = None
@@ -107,7 +108,6 @@ def send_bulk(bulk, phile=None):
                 indx = row.index(rep)
                 # skip header row
             else:
-                body = data['message']
                 if indx:
                     body = body.replace(rep, row[indx])
                 sent = send_message(

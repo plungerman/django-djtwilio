@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import csv
 import json
 import logging
 import re
@@ -348,9 +347,9 @@ def send_form(request):
                     phile.created_by = user
                     phile.updated_by = user
                     phile.save()
-                data = form_bulk.cleaned_data
+                bulk_clean = form_bulk.cleaned_data
                 bulk = form_bulk.save()
-                send_bulk(bulk, phile)
+                send_bulk(bulk, bulk_clean['message'], phile)
                 djmessages.add_message(
                     request,
                     djmessages.SUCCESS,
