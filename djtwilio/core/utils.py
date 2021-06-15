@@ -76,3 +76,45 @@ def send_message(sid, recipient, body, cid, callback=False, bulk=None, doc=None)
         message = False
 
     return {'message': message, 'response': apicall}
+
+
+def send_bulk(bulk, phile=None):
+    """Send a bulk message through the twilio API."""
+    rep = 'rep_first'
+    indx = None
+    # firstname, lastname, phone, cid, rep_first
+    with open(bulk.distribution.path, 'r', errors='ignore') as csvfile:
+        # check for a header
+        has_header = csv.Sniffer().has_header(csvfile.read(1024 * 1024))
+        # Rewind.
+        csvfile.seek(0)
+        # read 1MB chunks to ensure the sniffer works for files
+        # of any size without running out of memory:
+        dialect = csv.Sniffer().sniff(csvfile.read(1024 * 1024))
+        # Rewind.
+        csvfile.seek(0)
+        # detect delimiter
+        delimiter = dialect.delimiter
+        # set up csv reader
+        reader = csv.reader(
+            csvfile, delimiter=delimiter, quoting=csv.QUOTE_NONE,
+        )
+        # Skip header row.
+        if has_header:
+            next(reader)
+        for row in reader:
+            if rep in row:
+                indx = row.index(rep)
+                # skip header row
+            else:
+                body = data['message']
+                if indx:
+                    body = body.replace(rep, row[indx])
+                sent = send_message(
+                    bulk.sender.id,
+                    row[2],         # recipient
+                    body,           # body
+                    row[3],         # cid
+                    bulk=bulk,
+                    doc=phile,
+                )

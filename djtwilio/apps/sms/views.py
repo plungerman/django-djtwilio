@@ -32,6 +32,7 @@ from djtwilio.apps.sms.models import Message
 from djtwilio.core.data import CtcBlob
 from djtwilio.core.models import Account
 from djtwilio.core.models import Sender
+from djtwilio.core.utils import send_bulk
 from djtwilio.core.utils import send_message
 
 
@@ -349,46 +350,7 @@ def send_form(request):
                     phile.save()
                 data = form_bulk.cleaned_data
                 bulk = form_bulk.save()
-                rep = 'rep_first'
-                indx = None
-                # firstname, lastname, phone, cid, rep_first
-                with open(bulk.distribution.path, 'r') as csvfile:
-                    # check for a header
-                    has_header = csv.Sniffer().has_header(
-                        csvfile.read(1024 * 1024),
-                    )
-                    # Rewind.
-                    csvfile.seek(0)
-                    # read 1MB chunks to ensure the sniffer works for files
-                    # of any size without running out of memory:
-                    dialect = csv.Sniffer().sniff(csvfile.read(1024 * 1024))
-                    # Rewind.
-                    csvfile.seek(0)
-                    # detect delimiter
-                    delimiter = dialect.delimiter
-                    # set up csv reader
-                    reader = csv.reader(
-                        csvfile, delimiter=delimiter, quoting=csv.QUOTE_NONE,
-                    )
-                    # Skip header row.
-                    if has_header:
-                        next(reader)
-                    for row in reader:
-                        if rep in row:
-                            indx = row.index(rep)
-                            # skip header row
-                        else:
-                            body = data['message']
-                            if indx:
-                                body = body.replace(rep, row[indx])
-                            sent = send_message(
-                                bulk.sender.id,
-                                row[2],         # recipient
-                                body,           # body
-                                row[3],         # cid
-                                bulk=bulk,
-                                doc=phile,
-                            )
+                send_bulk(bulk, phile)
                 djmessages.add_message(
                     request,
                     djmessages.SUCCESS,

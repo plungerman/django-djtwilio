@@ -31,7 +31,7 @@ def main():
         args=(sender, to, body, cid),
         schedule_type=Schedule.ONCE,
         next_run=next_run,
-        repeats=-1,
+        repeats=1,
         name='lorca: {0}'.format(now),
     )
     """

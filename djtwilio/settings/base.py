@@ -358,16 +358,16 @@ Q_CLUSTER = {
     #'orm': 'default',
     'cpu_affinity': 1,
     'label': 'Django Q',
-    #'redis': {
-        #'host': '127.0.0.1',
-        #'port': 6379,
-        #'db': 0,
-        #'password': None,
-        #'socket_timeout': None,
-        #'charset': 'utf-8',
-        #'errors': 'strict',
-        #'unix_socket_path': None,
-    #},
+    'redis': {
+        'host': '127.0.0.1',
+        'port': 6379,
+        'db': 0,
+        'password': None,
+        'socket_timeout': None,
+        'charset': 'utf-8',
+        'errors': 'strict',
+        'unix_socket_path': None,
+    },
 }
 ##################
 # LOCAL SETTINGS #
