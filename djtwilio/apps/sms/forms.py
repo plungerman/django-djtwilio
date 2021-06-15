@@ -4,6 +4,7 @@ from django import forms
 from django.conf import settings
 
 from djtools.fields.localflavor import USPhoneNumberField
+from djtools.fields.time import KungfuTimeField
 from djtwilio.apps.sms.models import Bulk
 from djtwilio.apps.sms.models import Document
 from djtwilio.apps.sms.models import Status
@@ -66,6 +67,15 @@ class DocumentForm(forms.ModelForm):
 class BulkForm(forms.ModelForm):
     """Form class for the Bulk data class model."""
 
+    execute_date = forms.DateField(
+        label="Send date (Optional)",
+        required=False,
+    )
+    execute_time = KungfuTimeField(
+        label="Send time (Optional)",
+        help_text="(Format HH:MM am/pm)",
+        required=False,
+    )
     message = forms.CharField(
         label="Message to Recipients",
         widget=forms.Textarea(attrs={'class': 'required form-control'}),
@@ -77,6 +87,18 @@ class BulkForm(forms.ModelForm):
 
         model = Bulk
         fields = ['name', 'description', 'distribution', 'sender']
+
+    def clean(self):
+        """Deal with grants officer."""
+        cd = self.cleaned_data
+        date = cd.get('execute_date')
+        time = cd.get('execute_time')
+        if date and not time:
+            self.add_error('execute_time', "Please provide a time.")
+        elif time and not date:
+            self.add_error('execute_date', "Please provide a date.")
+
+        return cd
 
 
 class IndiForm(forms.Form):

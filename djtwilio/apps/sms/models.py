@@ -3,7 +3,7 @@
 from django.contrib.auth.models import User
 from django.core.validators import FileExtensionValidator
 from django.db import models
-
+from django_q.models import Schedule
 from djtools.fields.helpers import upload_to_path
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
@@ -48,6 +48,13 @@ class Bulk(models.Model):
         on_delete=models.CASCADE,
         verbose_name="From",
         related_name='bulk_sender',
+    )
+    schedule = models.ForeignKey(
+        Schedule,
+        on_delete=models.PROTECT,
+        related_name='schedule',
+        null=True,
+        blank=True,
     )
     date_created = models.DateTimeField(auto_now_add=True)
     name = models.CharField("Message Name (internal)", max_length=64)

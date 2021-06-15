@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import json
 import logging
 import re
@@ -15,7 +16,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.urls import reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
-
+from django_q.models import Schedule
 from djauth.decorators import portal_auth_required
 from djimix.core.encryption import decrypt
 from djtools.utils.mail import send_mail
@@ -348,16 +349,45 @@ def send_form(request):
                     phile.updated_by = user
                     phile.save()
                 bulk_clean = form_bulk.cleaned_data
+                body = bulk_clean['message']
                 bulk = form_bulk.save()
-                send_bulk(bulk, bulk_clean['message'], phile)
+                if bulk_clean['execute_date']:
+                    date_string = '{0} {1}'.format(
+                        bulk_clean['execute_date'],
+                        bulk_clean['execute_time'],
+                    )
+                    next_run = datetime.datetime.strptime(
+                        date_string, '%Y-%m-%d %H:%M:%S',
+                    )
+                    pid = None
+                    if phile:
+                        pid = phile.id
+                    Schedule.objects.create(
+                        func='djtwilio.core.utils.send_bulk',
+                        args=(bulk.id, body, pid),
+                        schedule_type=Schedule.ONCE,
+                        next_run=next_run,
+                        repeats=1,
+                        name='{0}: {1}'.format(bulk.name, date_string),
+                    )
+                    mensaje = """
+                        Your messages have been scheduled for delivery: {0}.
+                        View the
+                        <a href="{1}" class="message-status text-primary">
+                          delivery report</a>.
+                    """.format(date_string, reverse('sms_bulk_detail', args=[bulk.id]))
+                else:
+                    send_bulk(bulk, body, phile)
+                    mensaje = """
+                      Your messages have been sent. View the
+                      <a href="{0}" class="message-status text-primary">
+                        delivery report</a>.
+S>                    """.format(reverse('sms_bulk_detail', args=[bulk.id]))
+
                 djmessages.add_message(
                     request,
                     djmessages.SUCCESS,
-                    """
-                    Your messages have been sent. View the
-                    <a href="{0}" class="message-status text-primary">
-                      delivery report</a>.
-                    """.format(reverse('sms_bulk_detail', args=[bulk.id])),
+                    mensaje,
                     extra_tags='alert alert-success',
                 )
                 response = HttpResponseRedirect(reverse('sms_send_form'))

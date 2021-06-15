@@ -26,6 +26,11 @@ def main():
     cid = settings.TWILIO_TEST_COLLEGE_ID
     now = datetime.now()
     next_run = timezone.now() + timedelta(minutes=1)
+
+    date_string = '2021-06-30 4:20 PM'
+    next_run = datetime.strptime(
+        date_string, '%Y-%m-%d %I:%M %p',
+    )
     sched = Schedule.objects.create(
         func='djtwilio.core.utils.send_message',
         args=(sender, to, body, cid),

@@ -5,8 +5,14 @@
 {% endblock %}
 {% block extra_javascript %}
 {{block.super}}
-<script src="https://www.carthage.edu/static/vendor/cleave.js/cleave.min.js"></script>
-<script src="https://www.carthage.edu/static/vendor/cleave.js/addons/cleave-phone.us.js"></script>
+<script src="//www.carthage.edu/static/vendor/jquery/ui/datepicker/js/jquery-ui-1.10.4.custom.min.js"
+  type="text/javascript" charset="utf-8"></script>
+<script src="//www.carthage.edu/static/vendor/jquery/plugins/ptTimeSelect/src/jquery.ptTimeSelect.js"
+  type="text/javascript" charset="utf-8"></script>
+<script src="//www.carthage.edu/static/vendor/cleave.js/cleave.min.js"
+  type="text/javascript" charset="utf-8"></script>
+<script src="//www.carthage.edu/static/vendor/cleave.js/addons/cleave-phone.us.js"
+  type="text/javascript" charset="utf-8"></script>
 <script>
 var cleavePhone = new Cleave('#id_indi-phone_to', {
   phone: true,
@@ -14,6 +20,14 @@ var cleavePhone = new Cleave('#id_indi-phone_to', {
   delimiter: '-'
 });
 $(function() {
+    $("#id_bulk-execute_date").datepicker({
+        firstDay:0, appendText: "(format yyyy-mm-dd)",
+        changeFirstDay:false, dateFormat: "yy-mm-dd",
+        showOn: "both",
+        buttonImage: "//www.carthage.edu/themes/shared/img/ico/calendar.gif",
+        buttonImageOnly: true
+    });
+    $('#id_bulk-execute_time').ptTimeSelect();
   {% if bulk %}
   $('#bulkForm').slideDown('200');
   $('#indiForm').slideUp('200');
@@ -88,6 +102,13 @@ $(function() {
 
 });
 </script>
+{% endblock %}
+{% block extra_style %}
+{{block.super}}
+<link href="//www.carthage.edu/static/vendor/jquery/ui/datepicker/css/smoothness/jquery-ui-1.10.4.custom.min.css"
+  rel="stylesheet" type="text/css">
+<link href="//www.carthage.edu/static/vendor/jquery/plugins/ptTimeSelect/src/jquery.ptTimeSelect.css"
+  rel="stylesheet" type="text/css">
 {% endblock %}
 {% block content %}
 <h3>Send a message</h3>

@@ -7,6 +7,8 @@ import re
 from django.conf import settings
 from django.urls import reverse
 from djimix.core.encryption import encrypt
+from djtwilio.apps.sms.models import Bulk
+from djtwilio.apps.sms.models import Document
 from djtwilio.apps.sms.models import Message
 from djtwilio.apps.sms.models import Status
 from djtwilio.core.models import Sender
@@ -81,6 +83,10 @@ def send_message(sid, recipient, body, cid, callback=False, bulk=None, doc=None)
 
 def send_bulk(bulk, body, phile=None):
     """Send a bulk message through the twilio API."""
+    if isinstance(bulk, int):
+        bulk = Bulk.objects.get(pk=bulk)
+        if phile:
+            phile = Document.objects.get(pk=phile)
     rep = 'rep_first'
     indx = None
     # firstname, lastname, phone, cid, rep_first
