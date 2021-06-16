@@ -126,4 +126,5 @@ def send_bulk(bulk, body, phile=None):
                     bulk=bulk,
                     doc=phile,
                 )
-                time.sleep(1)
+                # simple rate limit to prevent API errors
+                #time.sleep(1)
