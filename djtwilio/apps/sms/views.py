@@ -382,7 +382,7 @@ S>                    """.format(reverse('sms_bulk_detail', args=[bulk.id]))
                     schedule_type=Schedule.ONCE,
                     next_run=next_run,
                     repeats=1,
-                    name='{0}: {1}'.format(bulk.name, date_string),
+                    name='{0}: {1}'.format(bulk.name, next_run),
                 )
 
                 djmessages.add_message(
