@@ -15,6 +15,7 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.urls import reverse
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django_q.models import Schedule
 from djauth.decorators import portal_auth_required
@@ -32,7 +33,6 @@ from djtwilio.apps.sms.models import Message
 from djtwilio.core.data import CtcBlob
 from djtwilio.core.models import Account
 from djtwilio.core.models import Sender
-from djtwilio.core.utils import send_bulk
 from djtwilio.core.utils import send_message
 
 
@@ -359,17 +359,6 @@ def send_form(request):
                     next_run = datetime.datetime.strptime(
                         date_string, '%Y-%m-%d %H:%M:%S',
                     )
-                    pid = None
-                    if phile:
-                        pid = phile.id
-                    Schedule.objects.create(
-                        func='djtwilio.core.utils.send_bulk',
-                        args=(bulk.id, body, pid),
-                        schedule_type=Schedule.ONCE,
-                        next_run=next_run,
-                        repeats=1,
-                        name='{0}: {1}'.format(bulk.name, date_string),
-                    )
                     mensaje = """
                         Your messages have been scheduled for delivery: {0}.
                         View the
@@ -377,12 +366,24 @@ def send_form(request):
                           delivery report</a>.
                     """.format(date_string, reverse('sms_bulk_detail', args=[bulk.id]))
                 else:
-                    send_bulk(bulk, body, phile)
+                    next_run = timezone.now() + datetime.timedelta(minutes=1)
                     mensaje = """
                       Your messages have been sent. View the
                       <a href="{0}" class="message-status text-primary">
                         delivery report</a>.
 S>                    """.format(reverse('sms_bulk_detail', args=[bulk.id]))
+
+                pid = None
+                if phile:
+                    pid = phile.id
+                Schedule.objects.create(
+                    func='djtwilio.core.utils.send_bulk',
+                    args=(bulk.id, body, pid),
+                    schedule_type=Schedule.ONCE,
+                    next_run=next_run,
+                    repeats=1,
+                    name='{0}: {1}'.format(bulk.name, date_string),
+                )
 
                 djmessages.add_message(
                     request,
