@@ -110,21 +110,20 @@ def send_bulk(bulk, body, phile=None):
         )
         # Skip header row.
         if has_header:
-            next(reader)
+            headers = next(reader)
+            if rep in headers:
+                indx = headers.index(rep)
         for row in reader:
-            if rep in row:
-                indx = row.index(rep)
-                # skip header row
-            else:
-                if indx:
-                    body = body.replace(rep, row[indx])
-                send_message(
-                    bulk.sender.id,
-                    row[2],         # recipient
-                    body,           # body
-                    row[3],         # cid
-                    bulk=bulk,
-                    doc=phile,
-                )
-                # simple rate limit to prevent API errors
-                #time.sleep(1)
+            if indx:
+                body = body.replace(rep, row[indx])
+
+            send_message(
+                bulk.sender.id,
+                row[2],         # recipient
+                body,           # body
+                row[3],         # cid
+                bulk=bulk,
+                doc=phile,
+            )
+            # simple rate limit to prevent API errors
+            time.sleep(1)
