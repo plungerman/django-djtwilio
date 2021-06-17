@@ -83,7 +83,7 @@ def send_message(sid, recipient, body, cid, callback=False, bulk=None, doc=None)
     return {'message': message, 'response': apicall}
 
 
-def send_bulk(bulk, body, phile=None):
+def send_bulk(bulk, body_orig, phile=None):
     """Send a bulk message through the twilio API."""
     if isinstance(bulk, int):
         bulk = Bulk.objects.get(pk=bulk)
@@ -113,10 +113,13 @@ def send_bulk(bulk, body, phile=None):
             headers = next(reader)
             if rep in headers:
                 indx = headers.index(rep)
+            else:
+                body = body_orig
+        else:
+            body = body_orig
         for row in reader:
             if indx:
-                body = body.replace(rep, row[indx])
-
+                body = body_orig.replace(rep, row[indx])
             send_message(
                 bulk.sender.id,
                 row[2],         # recipient
