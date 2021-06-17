@@ -355,7 +355,6 @@ Q_CLUSTER = {
     'save_limit': 250,
     'compress': True,
     'bulk': 10,
-    #'orm': 'default',
     'cpu_affinity': 1,
     'label': 'Django Q',
     'redis': {
