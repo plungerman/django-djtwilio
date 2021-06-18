@@ -70,7 +70,7 @@ class Bulk(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=['csv', 'CSV'])],
         help_text="""
             CSV File: Last Name, First Name, Phone, College ID,
-            separated by a tab
+            rep_first (optional), separated by a tab or pipe | .
         """,
     )
 
