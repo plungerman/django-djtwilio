@@ -179,6 +179,7 @@ def status_callback(request, mid=None):
         msg = ""
         # message status for form instance
         status = None
+        message = None
         if mid:
             mid = decrypt(mid)
             message = Message.objects.get(pk=mid)
@@ -215,6 +216,7 @@ def status_callback(request, mid=None):
                     mess_orig = Message.objects.filter(recipient=frum).order_by(
                         '-date_created',
                     ).first()
+                    to = None
                     if mess_orig:
                         sender = mess_orig.messenger
                         message = Message(
@@ -225,30 +227,34 @@ def status_callback(request, mid=None):
                             status=status,
                         )
                         message.save()
-                        to = None
+                        body = message.body
                         email_to = [sender.user.email]
                         if settings.DEBUG:
                             to = sender.user.email
                             email_to = [settings.MANAGERS[0][1]]
-                        subject = "[DJ Twilio] reply from one your contacts"
-                        context_dict = {
-                            'status': status,
-                            'original': mess_orig,
-                            'response': message,
-                            'to': to,
-                        }
-                        send_mail(
-                            request,
-                            email_to,
-                            subject,
-                            settings.DEFAULT_FROM_EMAIL,
-                            'apps/sms/reply_email.html',
-                            context_dict,
-                            [settings.MANAGERS[0][1]],
-                        )
                         status.MessageStatus = 'received'
                         message.status = status
                         status.save()
+                    else:
+                        body = status.Body
+                        email_to = [settings.MANAGERS[0][1]]
+                    context_dict = {
+                        'status': status,
+                        'original': mess_orig,
+                        'response': message,
+                        'to': to,
+                        'body': body,
+                    }
+                    subject = "[DJ Twilio] reply from one your contacts"
+                    send_mail(
+                        request,
+                        email_to,
+                        subject,
+                        settings.DEFAULT_FROM_EMAIL,
+                        'apps/sms/reply_email.html',
+                        context_dict,
+                        [settings.MANAGERS[0][1]],
+                    )
                     # update informix
                     status_list = ['delivered', 'received', 'sent', 'accepted']
                     if status.SmsStatus in status_list:
@@ -259,7 +265,7 @@ def status_callback(request, mid=None):
                         # non-standard characters that do not work with
                         # python strings
                         body = unicodedata.normalize(
-                            'NFKD', message.body,
+                            'NFKD', body,
                         ).encode('ascii', 'ignore')
                         blob = CtcBlob.objects.using('informix').create(txt=body)
                         # insert into database
@@ -286,12 +292,11 @@ def status_callback(request, mid=None):
                         )
                         with connections['informix'].cursor() as cursor:
                             cursor.execute(sql)
-
-                        if not msg:
-                            if settings.DEBUG:
-                                msg = status.MessageStatus
-                            else:
-                                msg = 'Success'
+            if not msg:
+                if settings.DEBUG:
+                    msg = status.MessageStatus
+                else:
+                    msg = 'Success'
         else:
             msg = "Invalid POST data"
     else:
