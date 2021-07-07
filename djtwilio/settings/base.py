@@ -348,7 +348,7 @@ LOGGING = {
 Q_CLUSTER = {
     'name': 'DJTwiliRedis',
     'workers': 8,
-    'timeout': 90,
+    'timeout': 3600,
     'retry': 120,
     'recycle': 500,
     'queue_limit': 500,
